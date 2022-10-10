@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message FlutterReleaseModel {
+  string hash = 1;
+  string channel = 2;
+  string version = 3;
+  string dart_sdk_version = 4;
+  string dart_sdk_arch = 5;
+  string release_date = 6;
+  string archive = 7;
+  string sha256 = 8;
+}
+
+message FlutterReleasesModel {
+  string base_url = 1;
+  map<string, string> current_release = 2;
+  repeated FlutterReleaseModel releases = 3;
+}

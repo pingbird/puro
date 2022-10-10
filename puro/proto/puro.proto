@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+message CommandErrorModel {
+  string exception = 1;
+  string exceptionType = 2;
+  string stackTrace = 3;
+}
+
+message LogEntryModel {
+  string timestamp = 1;
+  int32 level = 2;
+  string message = 3;
+}
+
+message EnvironmentSummaryModel {
+  string name = 1;
+  string path = 2;
+}
+
+message EnvironmentListModel {
+  repeated EnvironmentSummaryModel environments = 1;
+}
+
+message CommandResultModel {
+  bool success = 1;
+  optional string message = 2;
+  optional string usage = 3;
+  optional CommandErrorModel error = 4;
+  repeated LogEntryModel logs = 5;
+  optional EnvironmentListModel environmentList = 6;
+}
