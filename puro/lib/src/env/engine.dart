@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:http/http.dart';
-import 'package:puro/src/git.dart';
-import 'package:puro/src/http.dart';
-import 'package:puro/src/logger.dart';
 
 import '../config.dart';
+import '../git.dart';
+import '../http.dart';
+import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 

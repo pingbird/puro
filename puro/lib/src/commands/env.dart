@@ -1,15 +1,17 @@
 import 'package:pub_semver/pub_semver.dart';
-import 'package:puro/src/env/delete.dart';
 
 import '../command.dart';
 import '../env/create.dart';
+import '../env/delete.dart';
 import '../env/list.dart';
+import '../env/use.dart';
 
 class EnvCommand extends PuroCommand {
   EnvCommand() {
     addSubcommand(EnvLsCommand());
     addSubcommand(EnvCreateCommand());
     addSubcommand(EnvRmCommand());
+    addSubcommand(EnvUseCommand());
   }
 
   @override
@@ -49,7 +51,7 @@ class EnvCreateCommand extends PuroCommand {
   final name = 'create';
 
   @override
-  String? get argumentUsage => '<env-name>';
+  String? get argumentUsage => '<name>';
 
   @override
   final description = 'Sets up a new Flutter environment.';
@@ -92,7 +94,7 @@ class EnvRmCommand extends PuroCommand {
   final description = 'Delete an environment.';
 
   @override
-  String? get argumentUsage => '<env-name>';
+  String? get argumentUsage => '<name>';
 
   @override
   Future<CommandResult> run() async {
@@ -104,6 +106,30 @@ class EnvRmCommand extends PuroCommand {
     return BasicMessageResult(
       success: true,
       message: 'Deleted environment `$name`',
+    );
+  }
+}
+
+class EnvUseCommand extends PuroCommand {
+  @override
+  final name = 'use';
+
+  @override
+  final description = 'Select an environment to use in the current project.';
+
+  @override
+  String? get argumentUsage => '<name>';
+
+  @override
+  Future<CommandResult> run() async {
+    final name = unwrapSingleArgument();
+    await useEnvironment(
+      scope: scope,
+      name: name,
+    );
+    return BasicMessageResult(
+      success: true,
+      message: 'Now using environment `$name` for the current project',
     );
   }
 }

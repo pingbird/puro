@@ -1,6 +1,6 @@
 name: puro
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
+version: 0.1.0
 
 environment:
   sdk: '>=2.18.0 <3.0.0'

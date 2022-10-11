@@ -3,15 +3,15 @@ import 'dart:io';
 
 import 'package:file/file.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:puro/src/config.dart';
-import 'package:puro/src/git.dart';
-import 'package:puro/src/logger.dart';
-import 'package:puro/src/proto/flutter_releases.pb.dart';
-import 'package:puro/src/provider.dart';
 
 import '../../models.dart';
 import '../command.dart';
+import '../config.dart';
+import '../git.dart';
 import '../http.dart';
+import '../logger.dart';
+import '../proto/flutter_releases.pb.dart';
+import '../provider.dart';
 
 class EnvCreateResult extends CommandResult {
   EnvCreateResult({

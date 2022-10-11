@@ -1,9 +1,10 @@
 import 'package:args/command_runner.dart';
-import 'package:puro/src/commands/env.dart';
-import 'package:puro/src/commands/flutter.dart';
-import 'package:puro/src/logger.dart';
 
 import 'command.dart';
+import 'commands/dart.dart';
+import 'commands/env.dart';
+import 'commands/flutter.dart';
+import 'logger.dart';
 
 void main(List<String> args) async {
   final runner = PuroCommandRunner(
@@ -15,16 +16,34 @@ void main(List<String> args) async {
       'git',
       help: 'Overrides the path to the git executable.',
       valueHelp: 'exe',
+      callback: runner.wrapCallback((exe) {
+        runner.gitExecutableOverride = exe;
+      }),
     )
     ..addOption(
       'root',
-      help: 'Overrides the path to the directory containing environments.',
+      help: 'Overrides the global puro root directory. (defaults to `~/.puro`)',
       valueHelp: 'dir',
+      callback: runner.wrapCallback((dir) {
+        runner.rootDirOverride = dir;
+      }),
     )
     ..addOption(
       'dir',
       help: 'Overrides the current working directory.',
       valueHelp: 'dir',
+      callback: runner.wrapCallback((dir) {
+        runner.workingDirOverride = dir;
+      }),
+    )
+    ..addOption(
+      'project',
+      abbr: 'p',
+      help: 'Overrides the selected flutter project.',
+      valueHelp: 'dir',
+      callback: runner.wrapCallback((dir) {
+        runner.projectDirOverride = dir;
+      }),
     )
     ..addOption(
       'env',
@@ -39,18 +58,24 @@ void main(List<String> args) async {
       'flutter-git',
       help: 'Overrides the Flutter SDK git url.',
       valueHelp: 'url',
+      callback: runner.wrapCallback((url) {
+        runner.flutterGitUrlOverride = url;
+      }),
     )
     ..addOption(
       'engine-git',
       help: 'Overrides the Flutter Engine git url.',
       valueHelp: 'url',
+      callback: runner.wrapCallback((url) {
+        runner.engineGitUrlOverride = url;
+      }),
     )
     ..addOption(
       'releases-json-url',
       help: 'Overrides the Flutter releases json url.',
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
-        runner.versionsJsonUrl = url;
+        runner.versionsJsonUrlOverride = url;
       }),
     )
     ..addOption(
@@ -58,7 +83,7 @@ void main(List<String> args) async {
       help: 'Overrides the Flutter storage base url.',
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
-        runner.flutterStorageBaseUrl = url;
+        runner.flutterStorageBaseUrlOverride = url;
       }),
     )
     ..addOption(
@@ -88,13 +113,18 @@ void main(List<String> args) async {
       help: 'Verbose logging, alias for --log-level=3.',
       callback: runner.wrapCallback((flag) {
         if (flag) {
-          runner.logLevel = LogLevel.debug;
+          runner.logLevel = LogLevel.verbose;
         }
       }),
     )
     ..addFlag(
       'color',
       help: 'Enable or disable ANSI colors.',
+      callback: runner.wrapCallback((flag) {
+        if (runner.results.wasParsed('color')) {
+          runner.colorOverride = flag;
+        }
+      }),
     )
     ..addFlag(
       'json',
@@ -103,7 +133,8 @@ void main(List<String> args) async {
     );
   runner
     ..addCommand(EnvCommand())
-    ..addCommand(FlutterCommand());
+    ..addCommand(FlutterCommand())
+    ..addCommand(DartCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {

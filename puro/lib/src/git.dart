@@ -2,19 +2,21 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file/file.dart';
-import 'package:puro/src/config.dart';
-import 'package:puro/src/logger.dart';
-import 'package:puro/src/process.dart';
-import 'package:puro/src/provider.dart';
+
+import 'config.dart';
+import 'logger.dart';
+import 'process.dart';
+import 'provider.dart';
 
 class GitClient {
   GitClient({
-    required this.gitExecutable,
-    required this.log,
+    required this.scope,
   });
 
-  final File gitExecutable;
-  final PuroLogger log;
+  final Scope scope;
+  late final config = PuroConfig.of(scope);
+  late final gitExecutable = config.gitExecutable;
+  late final log = PuroLogger.of(scope);
 
   Future<ProcessResult> _git(
     List<String> args, {
@@ -23,6 +25,7 @@ class GitClient {
     log.v('${directory?.path ?? ''}> ${gitExecutable.path} ${args.join(' ')}');
 
     final process = await startProcess(
+      scope,
       gitExecutable.path,
       args,
       runInShell: true,
@@ -151,10 +154,7 @@ class GitClient {
   }
 
   static final provider = Provider<GitClient>((scope) {
-    return GitClient(
-      gitExecutable: PuroConfig.of(scope).gitExecutable,
-      log: PuroLogger.of(scope),
-    );
+    return GitClient(scope: scope);
   });
   static GitClient of(Scope scope) => scope.read(provider);
 }

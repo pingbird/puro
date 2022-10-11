@@ -1,5 +1,6 @@
 import 'package:neoansi/neoansi.dart';
-import 'package:puro/src/provider.dart';
+
+import 'provider.dart';
 
 enum LogLevel {
   wtf,

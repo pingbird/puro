@@ -1,8 +1,8 @@
 import 'package:file/file.dart';
-import 'package:puro/src/command.dart';
-import 'package:puro/src/proto/puro.pb.dart';
 
+import '../command.dart';
 import '../config.dart';
+import '../proto/puro.pb.dart';
 import '../provider.dart';
 
 class ListEnvironmentResult extends CommandResult {

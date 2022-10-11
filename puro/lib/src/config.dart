@@ -3,13 +3,17 @@ import 'dart:io';
 
 import 'package:file/file.dart';
 import 'package:process/process.dart';
-import 'package:puro/models.dart';
-import 'package:puro/src/command.dart';
-import 'package:puro/src/provider.dart';
 
-Directory? findFlutterProjectDir(Directory directory) {
+import '../models.dart';
+import 'command.dart';
+import 'provider.dart';
+
+Directory? findProjectDir(Directory directory, String fileName) {
   while (directory.existsSync()) {
-    if (directory.childFile('pubspec.yaml').existsSync()) {
+    if (directory.fileSystem
+            .statSync(directory.childFile(fileName).path)
+            .type !=
+        FileSystemEntityType.notFound) {
       return directory;
     }
     final parent = directory.parent;
@@ -25,6 +29,7 @@ class PuroConfig {
     required this.gitExecutable,
     required Directory puroRoot,
     required this.projectDir,
+    required this.parentProjectDir,
     required this.flutterGitUrl,
     required this.engineGitUrl,
     required this.releasesJsonUrl,
@@ -37,6 +42,7 @@ class PuroConfig {
     required String? gitExecutable,
     required String? puroRoot,
     required String? workingDir,
+    required String? projectDir,
     required String? flutterGitUrl,
     required String? engineGitUrl,
     required String? releasesJsonUrl,
@@ -55,17 +61,36 @@ class PuroConfig {
       homeDir = Platform.environment['HOME']!;
     }
 
+    final Directory? resultProjectDir;
+    final Directory? parentProjectDir;
+
+    workingDir = projectDir ?? workingDir;
+
+    final currentDir = workingDir == null
+        ? fileSystem.currentDirectory
+        : fileSystem.directory(workingDir);
+
+    resultProjectDir = findProjectDir(
+      currentDir,
+      'pubspec.yaml',
+    );
+
+    parentProjectDir = projectDir != null
+        ? resultProjectDir
+        : findProjectDir(
+              currentDir,
+              dotfileName,
+            ) ??
+            resultProjectDir;
+
     return PuroConfig(
       fileSystem: fileSystem,
       gitExecutable: fileSystem.file(gitExecutable),
       puroRoot: puroRoot != null
           ? fileSystem.directory(puroRoot)
           : fileSystem.directory(homeDir).childDirectory('.puro'),
-      projectDir: findFlutterProjectDir(
-        workingDir == null
-            ? fileSystem.currentDirectory
-            : fileSystem.directory(workingDir),
-      ),
+      projectDir: resultProjectDir,
+      parentProjectDir: parentProjectDir,
       flutterGitUrl: Uri.parse(
         flutterGitUrl ?? 'https://github.com/flutter/flutter.git',
       ),
@@ -87,14 +112,18 @@ class PuroConfig {
   final File gitExecutable;
   final Directory puroRoot;
   final Directory? projectDir;
+  final Directory? parentProjectDir;
   final Uri flutterGitUrl;
   final Uri engineGitUrl;
   final Uri releasesJsonUrl;
   final Uri flutterStorageBaseUrl;
   final String? environmentOverride;
 
+  static const dotfileName = '.puro.json';
+
   late final File? pubspecYamlFile = projectDir?.childFile('pubspec.yaml');
-  late final File? puroDotfile = projectDir?.childFile('.puro');
+  late final File? puroDotfile = projectDir?.childFile(dotfileName);
+  late final File? parentPuroDotfile = parentProjectDir?.childFile(dotfileName);
   late final Directory envsDir = puroRoot.childDirectory('envs');
   late final Directory sharedDir = puroRoot.childDirectory('shared');
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
@@ -109,8 +138,9 @@ class PuroConfig {
     if (environmentOverride != null) {
       return getEnv(environmentOverride!)..ensureExists();
     }
+    if (parentPuroDotfile?.existsSync() != true) return null;
     final dotfile = readDotfile();
-    if (dotfile == null || !dotfile.hasEnv()) return null;
+    if (!dotfile.hasEnv()) return null;
     return getEnv(dotfile.env);
   }
 
@@ -126,16 +156,41 @@ class PuroConfig {
     return env..ensureExists();
   }
 
-  PuroDotfileModel? readDotfile() => puroDotfile?.existsSync() ?? false
-      ? (PuroDotfileModel.create()
-        ..mergeFromProto3Json(jsonDecode(puroDotfile!.readAsStringSync())))
-      : null;
-
-  void writeDotfile(PuroDotfileModel dotfile) {
+  File get dotfileForWriting {
+    if (projectDir?.path != parentProjectDir?.path) {
+      throw AssertionError(
+        'Ambiguous project selection between `$projectDir` and `$parentProjectDir`,'
+        ' run this command in parent directory or use --project to disambiguate.',
+      );
+    }
     if (puroDotfile == null) {
       throw AssertionError('Could not find project root');
     }
-    puroDotfile!.writeAsStringSync(
+    return puroDotfile!;
+  }
+
+  PuroDotfileModel readDotfile() {
+    final model = PuroDotfileModel.create();
+    if (parentPuroDotfile?.existsSync() ?? false) {
+      model.mergeFromProto3Json(
+        jsonDecode(parentPuroDotfile!.readAsStringSync()),
+      );
+    }
+    return model;
+  }
+
+  PuroDotfileModel readDotfileForWriting() {
+    final model = PuroDotfileModel.create();
+    if (dotfileForWriting.existsSync()) {
+      model.mergeFromProto3Json(
+        jsonDecode(dotfileForWriting.readAsStringSync()),
+      );
+    }
+    return model;
+  }
+
+  void writeDotfile(PuroDotfileModel dotfile) {
+    dotfileForWriting.writeAsStringSync(
       prettyJsonEncoder.convert(
         dotfile.toProto3Json(),
       ),

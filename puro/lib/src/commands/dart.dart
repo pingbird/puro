@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:puro/src/env/engine.dart';
-import 'package:puro/src/process.dart';
 
 import '../command.dart';
 import '../config.dart';
+import '../env/engine.dart';
+import '../process.dart';
 
 class DartCommand extends PuroCommand {
   @override
@@ -30,6 +30,7 @@ class DartCommand extends PuroCommand {
       environment: environment,
     );
     final flutterProcess = await startProcess(
+      scope,
       flutterConfig.cache.dartSdk.dartExecutable.path,
       [
         '--disable-dart-dev',

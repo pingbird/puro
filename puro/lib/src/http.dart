@@ -4,7 +4,8 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:http/http.dart';
-import 'package:puro/src/provider.dart';
+
+import 'provider.dart';
 
 extension BaseRequestExtensions on BaseRequest {
   /// Copies a [BaseRequest], subscribes to the original and forwards its

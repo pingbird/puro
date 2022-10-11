@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:file/local.dart';
-import 'package:puro/src/logger.dart';
-import 'package:puro/src/provider.dart';
 
 import '../models.dart';
 import 'config.dart';
+import 'logger.dart';
+import 'provider.dart';
 
 class CommandErrorResult extends CommandResult {
   CommandErrorResult(this.exception, this.stackTrace);
@@ -178,9 +178,16 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   // CLI args
   final scope = RootScope();
   LogLevel? logLevel = LogLevel.warning;
-  String? versionsJsonUrl;
-  String? flutterStorageBaseUrl;
+  String? gitExecutableOverride;
+  String? rootDirOverride;
+  String? projectDirOverride;
+  String? workingDirOverride;
+  String? flutterGitUrlOverride;
+  String? engineGitUrlOverride;
+  String? versionsJsonUrlOverride;
+  String? flutterStorageBaseUrlOverride;
   String? environmentOverride;
+  bool? colorOverride;
 
   late ArgResults results;
   final logEntries = <LogEntry>[];
@@ -258,13 +265,14 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       PuroConfig.provider,
       PuroConfig.fromCommandLine(
         fileSystem: fileSystem,
-        gitExecutable: topLevelResults['git'] as String?,
-        puroRoot: topLevelResults['root'] as String?,
-        workingDir: topLevelResults['dir'] as String?,
-        flutterGitUrl: topLevelResults['flutter-git'] as String?,
-        engineGitUrl: topLevelResults['engine-git'] as String?,
-        releasesJsonUrl: versionsJsonUrl,
-        flutterStorageBaseUrl: flutterStorageBaseUrl,
+        gitExecutable: gitExecutableOverride,
+        puroRoot: rootDirOverride,
+        workingDir: workingDirOverride,
+        projectDir: projectDirOverride,
+        flutterGitUrl: flutterGitUrlOverride,
+        engineGitUrl: engineGitUrlOverride,
+        releasesJsonUrl: versionsJsonUrlOverride,
+        flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
         environmentOverride: environmentOverride,
       ),
     );
@@ -276,9 +284,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     } else {
       final printer = PuroLogPrinter(
         sink: stderr,
-        enableColor: results.wasParsed('color')
-            ? results['color'] as bool
-            : stderr.supportsAnsiEscapes,
+        enableColor: colorOverride ?? stderr.supportsAnsiEscapes,
       );
       onEvent = printer.add;
     }
