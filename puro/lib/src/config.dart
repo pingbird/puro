@@ -44,7 +44,7 @@ class PuroConfig {
     required String? environmentOverride,
   }) {
     gitExecutable ??= 'git';
-    if (!LocalProcessManager().canRun(gitExecutable)) {
+    if (!const LocalProcessManager().canRun(gitExecutable)) {
       throw ArgumentError('Git executable not found');
     }
 

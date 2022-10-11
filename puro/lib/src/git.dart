@@ -31,14 +31,16 @@ class GitClient {
 
     process.stdin.close();
 
-    final stdout = LineSplitter().bind(utf8.decoder.bind(process.stdout)).map(
+    final stdout =
+        const LineSplitter().bind(utf8.decoder.bind(process.stdout)).map(
       (e) {
         log.d('git: $e');
         return e;
       },
     ).join('\n');
 
-    final stderr = LineSplitter().bind(utf8.decoder.bind(process.stderr)).map(
+    final stderr =
+        const LineSplitter().bind(utf8.decoder.bind(process.stderr)).map(
       (e) {
         log.v('git: $e');
         return e;

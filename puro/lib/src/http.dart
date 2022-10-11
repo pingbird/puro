@@ -93,11 +93,11 @@ extension StreamedResponseExtensions on StreamedResponse {
 /// After the last call to [copyRequest] you should also call [close], this
 /// prevents the entire request body from buffering in memory.
 abstract class RequestCopier {
-  const RequestCopier._();
-
   factory RequestCopier({
     required BaseRequest original,
   }) = _RequestCopierImpl;
+
+  const RequestCopier._();
 
   /// Returns an optionally modified copy of the request that can be sent to
   /// other clients, inspected, or retried.
@@ -248,7 +248,7 @@ extension UriExtensions on Uri {
     final strQueryParameters = <String, Object>{
       for (final entry in queryParameters.entries)
         if (entry.value is Iterable)
-          entry.key: (entry.value as Iterable).map((e) => e.toString())
+          entry.key: (entry.value as Iterable).map((Object? e) => e.toString())
         else
           entry.key: '${entry.value}',
     };

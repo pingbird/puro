@@ -40,8 +40,10 @@ class DartCommand extends PuroCommand {
         ...argResults!.arguments,
       ],
     );
-    final stdoutFuture = flutterProcess.stdout.listen(stdout.add).asFuture();
-    final stderrFuture = flutterProcess.stderr.listen(stderr.add).asFuture();
+    final stdoutFuture =
+        flutterProcess.stdout.listen(stdout.add).asFuture<void>();
+    final stderrFuture =
+        flutterProcess.stderr.listen(stderr.add).asFuture<void>();
     final exitCode = await flutterProcess.exitCode;
     await stdoutFuture;
     await stderrFuture;

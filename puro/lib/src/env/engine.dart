@@ -229,7 +229,7 @@ Future<void> setUpFlutterTool({
       link.createSync(sharedCache.cacheDir.path);
     } else if (!isLink) {
       throw AssertionError(
-        "Cache ${flutterConfig.cacheDir.path} already exists, was it created without puro?",
+        'Cache ${flutterConfig.cacheDir.path} already exists, was it created without puro?',
       );
     }
   }
@@ -253,7 +253,7 @@ Future<void> setUpFlutterTool({
     final pubEnvironment =
         '${Platform.environment['PUB_ENVIRONMENT'] ?? ''}:flutter_install:puro';
 
-    var backoff = Duration(seconds: 1);
+    var backoff = const Duration(seconds: 1);
     final rand = Random();
     for (var i = 0;; i++) {
       final pubProcess = await runProcess(
@@ -284,7 +284,7 @@ Future<void> setUpFlutterTool({
         log.w(
           'pub upgrade failed, trying again in ${randomizedBackoff.inMilliseconds}ms...',
         );
-        await Future.delayed(randomizedBackoff);
+        await Future<void>.delayed(randomizedBackoff);
       }
     }
 

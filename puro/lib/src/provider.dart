@@ -67,6 +67,6 @@ class RootScope extends Scope {
       return overrides[provider] as T;
     }
     final node = nodes[provider] ??= provider.createNode(this);
-    return node.value;
+    return node.value as T;
   }
 }

@@ -98,13 +98,13 @@ abstract class PuroCommand extends Command<CommandResult> {
 
   @override
   String get invocation {
-    var parents = [name];
+    final parents = [name];
     for (var command = parent; command != null; command = command.parent) {
       parents.add(command.name);
     }
     parents.add(runner.executableName);
 
-    var invocation = parents.reversed.join(' ');
+    final invocation = parents.reversed.join(' ');
     return subcommands.isNotEmpty
         ? '$invocation <subcommand> [arguments]'
         : '$invocation${argumentUsage == null ? '' : ' $argumentUsage'}';
@@ -185,7 +185,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   late ArgResults results;
   final logEntries = <LogEntry>[];
   final callbackQueue = <void Function()>[];
-  final fileSystem = LocalFileSystem();
+  final fileSystem = const LocalFileSystem();
   late PuroLogger log;
 
   void Function(T) wrapCallback<T>(void Function(T) fn) {
@@ -203,7 +203,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
           .take(1)
           .contains('help');
 
-  bool get isJson => results['json'];
+  bool get isJson => results['json'] as bool;
 
   @override
   void printUsage() {
@@ -221,7 +221,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       final resultJson = model.toProto3Json();
       stdout.writeln(
         prettyJsonEncoder.convert(<String, dynamic>{
-          ...(resultJson as Map<String, dynamic>),
+          ...resultJson as Map<String, dynamic>,
           'logs': [
             for (final entry in logEntries)
               LogEntryModel(
@@ -254,11 +254,11 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       PuroConfig.provider,
       PuroConfig.fromCommandLine(
         fileSystem: fileSystem,
-        gitExecutable: topLevelResults['git'],
-        puroRoot: topLevelResults['root'],
-        workingDir: topLevelResults['dir'],
-        flutterGitUrl: topLevelResults['flutter-git'],
-        engineGitUrl: topLevelResults['engine-git'],
+        gitExecutable: topLevelResults['git'] as String,
+        puroRoot: topLevelResults['root'] as String,
+        workingDir: topLevelResults['dir'] as String,
+        flutterGitUrl: topLevelResults['flutter-git'] as String,
+        engineGitUrl: topLevelResults['engine-git'] as String,
         releasesJsonUrl: versionsJsonUrl,
         flutterStorageBaseUrl: flutterStorageBaseUrl,
         environmentOverride: environmentOverride,
@@ -273,7 +273,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       final printer = PuroLogPrinter(
         sink: stderr,
         enableColor: results.wasParsed('color')
-            ? results['color']
+            ? results['color'] as bool
             : stderr.supportsAnsiEscapes,
       );
       onEvent = printer.add;
