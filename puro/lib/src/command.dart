@@ -186,7 +186,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   final logEntries = <LogEntry>[];
   final callbackQueue = <void Function()>[];
   final fileSystem = const LocalFileSystem();
-  late PuroLogger log;
+  PuroLogger? log;
 
   void Function(T) wrapCallback<T>(void Function(T) fn) {
     return (str) {
@@ -235,7 +235,11 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     } else if (model.success) {
       stdout.writeln('$result');
     } else {
-      log.e('$result');
+      if (log != null) {
+        log!.e('$result');
+      } else {
+        stderr.writeln(result);
+      }
     }
     exit(model.success ? 0 : 1);
   }
@@ -254,11 +258,11 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       PuroConfig.provider,
       PuroConfig.fromCommandLine(
         fileSystem: fileSystem,
-        gitExecutable: topLevelResults['git'] as String,
-        puroRoot: topLevelResults['root'] as String,
-        workingDir: topLevelResults['dir'] as String,
-        flutterGitUrl: topLevelResults['flutter-git'] as String,
-        engineGitUrl: topLevelResults['engine-git'] as String,
+        gitExecutable: topLevelResults['git'] as String?,
+        puroRoot: topLevelResults['root'] as String?,
+        workingDir: topLevelResults['dir'] as String?,
+        flutterGitUrl: topLevelResults['flutter-git'] as String?,
+        engineGitUrl: topLevelResults['engine-git'] as String?,
         releasesJsonUrl: versionsJsonUrl,
         flutterStorageBaseUrl: flutterStorageBaseUrl,
         environmentOverride: environmentOverride,
@@ -278,14 +282,8 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       );
       onEvent = printer.add;
     }
-    log = PuroLogger(
-      level: logLevel,
-      onEvent: onEvent,
-    );
-    scope.add(
-      PuroLogger.provider,
-      log,
-    );
+    log = PuroLogger(level: logLevel, onEvent: onEvent);
+    scope.add(PuroLogger.provider, log!);
 
     return super.runCommand(topLevelResults);
   }
