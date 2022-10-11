@@ -43,16 +43,16 @@ const EnvironmentSummaryModel$json = const {
 
 /// Descriptor for `EnvironmentSummaryModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List environmentSummaryModelDescriptor = $convert.base64Decode('ChdFbnZpcm9ubWVudFN1bW1hcnlNb2RlbBISCgRuYW1lGAEgASgJUgRuYW1lEhIKBHBhdGgYAiABKAlSBHBhdGg=');
-@$core.Deprecated('Use environmentListResultModelDescriptor instead')
-const EnvironmentListResultModel$json = const {
-  '1': 'EnvironmentListResultModel',
+@$core.Deprecated('Use environmentListModelDescriptor instead')
+const EnvironmentListModel$json = const {
+  '1': 'EnvironmentListModel',
   '2': const [
     const {'1': 'environments', '3': 1, '4': 3, '5': 11, '6': '.EnvironmentSummaryModel', '10': 'environments'},
   ],
 };
 
-/// Descriptor for `EnvironmentListResultModel`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List environmentListResultModelDescriptor = $convert.base64Decode('ChpFbnZpcm9ubWVudExpc3RSZXN1bHRNb2RlbBI8CgxlbnZpcm9ubWVudHMYASADKAsyGC5FbnZpcm9ubWVudFN1bW1hcnlNb2RlbFIMZW52aXJvbm1lbnRz');
+/// Descriptor for `EnvironmentListModel`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List environmentListModelDescriptor = $convert.base64Decode('ChRFbnZpcm9ubWVudExpc3RNb2RlbBI8CgxlbnZpcm9ubWVudHMYASADKAsyGC5FbnZpcm9ubWVudFN1bW1hcnlNb2RlbFIMZW52aXJvbm1lbnRz');
 @$core.Deprecated('Use commandResultModelDescriptor instead')
 const CommandResultModel$json = const {
   '1': 'CommandResultModel',
@@ -62,7 +62,7 @@ const CommandResultModel$json = const {
     const {'1': 'usage', '3': 3, '4': 1, '5': 9, '9': 1, '10': 'usage', '17': true},
     const {'1': 'error', '3': 4, '4': 1, '5': 11, '6': '.CommandErrorModel', '9': 2, '10': 'error', '17': true},
     const {'1': 'logs', '3': 5, '4': 3, '5': 11, '6': '.LogEntryModel', '10': 'logs'},
-    const {'1': 'environmentList', '3': 6, '4': 1, '5': 11, '6': '.EnvironmentListResultModel', '9': 3, '10': 'environmentList', '17': true},
+    const {'1': 'environmentList', '3': 6, '4': 1, '5': 11, '6': '.EnvironmentListModel', '9': 3, '10': 'environmentList', '17': true},
   ],
   '8': const [
     const {'1': '_message'},
@@ -73,4 +73,17 @@ const CommandResultModel$json = const {
 };
 
 /// Descriptor for `CommandResultModel`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List commandResultModelDescriptor = $convert.base64Decode('ChJDb21tYW5kUmVzdWx0TW9kZWwSGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgdtZXNzYWdlGAIgASgJSABSB21lc3NhZ2WIAQESGQoFdXNhZ2UYAyABKAlIAVIFdXNhZ2WIAQESLQoFZXJyb3IYBCABKAsyEi5Db21tYW5kRXJyb3JNb2RlbEgCUgVlcnJvcogBARIiCgRsb2dzGAUgAygLMg4uTG9nRW50cnlNb2RlbFIEbG9ncxJKCg9lbnZpcm9ubWVudExpc3QYBiABKAsyGy5FbnZpcm9ubWVudExpc3RSZXN1bHRNb2RlbEgDUg9lbnZpcm9ubWVudExpc3SIAQFCCgoIX21lc3NhZ2VCCAoGX3VzYWdlQggKBl9lcnJvckISChBfZW52aXJvbm1lbnRMaXN0');
+final $typed_data.Uint8List commandResultModelDescriptor = $convert.base64Decode('ChJDb21tYW5kUmVzdWx0TW9kZWwSGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgdtZXNzYWdlGAIgASgJSABSB21lc3NhZ2WIAQESGQoFdXNhZ2UYAyABKAlIAVIFdXNhZ2WIAQESLQoFZXJyb3IYBCABKAsyEi5Db21tYW5kRXJyb3JNb2RlbEgCUgVlcnJvcogBARIiCgRsb2dzGAUgAygLMg4uTG9nRW50cnlNb2RlbFIEbG9ncxJECg9lbnZpcm9ubWVudExpc3QYBiABKAsyFS5FbnZpcm9ubWVudExpc3RNb2RlbEgDUg9lbnZpcm9ubWVudExpc3SIAQFCCgoIX21lc3NhZ2VCCAoGX3VzYWdlQggKBl9lcnJvckISChBfZW52aXJvbm1lbnRMaXN0');
+@$core.Deprecated('Use puroDotfileModelDescriptor instead')
+const PuroDotfileModel$json = const {
+  '1': 'PuroDotfileModel',
+  '2': const [
+    const {'1': 'env', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'env', '17': true},
+  ],
+  '8': const [
+    const {'1': '_env'},
+  ],
+};
+
+/// Descriptor for `PuroDotfileModel`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List puroDotfileModelDescriptor = $convert.base64Decode('ChBQdXJvRG90ZmlsZU1vZGVsEhUKA2VudhgBIAEoCUgAUgNlbnaIAQFCBgoEX2Vudg==');

@@ -103,7 +103,7 @@ class EnvRmCommand extends PuroCommand {
     );
     return BasicMessageResult(
       success: true,
-      message: 'Deleted environment `$name`.',
+      message: 'Deleted environment `$name`',
     );
   }
 }

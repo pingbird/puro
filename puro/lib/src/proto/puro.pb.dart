@@ -220,14 +220,14 @@ class EnvironmentSummaryModel extends $pb.GeneratedMessage {
   void clearPath() => clearField(2);
 }
 
-class EnvironmentListResultModel extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'EnvironmentListResultModel', createEmptyInstance: create)
+class EnvironmentListModel extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'EnvironmentListModel', createEmptyInstance: create)
     ..pc<EnvironmentSummaryModel>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'environments', $pb.PbFieldType.PM, subBuilder: EnvironmentSummaryModel.create)
     ..hasRequiredFields = false
   ;
 
-  EnvironmentListResultModel._() : super();
-  factory EnvironmentListResultModel({
+  EnvironmentListModel._() : super();
+  factory EnvironmentListModel({
     $core.Iterable<EnvironmentSummaryModel>? environments,
   }) {
     final _result = create();
@@ -236,26 +236,26 @@ class EnvironmentListResultModel extends $pb.GeneratedMessage {
     }
     return _result;
   }
-  factory EnvironmentListResultModel.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory EnvironmentListResultModel.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory EnvironmentListModel.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory EnvironmentListModel.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  EnvironmentListResultModel clone() => EnvironmentListResultModel()..mergeFromMessage(this);
+  EnvironmentListModel clone() => EnvironmentListModel()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  EnvironmentListResultModel copyWith(void Function(EnvironmentListResultModel) updates) => super.copyWith((message) => updates(message as EnvironmentListResultModel)) as EnvironmentListResultModel; // ignore: deprecated_member_use
+  EnvironmentListModel copyWith(void Function(EnvironmentListModel) updates) => super.copyWith((message) => updates(message as EnvironmentListModel)) as EnvironmentListModel; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
-  static EnvironmentListResultModel create() => EnvironmentListResultModel._();
-  EnvironmentListResultModel createEmptyInstance() => create();
-  static $pb.PbList<EnvironmentListResultModel> createRepeated() => $pb.PbList<EnvironmentListResultModel>();
+  static EnvironmentListModel create() => EnvironmentListModel._();
+  EnvironmentListModel createEmptyInstance() => create();
+  static $pb.PbList<EnvironmentListModel> createRepeated() => $pb.PbList<EnvironmentListModel>();
   @$core.pragma('dart2js:noInline')
-  static EnvironmentListResultModel getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<EnvironmentListResultModel>(create);
-  static EnvironmentListResultModel? _defaultInstance;
+  static EnvironmentListModel getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<EnvironmentListModel>(create);
+  static EnvironmentListModel? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.List<EnvironmentSummaryModel> get environments => $_getList(0);
@@ -268,7 +268,7 @@ class CommandResultModel extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'usage')
     ..aOM<CommandErrorModel>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'error', subBuilder: CommandErrorModel.create)
     ..pc<LogEntryModel>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logs', $pb.PbFieldType.PM, subBuilder: LogEntryModel.create)
-    ..aOM<EnvironmentListResultModel>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'environmentList', protoName: 'environmentList', subBuilder: EnvironmentListResultModel.create)
+    ..aOM<EnvironmentListModel>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'environmentList', protoName: 'environmentList', subBuilder: EnvironmentListModel.create)
     ..hasRequiredFields = false
   ;
 
@@ -279,7 +279,7 @@ class CommandResultModel extends $pb.GeneratedMessage {
     $core.String? usage,
     CommandErrorModel? error,
     $core.Iterable<LogEntryModel>? logs,
-    EnvironmentListResultModel? environmentList,
+    EnvironmentListModel? environmentList,
   }) {
     final _result = create();
     if (success != null) {
@@ -365,14 +365,61 @@ class CommandResultModel extends $pb.GeneratedMessage {
   $core.List<LogEntryModel> get logs => $_getList(4);
 
   @$pb.TagNumber(6)
-  EnvironmentListResultModel get environmentList => $_getN(5);
+  EnvironmentListModel get environmentList => $_getN(5);
   @$pb.TagNumber(6)
-  set environmentList(EnvironmentListResultModel v) { setField(6, v); }
+  set environmentList(EnvironmentListModel v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasEnvironmentList() => $_has(5);
   @$pb.TagNumber(6)
   void clearEnvironmentList() => clearField(6);
   @$pb.TagNumber(6)
-  EnvironmentListResultModel ensureEnvironmentList() => $_ensure(5);
+  EnvironmentListModel ensureEnvironmentList() => $_ensure(5);
+}
+
+class PuroDotfileModel extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PuroDotfileModel', createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'env')
+    ..hasRequiredFields = false
+  ;
+
+  PuroDotfileModel._() : super();
+  factory PuroDotfileModel({
+    $core.String? env,
+  }) {
+    final _result = create();
+    if (env != null) {
+      _result.env = env;
+    }
+    return _result;
+  }
+  factory PuroDotfileModel.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PuroDotfileModel.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PuroDotfileModel clone() => PuroDotfileModel()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PuroDotfileModel copyWith(void Function(PuroDotfileModel) updates) => super.copyWith((message) => updates(message as PuroDotfileModel)) as PuroDotfileModel; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PuroDotfileModel create() => PuroDotfileModel._();
+  PuroDotfileModel createEmptyInstance() => create();
+  static $pb.PbList<PuroDotfileModel> createRepeated() => $pb.PbList<PuroDotfileModel>();
+  @$core.pragma('dart2js:noInline')
+  static PuroDotfileModel getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PuroDotfileModel>(create);
+  static PuroDotfileModel? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get env => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set env($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasEnv() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearEnv() => clearField(1);
 }
 

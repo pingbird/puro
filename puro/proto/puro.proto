@@ -29,3 +29,7 @@ message CommandResultModel {
   repeated LogEntryModel logs = 5;
   optional EnvironmentListModel environmentList = 6;
 }
+
+message PuroDotfileModel {
+  optional string env = 1;
+}

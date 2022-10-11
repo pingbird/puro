@@ -10,12 +10,12 @@ class ListEnvironmentResult extends CommandResult {
     required this.environments,
   });
 
-  final List<PuroEnvConfig> environments;
+  final List<EnvConfig> environments;
 
   @override
   String? get description {
     if (environments.isEmpty) {
-      return 'No environments, use `puro env create` to create one.';
+      return 'No environments, use `puro env create` to create one';
     }
     return [
       'Environments:',
@@ -26,7 +26,7 @@ class ListEnvironmentResult extends CommandResult {
   @override
   CommandResultModel toModel() {
     return CommandResultModel(
-      environmentList: EnvironmentListResultModel(
+      environmentList: EnvironmentListModel(
         environments: [
           for (final environment in environments)
             EnvironmentSummaryModel(

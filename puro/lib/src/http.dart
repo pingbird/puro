@@ -242,17 +242,27 @@ class AllowIncompleteClient extends BaseClient {
 extension UriExtensions on Uri {
   Uri append({
     String path = '',
-    Map<String, Object?> query = const <String, Object?>{},
+    Map<String, Object?> queryParameters = const <String, Object?>{},
+    String? fragment,
   }) {
-    return replace(
+    final strQueryParameters = <String, Object>{
+      for (final entry in queryParameters.entries)
+        if (entry.value is Iterable)
+          entry.key: (entry.value as Iterable).map((e) => e.toString())
+        else
+          entry.key: '${entry.value}',
+    };
+    return Uri(
+      scheme: scheme,
+      userInfo: userInfo,
+      host: host,
+      port: port,
       pathSegments: [
         ...pathSegments,
         ...path.split('/'),
       ],
-      queryParameters: <String, String>{
-        ...queryParameters,
-        for (final entry in query.entries) entry.key: '${entry.value}',
-      },
+      queryParameters: strQueryParameters.isEmpty ? null : strQueryParameters,
+      fragment: fragment,
     );
   }
 }

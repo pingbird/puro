@@ -94,6 +94,9 @@ abstract class PuroCommand extends Command<CommandResult> {
   String? get argumentUsage => null;
 
   @override
+  bool get takesArguments => argumentUsage != null;
+
+  @override
   String get invocation {
     var parents = [name];
     for (var command = parent; command != null; command = command.parent) {
@@ -121,7 +124,7 @@ abstract class PuroCommand extends Command<CommandResult> {
     final rest = argResults!.rest;
     if (rest.length != 1) {
       throw UsageException(
-        'Exactly one argument expected, got ${rest.length}.',
+        'Exactly one argument expected, got ${rest.length}',
         usage,
       );
     }
@@ -137,7 +140,7 @@ abstract class PuroCommand extends Command<CommandResult> {
     Iterable<String> rest = argResults!.rest;
     if (rest.length < startingAt + atLeast) {
       throw UsageException(
-        'At least ${startingAt + atLeast} arguments expected, got ${rest.length}.',
+        'At least ${startingAt + atLeast} arguments expected, got ${rest.length}',
         usage,
       );
     }
@@ -145,7 +148,7 @@ abstract class PuroCommand extends Command<CommandResult> {
 
     if (exactly != null && rest.length != exactly) {
       throw UsageException(
-        'Exactly ${exactly + startingAt} arguments expected, got ${rest.length}.',
+        'Exactly ${exactly + startingAt} arguments expected, got ${rest.length}',
         usage,
       );
     }
@@ -153,7 +156,7 @@ abstract class PuroCommand extends Command<CommandResult> {
     if (atMost != null) {
       if (rest.length > atMost) {
         throw UsageException(
-          'At most ${atMost + startingAt} arguments expected, got ${rest.length}.',
+          'At most ${atMost + startingAt} arguments expected, got ${rest.length}',
           usage,
         );
       }
@@ -176,11 +179,14 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   final scope = RootScope();
   LogLevel? logLevel = LogLevel.warning;
   String? versionsJsonUrl;
+  String? flutterStorageBaseUrl;
+  String? environmentOverride;
 
   late ArgResults results;
   final logEntries = <LogEntry>[];
   final callbackQueue = <void Function()>[];
   final fileSystem = LocalFileSystem();
+  late PuroLogger log;
 
   void Function(T) wrapCallback<T>(void Function(T) fn) {
     return (str) {
@@ -229,7 +235,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     } else if (model.success) {
       stdout.writeln('$result');
     } else {
-      stderr.writeln('$result');
+      log.e('$result');
     }
     exit(model.success ? 0 : 1);
   }
@@ -243,6 +249,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     }
     callbackQueue.clear();
 
+    // Initialize config
     scope.add(
       PuroConfig.provider,
       PuroConfig.fromCommandLine(
@@ -253,9 +260,12 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         flutterGitUrl: topLevelResults['flutter-git'],
         engineGitUrl: topLevelResults['engine-git'],
         releasesJsonUrl: versionsJsonUrl,
+        flutterStorageBaseUrl: flutterStorageBaseUrl,
+        environmentOverride: environmentOverride,
       ),
     );
 
+    // Logging
     final void Function(LogEntry entry) onEvent;
     if (isJson) {
       onEvent = logEntries.add;
@@ -268,14 +278,13 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       );
       onEvent = printer.add;
     }
-    final logger = PuroLogger(
+    log = PuroLogger(
       level: logLevel,
       onEvent: onEvent,
     );
-
     scope.add(
       PuroLogger.provider,
-      logger,
+      log,
     );
 
     return super.runCommand(topLevelResults);

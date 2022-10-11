@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:neoansi/neoansi.dart';
 import 'package:puro/src/provider.dart';
 
@@ -85,19 +83,19 @@ class PuroLogPrinter extends Sink<LogEntry> {
   final bool enableColor;
 
   static const levelPrefixes = {
+    LogLevel.wtf: '[WTF]',
+    LogLevel.error: '[E]',
+    LogLevel.warning: '[W]',
     LogLevel.verbose: '[V]',
     LogLevel.debug: '[D]',
-    LogLevel.warning: '[W]',
-    LogLevel.error: '[E]',
-    LogLevel.wtf: '[WTF]',
   };
 
   static const levelColors = {
-    LogLevel.verbose: Ansi8BitColor.grey35,
-    LogLevel.debug: Ansi8BitColor.grey,
-    LogLevel.warning: Ansi8BitColor.orange1,
-    LogLevel.error: Ansi8BitColor.red,
     LogLevel.wtf: Ansi8BitColor.pink1,
+    LogLevel.error: Ansi8BitColor.red,
+    LogLevel.warning: Ansi8BitColor.orange1,
+    LogLevel.verbose: Ansi8BitColor.yellow,
+    LogLevel.debug: Ansi8BitColor.grey35,
   };
 
   @override

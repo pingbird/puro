@@ -31,8 +31,8 @@ class EnvCreateResult extends CommandResult {
 
   @override
   String? get description => existing
-      ? 'Updated existing environment `${directory.basename}`.'
-      : 'Created new environment `${directory.basename}` in `${directory.path}`.';
+      ? 'Updated existing environment `${directory.basename}`'
+      : 'Created new environment `${directory.basename}` in `${directory.path}`';
 }
 
 /// Creates a new Puro environment named [envName] and installs flutter.
@@ -65,26 +65,21 @@ Future<EnvCreateResult> createEnvironment({
 }
 
 /// Clones or fetches from a remote, putting it in a shared repository.
-Future<Directory> fetchShared({
+Future<void> fetchOrCloneShared({
   required Scope scope,
-  required String name,
+  required Directory repository,
   required Uri remote,
 }) async {
-  final config = PuroConfig.of(scope);
   final git = GitClient.of(scope);
-  final dir = config.sharedDir.childDirectory(name);
-
-  if (dir.existsSync()) {
-    await git.fetch(repository: dir);
+  if (repository.existsSync()) {
+    await git.fetch(repository: repository);
   } else {
     await git.clone(
       remote: remote,
-      repository: dir,
+      repository: repository,
       shared: true,
     );
   }
-
-  return dir;
 }
 
 enum FlutterChannel {
@@ -220,9 +215,10 @@ Future<void> cloneFlutterShared({
   final git = GitClient.of(scope);
   final config = PuroConfig.of(scope);
 
-  final sharedRepository = await fetchShared(
+  final sharedRepository = config.sharedFlutterDir;
+  await fetchOrCloneShared(
     scope: scope,
-    name: 'flutter',
+    repository: sharedRepository,
     remote: config.flutterGitUrl,
   );
 

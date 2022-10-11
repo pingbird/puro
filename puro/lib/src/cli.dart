@@ -1,5 +1,6 @@
 import 'package:args/command_runner.dart';
 import 'package:puro/src/commands/env.dart';
+import 'package:puro/src/commands/flutter.dart';
 import 'package:puro/src/logger.dart';
 
 import 'command.dart';
@@ -26,6 +27,15 @@ void main(List<String> args) async {
       valueHelp: 'dir',
     )
     ..addOption(
+      'env',
+      abbr: 'e',
+      help: 'Overrides the selected environment.',
+      valueHelp: 'name',
+      callback: runner.wrapCallback((name) {
+        runner.environmentOverride = name;
+      }),
+    )
+    ..addOption(
       'flutter-git',
       help: 'Overrides the Flutter SDK git url.',
       valueHelp: 'url',
@@ -36,11 +46,19 @@ void main(List<String> args) async {
       valueHelp: 'url',
     )
     ..addOption(
-      'releases-json',
+      'releases-json-url',
       help: 'Overrides the Flutter releases json url.',
       valueHelp: 'url',
-      callback: runner.wrapCallback((str) {
-        runner.versionsJsonUrl = str;
+      callback: runner.wrapCallback((url) {
+        runner.versionsJsonUrl = url;
+      }),
+    )
+    ..addOption(
+      'flutter-storage-base-url',
+      help: 'Overrides the Flutter storage base url.',
+      valueHelp: 'url',
+      callback: runner.wrapCallback((url) {
+        runner.flutterStorageBaseUrl = url;
       }),
     )
     ..addOption(
@@ -83,7 +101,9 @@ void main(List<String> args) async {
       help: 'Output in JSON where possible.',
       negatable: false,
     );
-  runner.addCommand(EnvCommand());
+  runner
+    ..addCommand(EnvCommand())
+    ..addCommand(FlutterCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {

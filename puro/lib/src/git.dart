@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:file/file.dart';
 import 'package:puro/src/config.dart';
 import 'package:puro/src/logger.dart';
+import 'package:puro/src/process.dart';
 import 'package:puro/src/provider.dart';
 
 class GitClient {
@@ -21,7 +22,7 @@ class GitClient {
   }) async {
     log.v('${directory?.path ?? ''}> ${gitExecutable.path} ${args.join(' ')}');
 
-    final process = await Process.start(
+    final process = await startProcess(
       gitExecutable.path,
       args,
       runInShell: true,
@@ -30,7 +31,12 @@ class GitClient {
 
     process.stdin.close();
 
-    final stdout = utf8.decoder.bind(process.stdout).join();
+    final stdout = LineSplitter().bind(utf8.decoder.bind(process.stdout)).map(
+      (e) {
+        log.d('git: $e');
+        return e;
+      },
+    ).join('\n');
 
     final stderr = LineSplitter().bind(utf8.decoder.bind(process.stderr)).map(
       (e) {
@@ -56,9 +62,7 @@ class GitClient {
   void _ensureSuccess(ProcessResult result) {
     if (result.exitCode != 0) {
       if (log.level == null || log.level! < LogLevel.verbose) {
-        for (final line in (result.stderr as String).split('\n')) {
-          log.e('git: $line');
-        }
+        log.e('git: ${result.stderr}');
       }
       throw StateError(
         'git subprocess failed with exit code ${result.exitCode}',
@@ -113,6 +117,35 @@ class GitClient {
       directory: repository,
     );
     _ensureSuccess(cloneResult);
+  }
+
+  Future<String> revParseSingle({
+    required Directory repository,
+    required String arg,
+    bool short = false,
+  }) async {
+    final revParseResult = await _git(
+      [
+        'rev-parse',
+        if (short) '--short',
+        arg,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(revParseResult);
+    return (revParseResult.stdout as String).trim().split('\n').single;
+  }
+
+  Future<String> getCurrentCommitHash({
+    required Directory repository,
+    bool short = false,
+    String branch = 'HEAD',
+  }) {
+    return revParseSingle(
+      repository: repository,
+      short: short,
+      arg: branch,
+    );
   }
 
   static final provider = Provider<GitClient>((scope) {
