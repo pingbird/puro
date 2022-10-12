@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:petitparser/core.dart';
 
 abstract class JsonElement {
-  Object? toJson() => throw ArgumentError('$runtimeType is not json-encodable');
+  Object? toJson();
   MapEntry<String, dynamic> toMapEntry() =>
       throw ArgumentError('$runtimeType is not a map entry');
   Iterable<Token<JsonElement>> get children;
@@ -76,7 +76,7 @@ class JsonMap extends JsonElement {
 
   @override
   Object? toJson() {
-    return Map.fromEntries([
+    return Map<String, dynamic>.fromEntries([
       for (final child in children) child.value.toMapEntry(),
     ]);
   }
@@ -172,8 +172,11 @@ class JsonMapEntry extends JsonElement {
 
   @override
   MapEntry<String, dynamic> toMapEntry() {
-    return MapEntry(key.value, value.value.toJson());
+    return MapEntry<String, dynamic>(key.value, value.value.toJson());
   }
+
+  @override
+  Object? toJson() => value.value.toJson();
 
   @override
   String toString() {
@@ -197,7 +200,7 @@ class JsonLiteral extends JsonElement {
   Token<Object?> value;
 
   @override
-  Object? toJson() => value;
+  Object? toJson() => value.value;
 
   @override
   String toString() {

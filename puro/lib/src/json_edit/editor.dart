@@ -403,4 +403,59 @@ class JsonEditor {
         content +
         source.substring(replaceEnd);
   }
+
+  Token<JsonElement>? query(
+    List<Object> selectors, {
+    bool permissive = true,
+  }) {
+    Token<JsonElement>? token = JsonGrammar.parse(source);
+    var selectorDesc = 'data';
+    for (var i = 0; i < selectors.length; i++) {
+      final selector = selectors[i];
+      var element = token!.value;
+      if (element is JsonMapEntry) {
+        token = element.value;
+        element = token.value;
+      } else if (element is JsonWhitespace) {
+        token = element.body;
+        element = token.value;
+      }
+      if (selector is String) {
+        if (element is! JsonMap) {
+          if (permissive) return null;
+          throw ArgumentError(
+            'Attempt to index $selectorDesc (a ${element.runtimeType}) with String',
+          );
+        }
+        token = element[selector];
+      } else if (selector is int) {
+        if (element is! JsonArray) {
+          if (permissive) return null;
+          throw ArgumentError(
+            'Attempt to index $selectorDesc (a ${element.runtimeType}) with int',
+          );
+        }
+        if (permissive &&
+            (selector < 0 || selector > element.children.length)) {
+          return null;
+        }
+        RangeError.checkValidIndex(
+          selector,
+          element.children,
+          'selector',
+          element.children.length + 1,
+          'in $selectorDesc',
+        );
+        token = selector == element.children.length ? null : element[selector];
+      } else {
+        throw ArgumentError('Unrecognized selector: ${selector.runtimeType}');
+      }
+      selectorDesc += '[${jsonEncode(selector)}]';
+      if (token == null) {
+        if (permissive) return null;
+        throw ArgumentError('$selectorDesc not found');
+      }
+    }
+    return token;
+  }
 }

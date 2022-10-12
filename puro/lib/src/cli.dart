@@ -1,15 +1,18 @@
 import 'package:args/command_runner.dart';
 
 import 'command.dart';
+import 'commands/create.dart';
 import 'commands/dart.dart';
-import 'commands/env.dart';
 import 'commands/flutter.dart';
+import 'commands/ls.dart';
+import 'commands/rm.dart';
+import 'commands/use.dart';
 import 'logger.dart';
 
 void main(List<String> args) async {
   final runner = PuroCommandRunner(
     'puro',
-    'A tool for managing Flutter versions, applying patches, and automating builds.',
+    'An experimental tool for managing flutter versions.',
   );
   runner.argParser
     ..addOption(
@@ -55,7 +58,7 @@ void main(List<String> args) async {
       }),
     )
     ..addOption(
-      'flutter-git',
+      'flutter-git-url',
       help: 'Overrides the Flutter SDK git url.',
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
@@ -63,7 +66,7 @@ void main(List<String> args) async {
       }),
     )
     ..addOption(
-      'engine-git',
+      'engine-git-url',
       help: 'Overrides the Flutter Engine git url.',
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
@@ -121,7 +124,7 @@ void main(List<String> args) async {
       'color',
       help: 'Enable or disable ANSI colors.',
       callback: runner.wrapCallback((flag) {
-        if (runner.results.wasParsed('color')) {
+        if (runner.results!.wasParsed('color')) {
           runner.colorOverride = flag;
         }
       }),
@@ -132,7 +135,10 @@ void main(List<String> args) async {
       negatable: false,
     );
   runner
-    ..addCommand(EnvCommand())
+    ..addCommand(EnvCreateCommand())
+    ..addCommand(EnvLsCommand())
+    ..addCommand(EnvUseCommand())
+    ..addCommand(EnvRmCommand())
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand());
   try {

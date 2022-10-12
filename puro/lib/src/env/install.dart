@@ -5,6 +5,7 @@ import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
 
 import '../config.dart';
+import '../json_edit/editor.dart';
 import '../logger.dart';
 import '../provider.dart';
 
@@ -166,7 +167,36 @@ Future<void> installIdeConfigs({
     }
   }
 
-  if (vscodeConfigDir != null) {}
+  if (vscodeConfigDir != null) {
+    final settingsFile = vscodeConfigDir.childFile('settings.json');
+    if (!settingsFile.existsSync()) {
+      settingsFile.writeAsStringSync('{}');
+    }
+    final editor = JsonEditor(
+      source: settingsFile.readAsStringSync(),
+      indentLevel: 4,
+    );
+    final flutterSdkPathStr =
+        editor.query(['dart.flutterSdkPath'])?.value.toJson();
+    if (flutterSdkPathStr is String) {
+      originalFlutterSdk = config.fileSystem.directory(flutterSdkPathStr);
+    }
+    final dartSdkPathStr = editor.query(['dart.sdkPath'])?.value.toJson();
+    if (dartSdkPathStr is String) {
+      originalDartSdk = config.fileSystem.directory(dartSdkPathStr);
+    }
+
+    final envFlutterSdkPath = environment.flutter.sdkDir.path;
+    if (flutterSdkPathStr != envFlutterSdkPath) {
+      editor.remove(['dart.sdkPath']);
+      editor.update(['dart.flutterSdkPath'], envFlutterSdkPath);
+      if (editor.query(['dart.flutterSdkPath'])?.value.toJson() !=
+          envFlutterSdkPath) {
+        throw AssertionError('Corrupt settings.json');
+      }
+      settingsFile.writeAsStringSync(editor.source);
+    }
+  }
 
   if (originalFlutterSdk != null || originalDartSdk != null) {
     if (!dotfile.hasPreviousFlutterSdk() && originalFlutterSdk != null)
@@ -187,6 +217,14 @@ Future<void> useEnvironment({
   config.getEnv(name).ensureExists();
   model.env = name;
   config.writeDotfile(model);
-  await installGitignore(scope: scope);
-  await installIdeConfigs(scope: scope);
+  await runOptional(
+    scope,
+    'adding ${PuroConfig.dotfileName} to gitignore',
+    () => installGitignore(scope: scope),
+  );
+  await runOptional(
+    scope,
+    'installing IDE configs',
+    () => installIdeConfigs(scope: scope),
+  );
 }

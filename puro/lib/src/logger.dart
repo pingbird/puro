@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:clock/clock.dart';
 import 'package:neoansi/neoansi.dart';
 
 import 'provider.dart';
@@ -123,4 +126,22 @@ class PuroLogPrinter extends Sink<LogEntry> {
 
   @override
   void close() {}
+}
+
+FutureOr<T?> runOptional<T>(
+  Scope scope,
+  String action,
+  Future<T> fn(), {
+  LogLevel level = LogLevel.error,
+  LogLevel? exceptionLevel,
+}) async {
+  try {
+    return await fn();
+  } catch (exception, stackTrace) {
+    final log = PuroLogger.of(scope);
+    final time = clock.now();
+    log.add(LogEntry(time, level, 'Exception while $action'));
+    log.add(LogEntry(time, exceptionLevel ?? level, '$exception\n$stackTrace'));
+    return null;
+  }
 }

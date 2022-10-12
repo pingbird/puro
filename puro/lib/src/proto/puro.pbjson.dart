@@ -48,11 +48,15 @@ const EnvironmentListModel$json = const {
   '1': 'EnvironmentListModel',
   '2': const [
     const {'1': 'environments', '3': 1, '4': 3, '5': 11, '6': '.EnvironmentSummaryModel', '10': 'environments'},
+    const {'1': 'selectedEnvironment', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'selectedEnvironment', '17': true},
+  ],
+  '8': const [
+    const {'1': '_selectedEnvironment'},
   ],
 };
 
 /// Descriptor for `EnvironmentListModel`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List environmentListModelDescriptor = $convert.base64Decode('ChRFbnZpcm9ubWVudExpc3RNb2RlbBI8CgxlbnZpcm9ubWVudHMYASADKAsyGC5FbnZpcm9ubWVudFN1bW1hcnlNb2RlbFIMZW52aXJvbm1lbnRz');
+final $typed_data.Uint8List environmentListModelDescriptor = $convert.base64Decode('ChRFbnZpcm9ubWVudExpc3RNb2RlbBI8CgxlbnZpcm9ubWVudHMYASADKAsyGC5FbnZpcm9ubWVudFN1bW1hcnlNb2RlbFIMZW52aXJvbm1lbnRzEjUKE3NlbGVjdGVkRW52aXJvbm1lbnQYAiABKAlIAFITc2VsZWN0ZWRFbnZpcm9ubWVudIgBAUIWChRfc2VsZWN0ZWRFbnZpcm9ubWVudA==');
 @$core.Deprecated('Use commandResultModelDescriptor instead')
 const CommandResultModel$json = const {
   '1': 'CommandResultModel',

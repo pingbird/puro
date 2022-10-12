@@ -223,16 +223,21 @@ class EnvironmentSummaryModel extends $pb.GeneratedMessage {
 class EnvironmentListModel extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'EnvironmentListModel', createEmptyInstance: create)
     ..pc<EnvironmentSummaryModel>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'environments', $pb.PbFieldType.PM, subBuilder: EnvironmentSummaryModel.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'selectedEnvironment', protoName: 'selectedEnvironment')
     ..hasRequiredFields = false
   ;
 
   EnvironmentListModel._() : super();
   factory EnvironmentListModel({
     $core.Iterable<EnvironmentSummaryModel>? environments,
+    $core.String? selectedEnvironment,
   }) {
     final _result = create();
     if (environments != null) {
       _result.environments.addAll(environments);
+    }
+    if (selectedEnvironment != null) {
+      _result.selectedEnvironment = selectedEnvironment;
     }
     return _result;
   }
@@ -259,6 +264,15 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<EnvironmentSummaryModel> get environments => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.String get selectedEnvironment => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set selectedEnvironment($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSelectedEnvironment() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSelectedEnvironment() => clearField(2);
 }
 
 class CommandResultModel extends $pb.GeneratedMessage {

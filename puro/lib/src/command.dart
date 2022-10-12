@@ -53,7 +53,8 @@ class CommandHelpResult extends CommandResult {
   }
 
   @override
-  String? get description => '$message\n$usage';
+  String? get description =>
+      [message, usage].where((e) => e != null).join('\n');
 }
 
 abstract class CommandResult {
@@ -95,6 +96,9 @@ abstract class PuroCommand extends Command<CommandResult> {
 
   @override
   bool get takesArguments => argumentUsage != null;
+
+  @override
+  String get description => '';
 
   @override
   String get invocation {
@@ -189,7 +193,8 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   String? environmentOverride;
   bool? colorOverride;
 
-  late ArgResults results;
+  late List<String> args;
+  ArgResults? results;
   final logEntries = <LogEntry>[];
   final callbackQueue = <void Function()>[];
   final fileSystem = const LocalFileSystem();
@@ -203,14 +208,18 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     };
   }
 
-  bool get didRequestHelp =>
-      results.wasParsed('help') ||
-      results.arguments
-          .where((e) => !e.startsWith('-'))
-          .take(1)
-          .contains('help');
+  /// Args before `--`.
+  Iterable<String> get puroArgs {
+    final index = args.indexOf('--');
+    return index >= 0 ? args.take(index) : args;
+  }
 
-  bool get isJson => results['json'] as bool;
+  bool get didRequestHelp =>
+      (results?.wasParsed('help') ?? false) ||
+      puroArgs.where((e) => !e.startsWith('-')).take(1).contains('help');
+
+  bool get isJson =>
+      (results?['json'] ?? false) as bool || puroArgs.contains('--json');
 
   @override
   void printUsage() {
@@ -252,6 +261,12 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   }
 
   @override
+  ArgResults parse(Iterable<String> args) {
+    this.args = args.toList();
+    return super.parse(args);
+  }
+
+  @override
   Future<CommandResult?> runCommand(ArgResults topLevelResults) {
     results = topLevelResults;
 
@@ -259,23 +274,6 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       callback();
     }
     callbackQueue.clear();
-
-    // Initialize config
-    scope.add(
-      PuroConfig.provider,
-      PuroConfig.fromCommandLine(
-        fileSystem: fileSystem,
-        gitExecutable: gitExecutableOverride,
-        puroRoot: rootDirOverride,
-        workingDir: workingDirOverride,
-        projectDir: projectDirOverride,
-        flutterGitUrl: flutterGitUrlOverride,
-        engineGitUrl: engineGitUrlOverride,
-        releasesJsonUrl: versionsJsonUrlOverride,
-        flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
-        environmentOverride: environmentOverride,
-      ),
-    );
 
     // Logging
     final void Function(LogEntry entry) onEvent;
@@ -290,6 +288,26 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     }
     log = PuroLogger(level: logLevel, onEvent: onEvent);
     scope.add(PuroLogger.provider, log!);
+
+    // Initialize config
+    final config = PuroConfig.fromCommandLine(
+      fileSystem: fileSystem,
+      gitExecutable: gitExecutableOverride,
+      puroRoot: rootDirOverride,
+      workingDir: workingDirOverride,
+      projectDir: projectDirOverride,
+      flutterGitUrl: flutterGitUrlOverride,
+      engineGitUrl: engineGitUrlOverride,
+      releasesJsonUrl: versionsJsonUrlOverride,
+      flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
+      environmentOverride: environmentOverride,
+    );
+    scope.add(
+      PuroConfig.provider,
+      config,
+    );
+
+    log!.d('Config: $config');
 
     return super.runCommand(topLevelResults);
   }

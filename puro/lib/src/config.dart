@@ -132,6 +132,22 @@ class PuroConfig {
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
 
+  @override
+  String toString() {
+    return 'PuroConfig(\n'
+        '  gitExecutable: $gitExecutable,\n'
+        '  puroRoot: $puroRoot,\n'
+        '  homeDir: $homeDir,\n'
+        '  projectDir: $projectDir,\n'
+        '  parentProjectDir: $parentProjectDir,\n'
+        '  flutterGitUrl: $flutterGitUrl,\n'
+        '  engineGitUrl: $engineGitUrl,\n'
+        '  releasesJsonUrl: $releasesJsonUrl,\n'
+        '  flutterStorageBaseUrl: $flutterStorageBaseUrl,\n'
+        '  environmentOverride: $environmentOverride,\n'
+        ')';
+  }
+
   EnvConfig getEnv(String name) {
     ensureValidName(name);
     return EnvConfig(envDir: envsDir.childDirectory(name));
@@ -139,7 +155,8 @@ class PuroConfig {
 
   EnvConfig? tryGetCurrentEnv() {
     if (environmentOverride != null) {
-      return getEnv(environmentOverride!)..ensureExists();
+      final result = getEnv(environmentOverride!);
+      return result.exists ? result : null;
     }
     if (parentPuroDotfile?.existsSync() != true) return null;
     final dotfile = readDotfile();

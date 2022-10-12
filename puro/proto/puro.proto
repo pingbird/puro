@@ -19,6 +19,7 @@ message EnvironmentSummaryModel {
 
 message EnvironmentListModel {
   repeated EnvironmentSummaryModel environments = 1;
+  optional string selectedEnvironment = 2;
 }
 
 message CommandResultModel {

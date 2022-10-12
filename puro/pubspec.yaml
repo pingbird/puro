@@ -1,6 +1,7 @@
 name: puro
-description: A starting point for Dart libraries or applications.
-version: 0.1.0
+description: An experimental tool for managing flutter versions.
+version: 0.0.1
+repository: https://github.com/PixelToast/puro
 
 environment:
   sdk: '>=2.18.0 <3.0.0'

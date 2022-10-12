@@ -8,9 +8,11 @@ import '../provider.dart';
 class ListEnvironmentResult extends CommandResult {
   ListEnvironmentResult({
     required this.environments,
+    required this.selectedEnvironment,
   });
 
   final List<EnvConfig> environments;
+  final String? selectedEnvironment;
 
   @override
   String? get description {
@@ -19,13 +21,18 @@ class ListEnvironmentResult extends CommandResult {
     }
     return [
       'Environments:',
-      ...environments.map((e) => '[ ] ${e.name}'),
+      ...environments.map(
+        (e) => '  [${selectedEnvironment == e.name ? '*' : ' '}] ${e.name}',
+      ),
+      '',
+      'Use `puro env use <name>` to switch, or `puro env create <name>` to create a new one',
     ].join('\n');
   }
 
   @override
   CommandResultModel toModel() {
     return CommandResultModel(
+      success: true,
       environmentList: EnvironmentListModel(
         environments: [
           for (final environment in environments)
@@ -34,6 +41,7 @@ class ListEnvironmentResult extends CommandResult {
               path: environment.envDir.path,
             )
         ],
+        selectedEnvironment: selectedEnvironment,
       ),
     );
   }
@@ -50,5 +58,6 @@ Future<ListEnvironmentResult> listEnvironments({
         if (childEntity is Directory && isValidName(childEntity.basename))
           config.getEnv(childEntity.basename),
     ],
+    selectedEnvironment: config.tryGetCurrentEnv()?.name,
   );
 }
