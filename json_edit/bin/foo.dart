@@ -23,7 +23,6 @@ void main() {
         }
     ]
 }''';
-  print('input: $input');
   final result = resolve(grammar.start()).parse(input);
   if (result.isFailure) {
     final lineAndCol = Token.lineAndColumnOf(result.buffer, result.position);
@@ -31,5 +30,4 @@ void main() {
       'pos=${result.position} line=${lineAndCol[0]} col=${lineAndCol[1]} ${result.message}',
     );
   }
-  print('${result.value.value}');
 }

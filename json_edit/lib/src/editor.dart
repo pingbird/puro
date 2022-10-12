@@ -91,8 +91,7 @@ class JsonEditor {
       return;
     }
 
-    final root = JsonGrammar.parse(source);
-    Token<JsonElement>? token = root;
+    Token<JsonElement>? token = JsonGrammar.parse(source);
     late Token<JsonElement> collectionToken;
     late Object collectionSelector;
     var selectorDesc = 'data';
@@ -192,14 +191,12 @@ class JsonEditor {
         replaceEnd = collectionToken.stop - 1;
         indent = collectionIndent + indentLevel;
         if (collectionElement.children.isNotEmpty) {
-          final lastChild = collectionElement.children.last.value;
+          var lastChild = collectionElement.children.last.value;
           var lastChildTrailingSpace = '';
           if (lastChild is JsonMapEntry) {
-            final entryValue = lastChild.value.value;
-            if (entryValue is JsonWhitespace) {
-              lastChildTrailingSpace = entryValue.trailing;
-            }
-          } else if (lastChild is JsonWhitespace) {
+            lastChild = lastChild.value.value;
+          }
+          if (lastChild is JsonWhitespace) {
             lastChildTrailingSpace = lastChild.trailing;
           }
           replaceStart = collectionElement.children.last.stop -
@@ -260,6 +257,150 @@ class JsonEditor {
         leading +
         encodedValue +
         trailing +
+        source.substring(replaceEnd);
+  }
+
+  void remove(
+    List<Object> selectors, {
+    bool permissive = true,
+  }) {
+    if (selectors.isEmpty) {
+      throw ArgumentError('Cannot delete root');
+    }
+    Token<JsonElement>? token = JsonGrammar.parse(source);
+    late Token<JsonElement> collectionToken;
+    var selectorDesc = 'data';
+    for (var i = 0; i < selectors.length; i++) {
+      final selector = selectors[i];
+      var element = token!.value;
+      if (element is JsonMapEntry) {
+        token = element.value;
+        element = token.value;
+      } else if (element is JsonWhitespace) {
+        token = element.body;
+        element = token.value;
+      }
+      collectionToken = token;
+      if (selector is String) {
+        if (element is! JsonMap) {
+          if (permissive) return;
+          throw ArgumentError(
+            'Attempt to index $selectorDesc (a ${element.runtimeType}) with String',
+          );
+        }
+        token = element[selector];
+      } else if (selector is int) {
+        if (element is! JsonArray) {
+          if (permissive) return;
+          throw ArgumentError(
+            'Attempt to index $selectorDesc (a ${element.runtimeType}) with int',
+          );
+        }
+        if (permissive &&
+            (selector < 0 || selector > element.children.length)) {
+          return;
+        }
+        RangeError.checkValidIndex(
+          selector,
+          element.children,
+          'selector',
+          element.children.length + 1,
+          'in $selectorDesc',
+        );
+        token = selector == element.children.length ? null : element[selector];
+      } else {
+        throw ArgumentError('Unrecognized selector: ${selector.runtimeType}');
+      }
+      selectorDesc += '[${jsonEncode(selector)}]';
+      if (token == null) {
+        if (permissive) return;
+        throw ArgumentError('$selectorDesc not found');
+      }
+    }
+
+    if (token == null) {
+      if (permissive) return;
+      throw ArgumentError('$selectorDesc not found');
+    }
+
+    int replaceStart;
+    int replaceEnd;
+    var content = '';
+
+    final collectionElement = collectionToken.value;
+
+    String trailingSpaceOf(JsonElement element) {
+      if (element is JsonMapEntry) {
+        element = element.value.value;
+      }
+      if (element is JsonWhitespace) {
+        return element.trailing;
+      }
+      return '';
+    }
+
+    String leadingSpaceOf(JsonElement element) {
+      if (element is JsonMapEntry) {
+        return element.beforeKey;
+      } else if (element is JsonWhitespace) {
+        return element.leading;
+      } else {
+        return '';
+      }
+    }
+
+    final trailingSpace = trailingSpaceOf(token.value);
+    final trailingSpaceNewline = trailingSpace.indexOf('\n');
+    final trailingSpaceAfterEOL = trailingSpaceNewline == -1
+        ? ''
+        : trailingSpace.substring(trailingSpaceNewline);
+
+    final collectionChildren = collectionElement.children.toList();
+    final elementIndex = collectionChildren.indexOf(token);
+    final hasChildBefore = elementIndex > 0;
+    final hasChildAfter = elementIndex + 1 < collectionChildren.length;
+    final collectionStartLine = collectionToken.line;
+    final collectionEndLine =
+        Token.lineAndColumnOf(collectionToken.buffer, collectionToken.stop)[0];
+    final singleLine = collectionStartLine == collectionEndLine;
+    final leadingLines = leadingSpaceOf(token.value).split('\n');
+    final leadingLineAfterComma =
+        !singleLine && hasChildBefore && leadingLines.isNotEmpty
+            ? leadingLines.first
+            : '';
+
+    if (collectionElement.children.length == 1 &&
+        trailingSpaceAfterEOL.trim().isEmpty) {
+      // Only child and no comment, collapse collection
+      replaceStart = collectionToken.start + 1;
+      replaceEnd = collectionToken.stop - 1;
+    } else {
+      final removeLeadingComma = hasChildBefore && !hasChildAfter;
+      replaceStart = token.start - (removeLeadingComma ? 1 : 0);
+      while (removeLeadingComma && _spaceAt(replaceStart - 1)) replaceStart--;
+
+      final removeTrailingComma = hasChildAfter;
+      replaceEnd = token.stop + (removeTrailingComma ? 1 : 0);
+      while (_spaceAt(replaceEnd)) replaceEnd++;
+
+      content = leadingLineAfterComma + trailingSpaceAfterEOL;
+      if (singleLine && hasChildBefore && hasChildAfter) {
+        content += ' ';
+      }
+
+      // Remove trailing comments on the same line
+      if (collectionStartLine != collectionEndLine && hasChildAfter) {
+        final nextChild = collectionChildren[elementIndex + 1];
+        final space = leadingSpaceOf(nextChild.value);
+        final spaceNewline = space.indexOf('\n');
+        if (spaceNewline > 0) {
+          replaceEnd = nextChild.start + spaceNewline;
+        }
+      }
+    }
+
+    source = source.substring(0, replaceStart) +
+        content +
         source.substring(replaceEnd);
   }
 }
