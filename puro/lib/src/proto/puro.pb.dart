@@ -379,16 +379,26 @@ class CommandResultModel extends $pb.GeneratedMessage {
 class PuroDotfileModel extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PuroDotfileModel', createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'env')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'previousDartSdk', protoName: 'previousDartSdk')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'previousFlutterSdk', protoName: 'previousFlutterSdk')
     ..hasRequiredFields = false
   ;
 
   PuroDotfileModel._() : super();
   factory PuroDotfileModel({
     $core.String? env,
+    $core.String? previousDartSdk,
+    $core.String? previousFlutterSdk,
   }) {
     final _result = create();
     if (env != null) {
       _result.env = env;
+    }
+    if (previousDartSdk != null) {
+      _result.previousDartSdk = previousDartSdk;
+    }
+    if (previousFlutterSdk != null) {
+      _result.previousFlutterSdk = previousFlutterSdk;
     }
     return _result;
   }
@@ -421,5 +431,23 @@ class PuroDotfileModel extends $pb.GeneratedMessage {
   $core.bool hasEnv() => $_has(0);
   @$pb.TagNumber(1)
   void clearEnv() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get previousDartSdk => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set previousDartSdk($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPreviousDartSdk() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPreviousDartSdk() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get previousFlutterSdk => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set previousFlutterSdk($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPreviousFlutterSdk() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPreviousFlutterSdk() => clearField(3);
 }
 

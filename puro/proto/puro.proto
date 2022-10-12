@@ -32,4 +32,6 @@ message CommandResultModel {
 
 message PuroDotfileModel {
   optional string env = 1;
+  optional string previousDartSdk = 2;
+  optional string previousFlutterSdk = 3;
 }

@@ -79,11 +79,15 @@ const PuroDotfileModel$json = const {
   '1': 'PuroDotfileModel',
   '2': const [
     const {'1': 'env', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'env', '17': true},
+    const {'1': 'previousDartSdk', '3': 2, '4': 1, '5': 9, '9': 1, '10': 'previousDartSdk', '17': true},
+    const {'1': 'previousFlutterSdk', '3': 3, '4': 1, '5': 9, '9': 2, '10': 'previousFlutterSdk', '17': true},
   ],
   '8': const [
     const {'1': '_env'},
+    const {'1': '_previousDartSdk'},
+    const {'1': '_previousFlutterSdk'},
   ],
 };
 
 /// Descriptor for `PuroDotfileModel`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List puroDotfileModelDescriptor = $convert.base64Decode('ChBQdXJvRG90ZmlsZU1vZGVsEhUKA2VudhgBIAEoCUgAUgNlbnaIAQFCBgoEX2Vudg==');
+final $typed_data.Uint8List puroDotfileModelDescriptor = $convert.base64Decode('ChBQdXJvRG90ZmlsZU1vZGVsEhUKA2VudhgBIAEoCUgAUgNlbnaIAQESLQoPcHJldmlvdXNEYXJ0U2RrGAIgASgJSAFSD3ByZXZpb3VzRGFydFNka4gBARIzChJwcmV2aW91c0ZsdXR0ZXJTZGsYAyABKAlIAlIScHJldmlvdXNGbHV0dGVyU2RriAEBQgYKBF9lbnZCEgoQX3ByZXZpb3VzRGFydFNka0IVChNfcHJldmlvdXNGbHV0dGVyU2Rr');

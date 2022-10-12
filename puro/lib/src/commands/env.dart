@@ -3,8 +3,8 @@ import 'package:pub_semver/pub_semver.dart';
 import '../command.dart';
 import '../env/create.dart';
 import '../env/delete.dart';
+import '../env/install.dart';
 import '../env/list.dart';
-import '../env/use.dart';
 
 class EnvCommand extends PuroCommand {
   EnvCommand() {

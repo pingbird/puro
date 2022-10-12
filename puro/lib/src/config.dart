@@ -28,6 +28,7 @@ class PuroConfig {
     required this.fileSystem,
     required this.gitExecutable,
     required Directory puroRoot,
+    required this.homeDir,
     required this.projectDir,
     required this.parentProjectDir,
     required this.flutterGitUrl,
@@ -89,6 +90,7 @@ class PuroConfig {
       puroRoot: puroRoot != null
           ? fileSystem.directory(puroRoot)
           : fileSystem.directory(homeDir).childDirectory('.puro'),
+      homeDir: fileSystem.directory(homeDir),
       projectDir: resultProjectDir,
       parentProjectDir: parentProjectDir,
       flutterGitUrl: Uri.parse(
@@ -111,6 +113,7 @@ class PuroConfig {
   final FileSystem fileSystem;
   final File gitExecutable;
   final Directory puroRoot;
+  final Directory homeDir;
   final Directory? projectDir;
   final Directory? parentProjectDir;
   final Uri flutterGitUrl;
@@ -211,7 +214,6 @@ class EnvConfig {
   late final String name = envDir.basename;
   late final Directory recipeDir = envDir.childDirectory('recipe');
   late final Directory engineDir = envDir.childDirectory('engine');
-  late final Directory dartSdkDir = envDir.childDirectory('dart');
   late final Directory flutterDir = envDir.childDirectory('flutter');
   late final FlutterConfig flutter = FlutterConfig(flutterDir);
 
@@ -292,6 +294,8 @@ class DartSdkConfig {
   late final Directory binDir = sdkDir.childDirectory('bin');
   late final File dartExecutable =
       binDir.childFile(Platform.isWindows ? 'dart.exe' : 'dart');
+  late final Directory libDir = sdkDir.childDirectory('lib');
+  late final File librariesJsonFile = libDir.childFile('libraries.json');
 }
 
 final _nameRegex = RegExp(
