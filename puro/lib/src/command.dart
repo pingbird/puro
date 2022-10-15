@@ -280,7 +280,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     if (isJson) {
       onEvent = logEntries.add;
     } else {
-      final printer = PuroLogPrinter(
+      final printer = PuroPrinter(
         sink: stderr,
         enableColor: colorOverride ?? stderr.supportsAnsiEscapes,
       );

@@ -17,7 +17,7 @@ class ListEnvironmentResult extends CommandResult {
   @override
   String? get description {
     if (environments.isEmpty) {
-      return 'No environments, use `puro env create` to create one';
+      return 'No environments, use `puro create` to create one';
     }
     return [
       'Environments:',
@@ -25,7 +25,7 @@ class ListEnvironmentResult extends CommandResult {
         (e) => '  [${selectedEnvironment == e.name ? '*' : ' '}] ${e.name}',
       ),
       '',
-      'Use `puro env use <name>` to switch, or `puro env create <name>` to create a new one',
+      'Use `puro use <name>` to switch, or `puro create <name>` to create new environments',
     ].join('\n');
   }
 

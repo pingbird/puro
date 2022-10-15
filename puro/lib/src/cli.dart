@@ -1,6 +1,7 @@
 import 'package:args/command_runner.dart';
 
 import 'command.dart';
+import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/dart.dart';
 import 'commands/flutter.dart';
@@ -138,6 +139,7 @@ void main(List<String> args) async {
     ..addCommand(EnvCreateCommand())
     ..addCommand(EnvLsCommand())
     ..addCommand(EnvUseCommand())
+    ..addCommand(CleanCommand())
     ..addCommand(EnvRmCommand())
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand());

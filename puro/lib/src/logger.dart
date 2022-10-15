@@ -77,8 +77,8 @@ class PuroLogger {
   static PuroLogger of(Scope scope) => scope.read(provider);
 }
 
-class PuroLogPrinter extends Sink<LogEntry> {
-  PuroLogPrinter({
+class PuroPrinter extends Sink<LogEntry> {
+  PuroPrinter({
     required this.sink,
     required this.enableColor,
   });
@@ -135,10 +135,11 @@ FutureOr<T?> runOptional<T>(
   LogLevel level = LogLevel.error,
   LogLevel? exceptionLevel,
 }) async {
+  final log = PuroLogger.of(scope);
+  log.v(action.substring(0, 1).toUpperCase() + action.substring(1) + '...');
   try {
     return await fn();
   } catch (exception, stackTrace) {
-    final log = PuroLogger.of(scope);
     final time = clock.now();
     log.add(LogEntry(time, level, 'Exception while $action'));
     log.add(LogEntry(time, exceptionLevel ?? level, '$exception\n$stackTrace'));

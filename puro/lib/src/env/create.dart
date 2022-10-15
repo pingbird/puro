@@ -12,6 +12,7 @@ import '../http.dart';
 import '../logger.dart';
 import '../proto/flutter_releases.pb.dart';
 import '../provider.dart';
+import 'engine.dart';
 
 class EnvCreateResult extends CommandResult {
   EnvCreateResult({
@@ -44,23 +45,29 @@ Future<EnvCreateResult> createEnvironment({
 }) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
-  final env = config.getEnv(envName);
+  final environment = config.getEnv(envName);
 
-  log.v('Creating a new environment in ${env.envDir.path}');
+  log.v('Creating a new environment in ${environment.envDir.path}');
 
-  final existing = env.envDir.existsSync();
-  env.envDir.createSync(recursive: true);
+  final existing = environment.envDir.existsSync();
+  environment.envDir.createSync(recursive: true);
 
   // Clone flutter
-  await cloneFlutterShared(
+  await cloneFlutterWithSharedRefs(
     scope: scope,
-    repository: env.flutterDir,
+    repository: environment.flutterDir,
+  );
+
+  // Set up engine
+  await setUpFlutterTool(
+    scope: scope,
+    environment: environment,
   );
 
   return EnvCreateResult(
     success: true,
     existing: existing,
-    directory: env.envDir,
+    directory: environment.envDir,
   );
 }
 
@@ -78,6 +85,7 @@ Future<void> fetchOrCloneShared({
       remote: remote,
       repository: repository,
       shared: true,
+      checkout: false,
     );
   }
 }
@@ -206,7 +214,7 @@ Future<String> findFrameworkRef({
 }
 
 /// Clone Flutter using git objects from a shared repository.
-Future<void> cloneFlutterShared({
+Future<void> cloneFlutterWithSharedRefs({
   required Scope scope,
   required Directory repository,
   Version? version,

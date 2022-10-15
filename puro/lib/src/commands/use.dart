@@ -1,5 +1,5 @@
 import '../command.dart';
-import '../env/install.dart';
+import '../workspace/install.dart';
 
 class EnvUseCommand extends PuroCommand {
   @override
@@ -13,14 +13,15 @@ class EnvUseCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
-    final name = unwrapSingleArgument();
-    await useEnvironment(
+    final args = unwrapArguments(atMost: 1);
+    final name = args.isEmpty ? null : args.first;
+    await switchEnvironment(
       scope: scope,
       name: name,
     );
     return BasicMessageResult(
       success: true,
-      message: 'Now using environment `$name` for the current project',
+      message: 'Switched project to `$name`',
     );
   }
 }

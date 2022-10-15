@@ -312,7 +312,12 @@ class DartSdkConfig {
   late final File dartExecutable =
       binDir.childFile(Platform.isWindows ? 'dart.exe' : 'dart');
   late final Directory libDir = sdkDir.childDirectory('lib');
+  late final Directory internalLibDir = libDir.childDirectory('_internal');
   late final File librariesJsonFile = libDir.childFile('libraries.json');
+  late final File internalLibrariesDartFile = internalLibDir
+      .childDirectory('sdk_library_metadata')
+      .childDirectory('lib')
+      .childFile('libraries.dart');
 }
 
 final _nameRegex = RegExp(
