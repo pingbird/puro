@@ -8,6 +8,17 @@ import 'logger.dart';
 import 'process.dart';
 import 'provider.dart';
 
+enum GitCloneStep {
+  countingObjects('remote: Counting objects'),
+  compressingObjects('remote: Compressing objects'),
+  receivingObjects('Receiving objects'),
+  resolvingDeltas('Resolving deltas');
+
+  const GitCloneStep(this.prefix);
+
+  final String prefix;
+}
+
 class GitClient {
   GitClient({
     required this.scope,
@@ -21,6 +32,8 @@ class GitClient {
   Future<ProcessResult> _git(
     List<String> args, {
     Directory? directory,
+    void Function(String line)? onStdout,
+    void Function(String line)? onStderr,
   }) async {
     log.v('${directory?.path ?? ''}> ${gitExecutable.path} ${args.join(' ')}');
 
@@ -38,6 +51,7 @@ class GitClient {
         const LineSplitter().bind(utf8.decoder.bind(process.stdout)).map(
       (e) {
         log.d('git: $e');
+        if (onStdout != null) onStdout(e);
         return e;
       },
     ).join('\n');
@@ -45,7 +59,8 @@ class GitClient {
     final stderr =
         const LineSplitter().bind(utf8.decoder.bind(process.stderr)).map(
       (e) {
-        log.v('git: $e');
+        log.d('git: $e');
+        if (onStderr != null) onStderr(e);
         return e;
       },
     ).join('\n');
@@ -82,15 +97,40 @@ class GitClient {
     String? branch,
     Directory? reference,
     bool checkout = true,
+    void Function(GitCloneStep step, double progress)? onProgress,
   }) async {
-    final cloneResult = await _git([
-      'clone',
-      '$remote',
-      if (branch != null) ...['--branch', branch],
-      if (reference != null) ...['--reference', reference.path],
-      if (!checkout) '--no-checkout',
-      repository.path,
-    ]);
+    if (onProgress != null) onProgress(GitCloneStep.values.first, 0);
+    final cloneResult = await _git(
+      [
+        'clone',
+        '$remote',
+        if (branch != null) ...['--branch', branch],
+        if (reference != null) ...['--reference', reference.path],
+        if (!checkout) '--no-checkout',
+        if (onProgress != null) '--progress',
+        repository.path,
+      ],
+      onStderr: (line) {
+        if (onProgress == null) return;
+        if (line.endsWith(', done.')) return;
+        for (final step in GitCloneStep.values) {
+          final prefix = '${step.prefix}:';
+          if (!line.startsWith(prefix)) continue;
+          final percentIndex = line.indexOf('%', prefix.length);
+          if (percentIndex < 0) {
+            continue;
+          }
+          final percent = int.tryParse(line
+              .substring(
+                prefix.length,
+                percentIndex,
+              )
+              .trimLeft());
+          if (percent == null) continue;
+          onProgress(step, percent / 100);
+        }
+      },
+    );
     _ensureSuccess(cloneResult);
   }
 

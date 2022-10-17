@@ -8,6 +8,7 @@ import '../git.dart';
 import '../http.dart';
 import '../logger.dart';
 import '../process.dart';
+import '../progress.dart';
 import '../provider.dart';
 
 enum EngineOS {
@@ -163,27 +164,30 @@ Future<void> setUpFlutterTool({
   var didChangeEngine = false;
 
   if (shouldUpdateEngine) {
-    log.v('Engine out of date, updating');
+    log.v('engine out of date, updating');
 
     final sharedCache = FlutterCacheConfig(sharedCacheDir);
 
     // Delete the current cache if it's corrupt
     if (sharedCache.exists) {
       try {
-        await runProcess(
-          scope,
-          sharedCache.dartSdk.dartExecutable.path,
-          ['--version'],
-          throwOnFailure: true,
-        );
+        await ProgressNode.of(scope).wrap((scope, node) async {
+          node.description = 'Checking if dart works';
+          await runProcess(
+            scope,
+            sharedCache.dartSdk.dartExecutable.path,
+            ['--version'],
+            throwOnFailure: true,
+          );
+        });
       } catch (e) {
-        log.w('Dart version check failed, deleting cache');
+        log.w('dart version check failed, deleting cache');
         sharedCacheDir.deleteSync(recursive: true);
       }
     }
 
     if (!sharedCache.exists) {
-      log.v('Downloading engine');
+      log.v('downloading engine');
 
       final engineZipUrl = await getEngineReleaseZipUrl(
         scope: scope,
@@ -193,23 +197,29 @@ Future<void> setUpFlutterTool({
       final zipFile = sharedCachesDir.childFile('$engineVersion.zip');
       final zipFileSink = zipFile.openWrite();
 
-      log.v('Saving $engineZipUrl to ${zipFile.path}');
+      log.v('saving $engineZipUrl to ${zipFile.path}');
 
-      final response = await httpClient.send(Request('GET', engineZipUrl));
-      if (response.statusCode ~/ 100 != 2) {
-        throw AssertionError(
-          'HTTP ${response.statusCode} on GET $engineZipUrl',
+      await ProgressNode.of(scope).wrap((scope, node) async {
+        node.description = 'Downloading engine';
+        final response = await httpClient.send(Request('GET', engineZipUrl));
+        if (response.statusCode ~/ 100 != 2) {
+          throw AssertionError(
+            'HTTP ${response.statusCode} on GET $engineZipUrl',
+          );
+        }
+        await node.wrapHttpResponse(response).pipe(zipFileSink);
+      });
+
+      log.v('unzipping into $sharedCacheDir');
+
+      await ProgressNode.of(scope).wrap((scope, node) async {
+        node.description = 'Unzipping engine';
+        await unzip(
+          scope: scope,
+          zipFile: zipFile,
+          destination: sharedCacheDir,
         );
-      }
-      await response.stream.pipe(zipFileSink);
-
-      log.v('Unzipping into $sharedCacheDir');
-
-      await unzip(
-        scope: scope,
-        zipFile: zipFile,
-        destination: sharedCacheDir,
-      );
+      });
 
       zipFile.deleteSync();
       didChangeEngine = true;
@@ -248,62 +258,70 @@ Future<void> setUpFlutterTool({
       didChangeEngine || flutterCache.flutterToolsStamp != flutterToolsStamp;
 
   if (shouldRecompileTool) {
-    log.v('Flutter tool out of date, updating...');
+    log.v('flutter tool out of date');
 
     final pubEnvironment =
         '${Platform.environment['PUB_ENVIRONMENT'] ?? ''}:flutter_install:puro';
 
-    var backoff = const Duration(seconds: 1);
-    final rand = Random();
-    for (var i = 0;; i++) {
-      final pubProcess = await runProcess(
+    await ProgressNode.of(scope).wrap((scope, node) async {
+      var backoff = const Duration(seconds: 1);
+      final rand = Random();
+      for (var i = 0;; i++) {
+        node.description = 'Updating flutter tool';
+        final pubProcess = await runProcess(
+          scope,
+          flutterCache.dartSdk.dartExecutable.path,
+          [
+            '__deprecated_pub',
+            'upgrade',
+            '--verbosity=normal',
+            '--no-precompile',
+          ],
+          environment: {
+            'PUB_ENVIRONMENT': pubEnvironment,
+          },
+          workingDirectory: flutterConfig.flutterToolsDir.path,
+        );
+        if (pubProcess.exitCode == 0) break;
+        if (i == 10) {
+          throw AssertionError('pub upgrade failed after 10 attempts');
+        } else {
+          // Exponential backoff with randomization
+          final randomizedBackoff = backoff +
+              Duration(
+                milliseconds:
+                    (backoff.inMilliseconds * rand.nextDouble() * 0.5).round(),
+              );
+          backoff += backoff;
+          log.w(
+            'Pub upgrade failed, trying again in ${randomizedBackoff.inMilliseconds}ms...',
+          );
+          node.description =
+              'Pub upgrade failed, waiting a little before trying again';
+          await Future<void>.delayed(randomizedBackoff);
+        }
+      }
+    });
+
+    await ProgressNode.of(scope).wrap((scope, node) async {
+      node.description = 'Compiling flutter tool';
+      await runProcess(
         scope,
         flutterCache.dartSdk.dartExecutable.path,
         [
-          '__deprecated_pub',
-          'upgrade',
-          '--verbosity=normal',
-          '--no-precompile',
+          '--disable-dart-dev',
+          '--verbosity=error',
+          '--disable-dart-dev',
+          '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
+          if (environment.flutterToolArgs.isNotEmpty)
+            ...environment.flutterToolArgs.split(RegExp(r'\S+')),
+          '--snapshot=${flutterCache.flutterToolsSnapshotFile.path}',
+          '--no-enable-mirrors',
+          flutterConfig.flutterToolsScriptFile.path,
         ],
-        environment: {
-          'PUB_ENVIRONMENT': pubEnvironment,
-        },
-        workingDirectory: flutterConfig.flutterToolsDir.path,
+        throwOnFailure: true,
       );
-      if (pubProcess.exitCode == 0) break;
-      if (i == 10) {
-        throw AssertionError('pub upgrade failed after 10 attempts');
-      } else {
-        // Exponential backoff with randomized
-        final randomizedBackoff = backoff +
-            Duration(
-              milliseconds:
-                  (backoff.inMilliseconds * rand.nextDouble() * 0.5).round(),
-            );
-        backoff += backoff;
-        log.w(
-          'pub upgrade failed, trying again in ${randomizedBackoff.inMilliseconds}ms...',
-        );
-        await Future<void>.delayed(randomizedBackoff);
-      }
-    }
-
-    await runProcess(
-      scope,
-      flutterCache.dartSdk.dartExecutable.path,
-      [
-        '--disable-dart-dev',
-        '--verbosity=error',
-        '--disable-dart-dev',
-        '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
-        if (environment.flutterToolArgs.isNotEmpty)
-          ...environment.flutterToolArgs.split(RegExp(r'\S+')),
-        '--snapshot=${flutterCache.flutterToolsSnapshotFile.path}',
-        '--no-enable-mirrors',
-        flutterConfig.flutterToolsScriptFile.path,
-      ],
-      throwOnFailure: true,
-    );
+    });
 
     flutterCache.flutterToolsStampFile.writeAsStringSync(flutterToolsStamp);
   }

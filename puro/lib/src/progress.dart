@@ -1,50 +1,80 @@
-enum ProgressUnit {
-  bytes,
-}
+import 'package:http/http.dart';
+import 'package:neoansi/neoansi.dart';
 
-abstract class ProgressNodeBase {
-  void addNode(ProgressNode node);
-  void removeNode(ProgressNode node);
-  Future<T> wrap<T>(
-    Future<T> Function(ProgressNode layer) fn, {
-    bool removeWhenComplete = true,
-  }) async {
-    final node = ProgressNode();
-    addNode(node);
-    try {
-      return await fn(node);
-    } finally {
-      node.complete = true;
-      if (removeWhenComplete) removeNode(node);
-    }
-  }
-}
+import 'git.dart';
+import 'logger.dart';
+import 'provider.dart';
+import 'terminal.dart';
 
-class ProgressNode extends ProgressNodeBase {
+abstract class ProgressNode {
+  ProgressNode({required this.scope});
+
+  final Scope scope;
+
   void Function()? _onChanged;
 
-  final children = <ProgressNode>[];
+  final children = <ActiveProgressNode>[];
 
-  @override
-  void addNode(ProgressNode node) {
+  void addNode(ActiveProgressNode node) {
     assert(!children.contains(node));
     assert(node._onChanged == null);
     node._onChanged = () {
       if (_onChanged != null) _onChanged!();
     };
     children.add(node);
+    if (_onChanged != null) _onChanged!();
   }
 
-  @override
-  void removeNode(ProgressNode node) {
+  void removeNode(ActiveProgressNode node) {
     assert(children.contains(node));
     node._onChanged = null;
     children.remove(node);
+    if (_onChanged != null) _onChanged!();
   }
+
+  Future<T> wrap<T>(
+    Future<T> Function(Scope scope, ActiveProgressNode node) fn, {
+    bool removeWhenComplete = true,
+    bool optional = false,
+  }) async {
+    final node = ActiveProgressNode(
+      scope: OverrideScope(parent: scope),
+    );
+    node.scope.add(ProgressNode.provider, node);
+    addNode(node);
+    try {
+      return await fn(scope, node);
+    } catch (exception, stackTrace) {
+      final log = PuroLogger.of(scope);
+      if (node.description != null) {
+        log.e('Exception while ${node.description}');
+      }
+      if (optional) {
+        log.e('$exception\n$stackTrace');
+        return null as T;
+      }
+      rethrow;
+    } finally {
+      node.complete = true;
+      if (removeWhenComplete) removeNode(node);
+    }
+  }
+
+  String render();
+
+  static final provider = Provider<ProgressNode>((scope) {
+    return RootProgressNode(scope: scope);
+  });
+  static ProgressNode of(Scope scope) => scope.read(provider);
+}
+
+class ActiveProgressNode extends ProgressNode {
+  ActiveProgressNode({required super.scope});
 
   String? _description;
   String? get description => _description;
   set description(String? description) {
+    if (description != null) PuroLogger.of(scope).v('started $description');
     if (_description == description) return;
     _description = description;
     if (_onChanged != null) _onChanged!();
@@ -73,28 +103,81 @@ class ProgressNode extends ProgressNodeBase {
     _complete = complete;
     if (_onChanged != null) _onChanged!();
   }
-}
 
-class ProgressController extends ProgressNodeBase {
-  ProgressController({
-    required this.onChanged,
-  });
+  Stream<List<int>> wrapHttpResponse(StreamedResponse response) {
+    progressTotal = response.contentLength;
+    progress = 0;
+    return wrapByteStream(response.stream);
+  }
 
-  final void Function() onChanged;
+  Stream<List<int>> wrapByteStream(Stream<List<int>> stream) {
+    return stream.map((event) {
+      progress = (progress ?? 0) + event.length;
+      return event;
+    });
+  }
 
-  ProgressNode? root;
+  void onCloneProgress(GitCloneStep step, double progress) {
+    progressTotal = GitCloneStep.values.length;
+    this.progress = step.index + progress;
+  }
 
-  @override
-  void addNode(ProgressNode node) {
-    assert(root == null);
-    assert(node._onChanged == null);
-    node._onChanged = onChanged;
+  double? get progressFraction {
+    if (_progress == null || _progressTotal == null) {
+      return null;
+    }
+    return (_progress! / _progressTotal!).clamp(0.0, 1.0);
+  }
+
+  static String _indentString(
+    String input,
+    String indent,
+  ) {
+    return input.split('\n').map((e) => '$indent$e').join('\n');
   }
 
   @override
-  void removeNode(ProgressNode node) {
-    assert(root == node);
-    root!._onChanged = null;
-    root = null;
+  String render() {
+    const width = 15;
+    final progressFraction = this.progressFraction;
+    String text;
+    if (progressFraction == null) {
+      text = '[${('/ ' * (width ~/ 2 + 1)).substring(0, width)}]';
+    } else {
+      final progressChars = (progressFraction * width).round();
+      text = '[${('=' * progressChars).padRight(width)}]';
+    }
+    text = Terminal.of(scope).formatString(
+      text,
+      foregroundColor: Ansi8BitColor.blue,
+      bold: true,
+    );
+    if (_description != null) {
+      text = '$text $description';
+    }
+    if (children.isNotEmpty) {
+      text = '$text\n${_indentString(
+        '${children.map((e) => e.render()).join('\n')}',
+        '  ',
+      )}';
+    }
+    return text;
+  }
+}
+
+class RootProgressNode extends ProgressNode {
+  RootProgressNode({
+    required super.scope,
+  }) {
+    _onChanged = () {
+      terminal.status = render();
+    };
+  }
+
+  late final Terminal terminal = Terminal.of(scope);
+
+  @override
+  String render() {
+    return children.map((e) => e.render()).join('\n');
   }
 }

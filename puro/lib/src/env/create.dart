@@ -1,15 +1,17 @@
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../../models.dart';
 import '../command.dart';
 import '../config.dart';
+import '../file_lock.dart';
 import '../git.dart';
 import '../http.dart';
 import '../logger.dart';
+import '../progress.dart';
 import '../proto/flutter_releases.pb.dart';
 import '../provider.dart';
 import 'engine.dart';
@@ -56,6 +58,8 @@ Future<EnvCreateResult> createEnvironment({
   await cloneFlutterWithSharedRefs(
     scope: scope,
     repository: environment.flutterDir,
+    version: version,
+    channel: channel,
   );
 
   // Set up engine
@@ -77,17 +81,22 @@ Future<void> fetchOrCloneShared({
   required Directory repository,
   required Uri remote,
 }) async {
-  final git = GitClient.of(scope);
-  if (repository.existsSync()) {
-    await git.fetch(repository: repository);
-  } else {
-    await git.clone(
-      remote: remote,
-      repository: repository,
-      shared: true,
-      checkout: false,
-    );
-  }
+  await ProgressNode.of(scope).wrap((scope, node) async {
+    final git = GitClient.of(scope);
+    if (repository.existsSync()) {
+      node.description = 'Fetching $remote';
+      await git.fetch(repository: repository);
+    } else {
+      node.description = 'Cloning $remote';
+      await git.clone(
+        remote: remote,
+        repository: repository,
+        shared: true,
+        checkout: false,
+        onProgress: node.onCloneProgress,
+      );
+    }
+  });
 }
 
 enum FlutterChannel {
@@ -107,41 +116,43 @@ enum FlutterChannel {
   }
 }
 
-/// Fetches all of the available Flutter versions.
-Future<FlutterReleasesModel> fetchFlutterVersions({
+/// Fetches all of the available Flutter releases.
+Future<FlutterReleasesModel> fetchFlutterReleases({
   required Scope scope,
-  required String platform,
 }) async {
-  final client = scope.read(clientProvider);
-  final config = PuroConfig.of(scope);
-  final response = await client.get(config.releasesJsonUrl);
-  HttpException.ensureSuccess(response);
-  return FlutterReleasesModel.create()
-    ..mergeFromProto3Json(jsonDecode(response.body));
+  return ProgressNode.of(scope).wrap((scope, node) async {
+    final client = scope.read(clientProvider);
+    final config = PuroConfig.of(scope);
+    node.description = 'Fetching ${config.releasesJsonUrl}';
+    final response = await client.get(config.releasesJsonUrl);
+    HttpException.ensureSuccess(response);
+    config.cachedReleasesJsonFile.parent.createSync(recursive: true);
+    await writeFileAtomic(
+      scope: scope,
+      bytes: response.bodyBytes,
+      file: config.cachedReleasesJsonFile,
+    );
+    return FlutterReleasesModel.create()
+      ..mergeFromProto3Json(jsonDecode(response.body));
+  });
 }
 
-/// Fetches the available Flutter versions and returns the one matching
-/// [version] and [channel], if any.
-Future<FlutterReleaseModel?> tryFindFrameworkRelease({
-  required Scope scope,
+/// Searches [releases] for a specific version and/or channel.
+FlutterReleaseModel? searchFlutterVersions({
+  required FlutterReleasesModel releases,
   Version? version,
   FlutterChannel? channel,
-}) async {
-  final versions = await fetchFlutterVersions(
-    scope: scope,
-    platform: Platform.operatingSystem,
-  );
-
+}) {
   if (version == null) {
-    final hash = versions.currentRelease[channel ?? 'stable'];
+    final hash = releases.currentRelease[channel ?? 'stable'];
     if (hash == null) return null;
-    return versions.releases.firstWhere((r) => r.hash == hash);
+    return releases.releases.firstWhere((r) => r.hash == hash);
   }
 
   FlutterReleaseModel? result;
   FlutterChannel? resultChannel;
   final versionString = '$version';
-  for (final release in versions.releases) {
+  for (final release in releases.releases) {
     if (release.version == versionString ||
         (release.version.startsWith('v') &&
             release.version.substring(1) == versionString)) {
@@ -156,21 +167,64 @@ Future<FlutterReleaseModel?> tryFindFrameworkRelease({
   return result;
 }
 
-/// Same as [tryFindFrameworkRelease] but throws an assertion error if the
-/// release couldn't be found.
+/// Finds a framework release matching [version] and/or [channel], pulling from
+/// a cache when possible.
 Future<FlutterReleaseModel> findFrameworkRelease({
   required Scope scope,
   Version? version,
   FlutterChannel? channel,
 }) async {
-  final release = await tryFindFrameworkRelease(
-    scope: scope,
-    version: version,
-    channel: channel,
-  );
+  final config = PuroConfig.of(scope);
 
-  if (release != null) {
-    return release;
+  // Default to the stable channel
+  if (channel == null && version == null) {
+    channel = FlutterChannel.stable;
+  }
+
+  final cachedReleasesStat = config.cachedReleasesJsonFile.statSync();
+  final hasCache = cachedReleasesStat.type == FileSystemEntityType.file;
+  final cacheIsFresh = hasCache &&
+      clock.now().difference(cachedReleasesStat.modified).inHours < 1;
+  final isChannelOnly = channel != null && version == null;
+
+  // Don't fetch from the cache if it's stale and we are looking for the latest
+  // release.
+  if (!isChannelOnly || cacheIsFresh) {
+    FlutterReleasesModel? cachedReleases;
+    await ProgressNode.of(scope).wrap(
+      (scope, node) async {
+        return lockFile(
+          scope,
+          config.cachedReleasesJsonFile,
+          (handle) async {
+            final contents = await handle.read(handle.lengthSync());
+            final contentsString = utf8.decode(contents);
+            cachedReleases = FlutterReleasesModel.create()
+              ..mergeFromProto3Json(jsonDecode(contentsString));
+          },
+          exclusive: false,
+        );
+      },
+      optional: true,
+    );
+    if (cachedReleases != null) {
+      final foundRelease = searchFlutterVersions(
+        releases: cachedReleases!,
+        version: version,
+        channel: channel,
+      );
+      if (foundRelease != null) return foundRelease;
+    }
+  }
+
+  // Fetch new releases as long as the cache isn't stale.
+  if (!cacheIsFresh) {
+    final foundRelease = searchFlutterVersions(
+      releases: await fetchFlutterReleases(scope: scope),
+      version: version,
+      channel: channel,
+    );
+    if (foundRelease != null) return foundRelease;
   }
 
   if (version == null) {
@@ -223,6 +277,12 @@ Future<void> cloneFlutterWithSharedRefs({
   final git = GitClient.of(scope);
   final config = PuroConfig.of(scope);
 
+  final ref = await findFrameworkRef(
+    scope: scope,
+    version: version,
+    channel: channel,
+  );
+
   final sharedRepository = config.sharedFlutterDir;
   await fetchOrCloneShared(
     scope: scope,
@@ -230,25 +290,23 @@ Future<void> cloneFlutterWithSharedRefs({
     remote: config.flutterGitUrl,
   );
 
-  final ref = await findFrameworkRef(
-    scope: scope,
-    version: version,
-    channel: channel,
-  );
-
   if (!repository.existsSync()) {
-    await git.clone(
-      remote: config.flutterGitUrl,
-      repository: repository,
-      reference: sharedRepository,
-      checkout: false,
-    );
-  } else {
-    await git.fetch(repository: repository);
+    await ProgressNode.of(scope).wrap((scope, node) async {
+      node.description = 'Cloning framework from cache';
+      await git.clone(
+        remote: config.flutterGitUrl,
+        repository: repository,
+        reference: sharedRepository,
+        checkout: false,
+      );
+    });
   }
 
-  await git.checkout(
-    repository: repository,
-    refname: ref,
-  );
+  await ProgressNode.of(scope).wrap((scope, node) async {
+    node.description = 'Checking out $ref';
+    await git.checkout(
+      repository: repository,
+      refname: ref,
+    );
+  });
 }

@@ -132,6 +132,9 @@ class PuroConfig {
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
 
+  late final File cachedReleasesJsonFile =
+      puroRoot.childFile(releasesJsonUrl.pathSegments.last);
+
   @override
   String toString() {
     return 'PuroConfig(\n'

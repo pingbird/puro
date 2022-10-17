@@ -64,4 +64,5 @@ Future<void> cleanWorkspace({
       environment: environment,
     );
   });
+  config.dotfileForWriting.deleteSync();
 }

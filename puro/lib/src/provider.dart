@@ -15,20 +15,26 @@ abstract class Scope {
   T read<T>(Provider<T> provider);
 }
 
-abstract class ProviderNode<T> implements Scope {
-  ProviderNode(this.parent);
-
-  final Scope parent;
-  T get value;
-  Provider<T> get provider;
-
-  void dispose() {}
+abstract class ProxyScope implements Scope {
+  Scope get parent;
 
   @override
   void add<V>(Provider<V> provider, V value) => parent.add(provider, value);
 
   @override
   V read<V>(Provider<V> provider) => parent.read(provider);
+}
+
+abstract class ProviderNode<T> extends ProxyScope {
+  ProviderNode(this.parent);
+
+  @override
+  final Scope parent;
+
+  T get value;
+  Provider<T> get provider;
+
+  void dispose() {}
 }
 
 class LazyProvider<T> implements Provider<T> {
@@ -68,5 +74,26 @@ class RootScope extends Scope {
     }
     final node = nodes[provider] ??= provider.createNode(this);
     return node.value as T;
+  }
+}
+
+class OverrideScope extends Scope {
+  OverrideScope({required this.parent});
+
+  final Scope parent;
+
+  final overrides = <Provider, Object?>{};
+
+  @override
+  void add<T>(Provider<T> provider, T value) {
+    overrides[provider] = value;
+  }
+
+  @override
+  T read<T>(Provider<T> provider) {
+    if (overrides.containsKey(provider)) {
+      return overrides[provider] as T;
+    }
+    return parent.read<T>(provider);
   }
 }

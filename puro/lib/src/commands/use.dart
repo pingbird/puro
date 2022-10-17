@@ -21,7 +21,7 @@ class EnvUseCommand extends PuroCommand {
     );
     return BasicMessageResult(
       success: true,
-      message: 'Switched project to `$name`',
+      message: 'Switched to environment `$name`',
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:clock/clock.dart';
 import 'package:neoansi/neoansi.dart';
 
 import 'provider.dart';
+import 'terminal.dart';
 
 enum LogLevel {
   wtf,
@@ -40,51 +41,71 @@ class LogEntry {
 class PuroLogger {
   PuroLogger({
     this.level,
-    required this.onEvent,
+    required this.terminal,
+    this.addOverride,
   });
 
-  final LogLevel? level;
-  final void Function(LogEntry entry) onEvent;
+  LogLevel? level;
+  final Terminal terminal;
+  void Function(LogEntry event)? addOverride;
 
-  void add(LogEntry event) => onEvent(event);
+  void add(LogEntry event) {
+    if (level == null || level! < event.level) return;
+    _add(event);
+  }
+
+  void _add(LogEntry event) {
+    if (addOverride != null) {
+      addOverride!(event);
+      return;
+    }
+    final label = terminal.formatString(
+      levelPrefixes[event.level]!,
+      foregroundColor: levelColors[event.level]!,
+      bold: true,
+    );
+    final labelLength = label.length;
+    final lines = '$label ${event.message}'.trim().split('\n');
+    terminal.writeln(
+      [
+        lines.first,
+        for (final line in lines.skip(1)) '${' ' * labelLength} $line',
+      ].join('\n'),
+    );
+  }
 
   void d(String message) {
     if (level == null || level! < LogLevel.debug) return;
-    add(LogEntry(DateTime.now(), LogLevel.debug, message));
+    _add(LogEntry(DateTime.now(), LogLevel.debug, message));
   }
 
   void v(String message) {
     if (level == null || level! < LogLevel.verbose) return;
-    add(LogEntry(DateTime.now(), LogLevel.verbose, message));
+    _add(LogEntry(DateTime.now(), LogLevel.verbose, message));
   }
 
   void w(String message) {
     if (level == null || level! < LogLevel.warning) return;
-    add(LogEntry(DateTime.now(), LogLevel.warning, message));
+    _add(LogEntry(DateTime.now(), LogLevel.warning, message));
   }
 
   void e(String message) {
     if (level == null || level! < LogLevel.error) return;
-    add(LogEntry(DateTime.now(), LogLevel.error, message));
+    _add(LogEntry(DateTime.now(), LogLevel.error, message));
   }
 
   void wtf(String message) {
     if (level == null || level! < LogLevel.wtf) return;
-    add(LogEntry(DateTime.now(), LogLevel.wtf, message));
+    _add(LogEntry(DateTime.now(), LogLevel.wtf, message));
   }
 
-  static final provider = Provider<PuroLogger>.late();
-  static PuroLogger of(Scope scope) => scope.read(provider);
-}
-
-class PuroPrinter extends Sink<LogEntry> {
-  PuroPrinter({
-    required this.sink,
-    required this.enableColor,
-  });
-
-  final StringSink sink;
-  final bool enableColor;
+  void complete(String message) {
+    terminal.writeln('${terminal.formatString(
+      completePrefix,
+      foregroundColor: completeColor,
+      bold: true,
+    )} $message');
+  }
 
   static const levelPrefixes = {
     LogLevel.wtf: '[WTF]',
@@ -102,30 +123,11 @@ class PuroPrinter extends Sink<LogEntry> {
     LogLevel.debug: Ansi8BitColor.grey35,
   };
 
-  @override
-  void add(LogEntry data) {
-    var label = levelPrefixes[data.level]!;
-    final labelLength = label.length;
-    if (enableColor) {
-      final buffer = StringBuffer();
-      AnsiWriter.from(buffer)
-        ..setBold()
-        ..setForegroundColor8(levelColors[data.level]!)
-        ..write(label)
-        ..resetStyles();
-      label = '$buffer';
-    }
-    final lines = '$label ${data.message}'.trim().split('\n');
-    sink.writeln(
-      [
-        lines.first,
-        for (final line in lines.skip(1)) '${' ' * labelLength} $line',
-      ].join('\n'),
-    );
-  }
+  static const completePrefix = '[\u2713]';
+  static const completeColor = Ansi8BitColor.green;
 
-  @override
-  void close() {}
+  static final provider = Provider<PuroLogger>.late();
+  static PuroLogger of(Scope scope) => scope.read(provider);
 }
 
 FutureOr<T?> runOptional<T>(

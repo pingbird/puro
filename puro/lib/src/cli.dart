@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 
 import 'command.dart';
@@ -9,12 +11,38 @@ import 'commands/ls.dart';
 import 'commands/rm.dart';
 import 'commands/use.dart';
 import 'logger.dart';
+import 'provider.dart';
+import 'terminal.dart';
 
 void main(List<String> args) async {
+  final scope = RootScope();
+  final terminal = Terminal(stdout: stdout);
+  scope.add(Terminal.provider, terminal);
+
+  final index = args.indexOf('--');
+  final puroArgs = index >= 0 ? args.take(index) : args;
+  final isJson = puroArgs.contains('--json');
+
   final runner = PuroCommandRunner(
     'puro',
     'An experimental tool for managing flutter versions.',
+    scope: scope,
+    isJson: isJson,
   );
+
+  final PuroLogger log;
+  if (isJson) {
+    terminal.enableStatus = false;
+    terminal.enableColor = false;
+    log = PuroLogger(
+      terminal: terminal,
+      addOverride: runner.logEntries.add,
+    );
+  } else {
+    log = PuroLogger(terminal: terminal);
+  }
+  scope.add(PuroLogger.provider, log);
+
   runner.argParser
     ..addOption(
       'git',
@@ -103,7 +131,7 @@ void main(List<String> args) async {
             'log-level must be a number between 0 and 4, inclusive',
           );
         }
-        runner.logLevel = {
+        log.level = {
           1: LogLevel.error,
           2: LogLevel.warning,
           3: LogLevel.verbose,
@@ -117,7 +145,7 @@ void main(List<String> args) async {
       help: 'Verbose logging, alias for --log-level=3.',
       callback: runner.wrapCallback((flag) {
         if (flag) {
-          runner.logLevel = LogLevel.verbose;
+          log.level = LogLevel.verbose;
         }
       }),
     )
@@ -126,7 +154,16 @@ void main(List<String> args) async {
       help: 'Enable or disable ANSI colors.',
       callback: runner.wrapCallback((flag) {
         if (runner.results!.wasParsed('color')) {
-          runner.colorOverride = flag;
+          terminal.enableColor = flag;
+        }
+      }),
+    )
+    ..addFlag(
+      'progress',
+      help: 'Enable progress bars.',
+      callback: runner.wrapCallback((flag) {
+        if (runner.results!.wasParsed('progress')) {
+          terminal.enableStatus = flag;
         }
       }),
     )

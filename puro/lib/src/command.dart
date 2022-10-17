@@ -9,6 +9,7 @@ import '../models.dart';
 import 'config.dart';
 import 'logger.dart';
 import 'provider.dart';
+import 'terminal.dart';
 
 class CommandErrorResult extends CommandResult {
   CommandErrorResult(this.exception, this.stackTrace);
@@ -176,12 +177,18 @@ const prettyJsonEncoder = JsonEncoder.withIndent('  ');
 class PuroCommandRunner extends CommandRunner<CommandResult> {
   PuroCommandRunner(
     super.executableName,
-    super.description,
-  );
+    super.description, {
+    required this.scope,
+    required this.isJson,
+  });
+
+  final Scope scope;
+
+  late final log = PuroLogger.of(scope);
+  late final terminal = Terminal.of(scope);
+  final bool isJson;
 
   // CLI args
-  final scope = RootScope();
-  LogLevel? logLevel = LogLevel.warning;
   String? gitExecutableOverride;
   String? rootDirOverride;
   String? projectDirOverride;
@@ -191,14 +198,12 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   String? versionsJsonUrlOverride;
   String? flutterStorageBaseUrlOverride;
   String? environmentOverride;
-  bool? colorOverride;
 
   late List<String> args;
   ArgResults? results;
   final logEntries = <LogEntry>[];
   final callbackQueue = <void Function()>[];
   final fileSystem = const LocalFileSystem();
-  PuroLogger? log;
 
   void Function(T) wrapCallback<T>(void Function(T) fn) {
     return (str) {
@@ -217,9 +222,6 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   bool get didRequestHelp =>
       (results?.wasParsed('help') ?? false) ||
       puroArgs.where((e) => !e.startsWith('-')).take(1).contains('help');
-
-  bool get isJson =>
-      (results?['json'] ?? false) as bool || puroArgs.contains('--json');
 
   @override
   void printUsage() {
@@ -249,13 +251,10 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         }),
       );
     } else if (model.success) {
-      stdout.writeln('$result');
+      log.complete('$result');
     } else {
-      if (log != null) {
-        log!.e('$result');
-      } else {
-        stderr.writeln(result);
-      }
+      terminal.preserveStatus();
+      log.e('$result');
     }
     exit(model.success ? 0 : 1);
   }
@@ -275,20 +274,6 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     }
     callbackQueue.clear();
 
-    // Logging
-    final void Function(LogEntry entry) onEvent;
-    if (isJson) {
-      onEvent = logEntries.add;
-    } else {
-      final printer = PuroPrinter(
-        sink: stderr,
-        enableColor: colorOverride ?? stderr.supportsAnsiEscapes,
-      );
-      onEvent = printer.add;
-    }
-    log = PuroLogger(level: logLevel, onEvent: onEvent);
-    scope.add(PuroLogger.provider, log!);
-
     // Initialize config
     final config = PuroConfig.fromCommandLine(
       fileSystem: fileSystem,
@@ -307,7 +292,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       config,
     );
 
-    log!.d('Config: $config');
+    log.d('Config: $config');
 
     return super.runCommand(topLevelResults);
   }
