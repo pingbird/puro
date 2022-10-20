@@ -14,13 +14,13 @@ commands:
       - run:
           name: "Format"
           command: |-
-            flutter format --set-exit-if-changed .
+            dart format --set-exit-if-changed .
   analyze:
     steps:
       - run:
           name: "Analyze"
           command: |-
-            flutter analyze .
+            dart analyze .
   test:
     steps:
       - run:
