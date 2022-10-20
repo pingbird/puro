@@ -2,6 +2,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import '../command.dart';
 import '../env/create.dart';
+import '../env/releases.dart';
 
 class EnvCreateCommand extends PuroCommand {
   EnvCreateCommand() {

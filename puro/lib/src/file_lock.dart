@@ -50,3 +50,18 @@ Future<void> writeFileAtomic({
     },
   );
 }
+
+/// Acquires an shared lock on a file before reading from it.
+Future<Uint8List> readFileAtomic({
+  required Scope scope,
+  required File file,
+}) async {
+  return await lockFile(
+    scope,
+    file,
+    (handle) async {
+      return handle.read(handle.lengthSync());
+    },
+    exclusive: false,
+  );
+}

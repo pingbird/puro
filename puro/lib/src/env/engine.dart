@@ -146,6 +146,77 @@ Future<void> unzip({
   }
 }
 
+Future<bool> downloadSharedEngine({
+  required Scope scope,
+  required String engineVersion,
+}) async {
+  final config = PuroConfig.of(scope);
+  final log = PuroLogger.of(scope);
+  final httpClient = scope.read(clientProvider);
+  final sharedCache = config.getFlutterCache(engineVersion);
+  var didChangeEngine = false;
+
+  // Delete the current cache if it's corrupt
+  if (sharedCache.exists) {
+    try {
+      await ProgressNode.of(scope).wrap((scope, node) async {
+        node.description = 'Checking if dart works';
+        await runProcess(
+          scope,
+          sharedCache.dartSdk.dartExecutable.path,
+          ['--version'],
+          throwOnFailure: true,
+        );
+      });
+    } catch (e) {
+      log.w('dart version check failed, deleting cache');
+      sharedCache.cacheDir.deleteSync(recursive: true);
+    }
+  }
+
+  if (!sharedCache.exists) {
+    log.v('downloading engine');
+
+    final engineZipUrl = await getEngineReleaseZipUrl(
+      scope: scope,
+      engineVersion: engineVersion,
+    );
+    sharedCache.cacheDir.createSync(recursive: true);
+    final zipFile = config.sharedCachesDir.childFile('$engineVersion.zip');
+    final zipFileSink = zipFile.openWrite();
+
+    log.v('saving $engineZipUrl to ${zipFile.path}');
+
+    await ProgressNode.of(scope).wrap((scope, node) async {
+      node.description = 'Downloading engine';
+      final response = await httpClient.send(Request('GET', engineZipUrl));
+      if (response.statusCode ~/ 100 != 2) {
+        throw AssertionError(
+          'HTTP ${response.statusCode} on GET $engineZipUrl',
+        );
+      }
+      await node.wrapHttpResponse(response).pipe(zipFileSink);
+    });
+
+    log.v('unzipping into ${config.sharedCachesDir}');
+
+    await ProgressNode.of(scope).wrap((scope, node) async {
+      node.description = 'Unzipping engine';
+      await unzip(
+        scope: scope,
+        zipFile: zipFile,
+        destination: sharedCache.cacheDir,
+      );
+    });
+
+    zipFile.deleteSync();
+
+    didChangeEngine = true;
+  }
+
+  return didChangeEngine;
+}
+
 Future<void> setUpFlutterTool({
   required Scope scope,
   required EnvConfig environment,
@@ -155,78 +226,19 @@ Future<void> setUpFlutterTool({
   final log = PuroLogger.of(scope);
   final flutterConfig = environment.flutter;
   final flutterCache = flutterConfig.cache;
-  final httpClient = scope.read(clientProvider);
   final engineVersion = flutterConfig.engineVersion!;
-  final sharedCachesDir = config.sharedCachesDir;
-  final sharedCacheDir = sharedCachesDir.childDirectory(engineVersion);
 
   final shouldUpdateEngine = flutterCache.engineVersion != engineVersion;
   var didChangeEngine = false;
 
   if (shouldUpdateEngine) {
-    log.v('engine out of date, updating');
-
-    final sharedCache = FlutterCacheConfig(sharedCacheDir);
-
-    // Delete the current cache if it's corrupt
-    if (sharedCache.exists) {
-      try {
-        await ProgressNode.of(scope).wrap((scope, node) async {
-          node.description = 'Checking if dart works';
-          await runProcess(
-            scope,
-            sharedCache.dartSdk.dartExecutable.path,
-            ['--version'],
-            throwOnFailure: true,
-          );
-        });
-      } catch (e) {
-        log.w('dart version check failed, deleting cache');
-        sharedCacheDir.deleteSync(recursive: true);
-      }
-    }
-
-    if (!sharedCache.exists) {
-      log.v('downloading engine');
-
-      final engineZipUrl = await getEngineReleaseZipUrl(
-        scope: scope,
-        engineVersion: engineVersion,
-      );
-      sharedCachesDir.createSync(recursive: true);
-      final zipFile = sharedCachesDir.childFile('$engineVersion.zip');
-      final zipFileSink = zipFile.openWrite();
-
-      log.v('saving $engineZipUrl to ${zipFile.path}');
-
-      await ProgressNode.of(scope).wrap((scope, node) async {
-        node.description = 'Downloading engine';
-        final response = await httpClient.send(Request('GET', engineZipUrl));
-        if (response.statusCode ~/ 100 != 2) {
-          throw AssertionError(
-            'HTTP ${response.statusCode} on GET $engineZipUrl',
-          );
-        }
-        await node.wrapHttpResponse(response).pipe(zipFileSink);
-      });
-
-      log.v('unzipping into $sharedCacheDir');
-
-      await ProgressNode.of(scope).wrap((scope, node) async {
-        node.description = 'Unzipping engine';
-        await unzip(
-          scope: scope,
-          zipFile: zipFile,
-          destination: sharedCacheDir,
-        );
-      });
-
-      zipFile.deleteSync();
-      didChangeEngine = true;
-    }
-
+    log.v('engine out of date');
+    didChangeEngine = await downloadSharedEngine(
+      scope: scope,
+      engineVersion: engineVersion,
+    );
+    final sharedCache = config.getFlutterCache(engineVersion);
     sharedCache.engineVersionFile.writeAsStringSync(engineVersion);
-
     final cacheExists = flutterCache.exists;
     final cachePath = flutterConfig.cacheDir.path;
     final link = config.fileSystem.link(cachePath);

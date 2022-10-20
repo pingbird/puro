@@ -151,6 +151,10 @@ class PuroConfig {
         ')';
   }
 
+  FlutterCacheConfig getFlutterCache(String engineVersion) {
+    return FlutterCacheConfig(sharedCachesDir.childDirectory(engineVersion));
+  }
+
   EnvConfig getEnv(String name) {
     ensureValidName(name);
     return EnvConfig(envDir: envsDir.childDirectory(name));

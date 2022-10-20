@@ -220,6 +220,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   }
 
   bool get didRequestHelp =>
+      puroArgs.where((e) => !e.startsWith('-')).isEmpty ||
       (results?.wasParsed('help') ?? false) ||
       puroArgs.where((e) => !e.startsWith('-')).take(1).contains('help');
 
@@ -251,7 +252,11 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         }),
       );
     } else if (model.success) {
-      log.complete('$result');
+      if (didRequestHelp) {
+        terminal.writeln('$result');
+      } else {
+        log.complete('$result');
+      }
     } else {
       terminal.preserveStatus();
       log.e('$result');

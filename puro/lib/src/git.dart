@@ -90,6 +90,7 @@ class GitClient {
     }
   }
 
+  /// https://git-scm.com/docs/git-clone
   Future<void> clone({
     required Uri remote,
     required Directory repository,
@@ -134,6 +135,7 @@ class GitClient {
     _ensureSuccess(cloneResult);
   }
 
+  /// https://git-scm.com/docs/git-checkout
   Future<void> checkout({
     required Directory repository,
     required String refname,
@@ -150,6 +152,7 @@ class GitClient {
     _ensureSuccess(checkoutResult);
   }
 
+  /// https://git-scm.com/docs/git-fetch
   Future<void> fetch({
     required Directory repository,
     String? ref,
@@ -164,15 +167,18 @@ class GitClient {
     _ensureSuccess(cloneResult);
   }
 
+  /// https://git-scm.com/docs/git-rev-parse
   Future<String> revParseSingle({
     required Directory repository,
     required String arg,
     bool short = false,
+    bool abbreviation = false,
   }) async {
     final revParseResult = await _git(
       [
         'rev-parse',
         if (short) '--short',
+        if (abbreviation) '--abbrev-ref',
         arg,
       ],
       directory: repository,
@@ -181,6 +187,7 @@ class GitClient {
     return (revParseResult.stdout as String).trim().split('\n').single;
   }
 
+  /// Get the commit hash of the current branch.
   Future<String> getCurrentCommitHash({
     required Directory repository,
     bool short = false,
@@ -191,6 +198,25 @@ class GitClient {
       short: short,
       arg: branch,
     );
+  }
+
+  /// Attempts to get the branch of the current commit, returns null if we are
+  /// detached from a branch.
+  Future<String?> getBranch({
+    required Directory repository,
+    bool short = false,
+    String ref = 'HEAD',
+  }) async {
+    final result = await revParseSingle(
+      repository: repository,
+      short: short,
+      arg: ref,
+      abbreviation: true,
+    );
+    if (result == ref) {
+      return null;
+    }
+    return result;
   }
 
   static final provider = Provider<GitClient>((scope) {

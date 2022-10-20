@@ -22,6 +22,16 @@ message EnvironmentListModel {
   optional string selectedEnvironment = 2;
 }
 
+message EnvironmentUpgradeModel {
+  string environment = 1;
+  optional string fromChannel = 2;
+  optional string fromVersion = 3;
+  string fromCommit = 4;
+  optional string toChannel = 5;
+  optional string toVersion = 6;
+  string toCommit = 7;
+}
+
 message CommandResultModel {
   bool success = 1;
   optional string message = 2;
@@ -29,6 +39,7 @@ message CommandResultModel {
   optional CommandErrorModel error = 4;
   repeated LogEntryModel logs = 5;
   optional EnvironmentListModel environmentList = 6;
+  optional EnvironmentUpgradeModel environmentUpgrade = 7;
 }
 
 message PuroDotfileModel {

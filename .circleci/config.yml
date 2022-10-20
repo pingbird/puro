@@ -1,0 +1,49 @@
+version: 2.1
+
+commands:
+  install_dart:
+    steps:
+      - run:
+          name: "Install Dart"
+          command: |-
+            wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/latest/linux_packages/dart_${DART_VERSION}_amd64.deb
+            sudo dpkg -i dart_${DART_VERSION}_amd64.deb
+            dart --version
+  format:
+    steps:
+      - run:
+          name: "Format"
+          command: |-
+            flutter format --set-exit-if-changed .
+  analyze:
+    steps:
+      - run:
+          name: "Analyze"
+          command: |-
+            flutter analyze .
+  test:
+    steps:
+      - run:
+          name: "Test"
+          command: |-
+            cd puro
+            dart test
+
+jobs:
+  linux_tests:
+    environment:
+      DART_VERSION: "2.18.3-1"
+      DART_RELEASE: "stable"
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_dart
+      - format
+      - analyze
+      - test
+
+workflows:
+  main:
+    jobs:
+      - linux_tests
