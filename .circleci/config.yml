@@ -9,6 +9,13 @@ commands:
             wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/latest/linux_packages/dart_${DART_VERSION}_amd64.deb
             sudo dpkg -i dart_${DART_VERSION}_amd64.deb
             dart --version
+  pub_get:
+    steps:
+      - run:
+          name: "Pub Get"
+          command: |-
+            cd puro
+            dart pub get
   format:
     steps:
       - run:
