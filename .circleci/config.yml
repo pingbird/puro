@@ -46,6 +46,7 @@ jobs:
     steps:
       - checkout
       - install_dart
+      - pub_get
       - format
       - analyze
       - test
