@@ -8,10 +8,11 @@ import 'provider.dart';
 /// Locks the [file] for reading or writing, releasing the lock when [fn]
 /// returns.
 ///
-/// If [exclusive] is true, this will acquire an exclusive lock that prevents
-/// any other process from locking it. Otherwise, if [exclusive] is false, this
-/// acquires a shared lock which is useful if multiple processes should be able
-/// to read from the file at the same time (while blocking exclusive locks).
+/// If [mode] is FileMode.write or FileMode.append, this will acquire an
+/// exclusive lock that prevents any other process from locking it. Otherwise,
+/// this acquires a shared lock which is useful if multiple processes should be
+/// able to read from the file at the same time (while blocking exclusive
+/// locks).
 ///
 /// This does NOT prevent this file from being accessed more than once in our
 /// own process and the behavior is undefined if that happens.
@@ -19,18 +20,23 @@ Future<T> lockFile<T>(
   Scope scope,
   File file,
   Future<T> fn(RandomAccessFile handle), {
-  bool exclusive = true,
+  FileMode mode = FileMode.read,
+  bool? exclusive,
 }) async {
-  final handle = await file.open(mode: FileMode.write);
+  exclusive ??= mode != FileMode.read;
+  final handle = await file.open(mode: mode);
   await ProgressNode.of(scope).wrap((scope, node) async {
     node.description = 'Waiting for lock on ${file.path}';
     await handle.lock(
-      exclusive ? FileLock.blockingExclusive : FileLock.blockingShared,
+      exclusive! ? FileLock.blockingExclusive : FileLock.blockingShared,
     );
   });
   try {
-    return fn(handle);
+    return await fn(handle);
   } finally {
+    if (mode != FileMode.read) {
+      await handle.flush();
+    }
     await handle.close();
   }
 }

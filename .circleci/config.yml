@@ -34,7 +34,7 @@ commands:
           name: "Test"
           command: |-
             cd puro
-            dart test
+            dart test -r expanded
 
 jobs:
   linux_tests:

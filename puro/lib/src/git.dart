@@ -168,9 +168,9 @@ class GitClient {
   }
 
   /// https://git-scm.com/docs/git-rev-parse
-  Future<String> revParseSingle({
+  Future<List<String>> revParse({
     required Directory repository,
-    required String arg,
+    required List<String> args,
     bool short = false,
     bool abbreviation = false,
   }) async {
@@ -179,12 +179,83 @@ class GitClient {
         'rev-parse',
         if (short) '--short',
         if (abbreviation) '--abbrev-ref',
-        arg,
+        ...args,
       ],
       directory: repository,
     );
     _ensureSuccess(revParseResult);
-    return (revParseResult.stdout as String).trim().split('\n').single;
+    return (revParseResult.stdout as String).trim().split('\n').toList();
+  }
+
+  /// Same as [revParse] but parses a single argument.
+  Future<String> revParseSingle({
+    required Directory repository,
+    required String arg,
+    bool short = false,
+    bool abbreviation = false,
+  }) async {
+    final result = await revParse(
+      repository: repository,
+      args: [arg],
+      short: short,
+      abbreviation: abbreviation,
+    );
+    return result.single;
+  }
+
+  /// Same as [tryRevParse] but returns null instead of throwing an exception.
+  Future<List<String>?> tryRevParse({
+    required Directory repository,
+    required List<String> args,
+    bool short = false,
+    bool abbreviation = false,
+  }) async {
+    final revParseResult = await _git(
+      [
+        'rev-parse',
+        if (short) '--short',
+        if (abbreviation) '--abbrev-ref',
+        ...args,
+      ],
+      directory: repository,
+    );
+    if (revParseResult.exitCode != 0) {
+      return null;
+    }
+    return (revParseResult.stdout as String).trim().split('\n').toList();
+  }
+
+  /// Same as [revParseSingle] but returns null instead of throwing an exception.
+  Future<String?> tryRevParseSingle({
+    required Directory repository,
+    required String arg,
+    bool short = false,
+    bool abbreviation = false,
+  }) async {
+    final result = await tryRevParse(
+      repository: repository,
+      args: [arg],
+      short: short,
+      abbreviation: abbreviation,
+    );
+    return result?.single;
+  }
+
+  final _branchRegex = RegExp(
+    r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\000-\037\177 ~^:?*[]+/[^\000-\037\177 ~^:?*[]+(?<!\.lock)(?<!/)(?<!\.)$',
+  );
+
+  Future<bool> checkBranchExists({
+    required String branch,
+  }) async {
+    if (!_branchRegex.hasMatch(branch)) return false;
+    final result = await _git([
+      'branch',
+      '-a',
+      '--list',
+      branch,
+    ]);
+    return result.exitCode == 0;
   }
 
   /// Get the commit hash of the current branch.

@@ -1,0 +1,40 @@
+site_name: Puro
+site_url: https://puro.dev
+nav:
+    - Home: index.md
+    - 'pub.dev': https://pub.dev/packages/puro
+    - 'Discord': https://discord.com/invite/N7Yshp4
+theme:
+  name: material
+  custom_dir: overrides
+  logo: assets/puro_icon_small.png
+  favicon: assets/puro_icon_small.png
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to light mode
+    - scheme: default
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - navigation.tracking
+    - toc.follow
+extra:
+  generator: false
+  analytics:
+    provider: google
+    property: G-245TJ8036B'
+  social:
+    - icon: fontawesome/solid/heart
+      link: https://tst.sh
+repo_url: https://github.com/PixelToast/puro
+extra_css:
+  - stylesheets/extra.css

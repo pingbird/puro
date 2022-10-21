@@ -1,0 +1,50 @@
+/* Make tabs smaller and add indicator */
+.md-footer .md-social {
+	padding: 0;
+}
+.md-tabs .md-tabs__link {
+	margin: 0;
+}
+.md-tabs .md-tabs__item {
+	height: inherit;
+	padding: 0;
+	display: flex;
+	align-content: stretch;
+}
+
+.md-tabs .md-tabs__item a {
+	vertical-align: middle;
+	padding: 0 8px;
+	margin: 0 8px;
+}
+.md-tabs .md-tabs__link {
+	box-sizing: border-box;
+	border-bottom: 2px solid rgba(0, 0, 0, 0);
+}
+.md-tabs .md-tabs__link--active {
+	border-bottom: 2px solid;
+}
+.md-tabs .md-tabs__list {
+	height: 48px;
+	display: flex;
+	flex-direction: row;
+}
+
+
+/* Make content a little wider */
+.md-grid {
+	max-width: 1300px;
+}
+
+/* Disable breakpoint text scaling */
+html {
+	font-size: 125%;
+}
+
+/* Bigger logo */
+.md-header__button.md-logo :-webkit-any(img,svg) {
+	height: 32px;
+}
+.md-header__button.md-logo {
+	padding: 0;
+}

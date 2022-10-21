@@ -83,7 +83,7 @@ Future<void> switchEnvironment({
     throw AssertionError("Couldn't find dart project in current directory");
   }
   if (!environment.exists) {
-    if (name != null && FlutterChannel.fromString(name) != null) {
+    if (name != null && FlutterChannel.parse(name) != null) {
       throw ArgumentError(
         'No environment named `$name`\n'
         'That looks like a version, you probably meant to do `puro create my_env $name; puro use my_env`',

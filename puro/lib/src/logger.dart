@@ -69,7 +69,8 @@ class PuroLogger {
     terminal.writeln(
       [
         lines.first,
-        for (final line in lines.skip(1)) '${' ' * labelLength} $line',
+        for (final line in lines.skip(1))
+          '${' ' * labelLength} ${line.replaceAll('\t', '    ')}',
       ].join('\n'),
     );
   }

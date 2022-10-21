@@ -2,7 +2,7 @@
 
 ## About
 
-Puro is an experimental tool for managing flutter installs.
+Puro is an advanced tool for installing and managing flutter versions.
 
 Unlike the current approaches, puro uses a global cache of git objects and engine artifacts, allowing you to get a
 working fork of Flutter in as little as **3 seconds**.

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file/file.dart';
 import 'package:process/process.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 import '../models.dart';
 import 'command.dart';
@@ -333,6 +334,14 @@ final _nameRegex = RegExp(
 );
 bool isValidName(String name) {
   return _nameRegex.hasMatch(name);
+}
+
+Version? tryParseVersion(String text) {
+  try {
+    return Version.parse(text.startsWith('v') ? text.substring(1) : text);
+  } catch (_) {
+    return null;
+  }
 }
 
 void ensureValidName(String name) {

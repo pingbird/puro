@@ -39,7 +39,10 @@ void main(List<String> args) async {
       addOverride: runner.logEntries.add,
     );
   } else {
-    log = PuroLogger(terminal: terminal);
+    log = PuroLogger(
+      terminal: terminal,
+      level: LogLevel.warning,
+    );
   }
   scope.add(PuroLogger.provider, log);
 

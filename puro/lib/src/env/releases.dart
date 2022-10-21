@@ -8,6 +8,7 @@ import '../config.dart';
 import '../file_lock.dart';
 import '../git.dart';
 import '../http.dart';
+import '../logger.dart';
 import '../progress.dart';
 import '../proto/flutter_releases.pb.dart';
 import '../provider.dart';
@@ -18,7 +19,7 @@ enum FlutterChannel {
   beta,
   stable;
 
-  static FlutterChannel? fromString(String name) {
+  static FlutterChannel? parse(String name) {
     name = name.toLowerCase();
     for (final channel in values) {
       if (channel.name == name) {
@@ -57,7 +58,7 @@ FlutterReleaseModel? searchFlutterVersions({
   FlutterChannel? channel,
 }) {
   if (version == null) {
-    final hash = releases.currentRelease[channel ?? 'stable'];
+    final hash = releases.currentRelease[channel?.name ?? 'stable'];
     if (hash == null) return null;
     return releases.releases.firstWhere((r) => r.hash == hash);
   }
@@ -69,7 +70,7 @@ FlutterReleaseModel? searchFlutterVersions({
     if (release.version == versionString ||
         (release.version.startsWith('v') &&
             release.version.substring(1) == versionString)) {
-      final releaseChannel = FlutterChannel.fromString(release.channel)!;
+      final releaseChannel = FlutterChannel.parse(release.channel)!;
       if (channel == releaseChannel) return release;
       if (result == null || releaseChannel.index < resultChannel!.index) {
         result = release;
@@ -88,6 +89,7 @@ Future<FlutterReleaseModel> findFrameworkRelease({
   FlutterChannel? channel,
 }) async {
   final config = PuroConfig.of(scope);
+  final log = PuroLogger.of(scope);
 
   // Default to the stable channel
   if (channel == null && version == null) {
@@ -96,7 +98,7 @@ Future<FlutterReleaseModel> findFrameworkRelease({
 
   final cachedReleasesStat = config.cachedReleasesJsonFile.statSync();
   final hasCache = cachedReleasesStat.type == FileSystemEntityType.file;
-  final cacheIsFresh = hasCache &&
+  var cacheIsFresh = hasCache &&
       clock.now().difference(cachedReleasesStat.modified).inHours < 1;
   final isChannelOnly = channel != null && version == null;
 
@@ -104,21 +106,22 @@ Future<FlutterReleaseModel> findFrameworkRelease({
   // release.
   if (!isChannelOnly || cacheIsFresh) {
     FlutterReleasesModel? cachedReleases;
-    await ProgressNode.of(scope).wrap(
-      (scope, node) async {
-        return lockFile(
-          scope,
-          config.cachedReleasesJsonFile,
-          (handle) async {
-            final contents = await handle.read(handle.lengthSync());
-            final contentsString = utf8.decode(contents);
-            cachedReleases = FlutterReleasesModel.create()
-              ..mergeFromProto3Json(jsonDecode(contentsString));
-          },
-          exclusive: false,
-        );
+    await lockFile(
+      scope,
+      config.cachedReleasesJsonFile,
+      (handle) async {
+        final contents = await handle.read(handle.lengthSync());
+        try {
+          final contentsString = utf8.decode(contents);
+          cachedReleases = FlutterReleasesModel.create()
+            ..mergeFromProto3Json(jsonDecode(contentsString));
+        } catch (error, stackTrace) {
+          log.w('Error while parsing cached releases');
+          log.w('$error\n$stackTrace');
+          cacheIsFresh = false;
+        }
       },
-      optional: true,
+      exclusive: false,
     );
     if (cachedReleases != null) {
       final foundRelease = searchFlutterVersions(
@@ -130,7 +133,7 @@ Future<FlutterReleaseModel> findFrameworkRelease({
     }
   }
 
-  // Fetch new releases as long as the cache isn't stale.
+  // Fetch new releases as long as the cache isn't already fresh.
   if (!cacheIsFresh) {
     final foundRelease = searchFlutterVersions(
       releases: await fetchFlutterReleases(scope: scope),
@@ -143,7 +146,7 @@ Future<FlutterReleaseModel> findFrameworkRelease({
   if (version == null) {
     channel ??= FlutterChannel.stable;
     throw AssertionError(
-      'Could not find latest version of the $channel channel',
+      'Could not find latest version of the ${channel.name} channel',
     );
   } else if (channel == null) {
     throw AssertionError(
@@ -156,30 +159,6 @@ Future<FlutterReleaseModel> findFrameworkRelease({
   }
 }
 
-/// Finds the git ref (branch name or commit hash) corresponding to the Flutter
-/// release matching [version] and [channel].
-Future<String> findFrameworkRef({
-  required Scope scope,
-  Version? version,
-  FlutterChannel? channel,
-}) async {
-  if (version == null) {
-    return (channel ?? FlutterChannel.stable).name;
-  } else {
-    if (channel == FlutterChannel.master) {
-      throw ArgumentError(
-        'Unexpected version $version, the master channel is not versioned',
-      );
-    }
-    final release = await findFrameworkRelease(
-      scope: scope,
-      version: version,
-      channel: channel,
-    );
-    return release.hash;
-  }
-}
-
 /// Attempts to find the current flutter channel.
 Future<FlutterChannel?> getFlutterChannel({
   required Scope scope,
@@ -188,5 +167,5 @@ Future<FlutterChannel?> getFlutterChannel({
   final git = GitClient.of(scope);
   final branch = await git.getBranch(repository: config.sdkDir);
   if (branch == null) return null;
-  return FlutterChannel.fromString(branch);
+  return FlutterChannel.parse(branch);
 }
