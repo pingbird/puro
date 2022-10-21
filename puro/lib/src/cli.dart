@@ -7,6 +7,7 @@ import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/dart.dart';
 import 'commands/flutter.dart';
+import 'commands/generate-docs.dart';
 import 'commands/ls.dart';
 import 'commands/rm.dart';
 import 'commands/use.dart';
@@ -182,7 +183,8 @@ void main(List<String> args) async {
     ..addCommand(CleanCommand())
     ..addCommand(EnvRmCommand())
     ..addCommand(FlutterCommand())
-    ..addCommand(DartCommand());
+    ..addCommand(DartCommand())
+    ..addCommand(GenerateDocsCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {

@@ -1,7 +1,10 @@
 site_name: Puro
 site_url: https://puro.dev
 nav:
-    - Home: index.md
+    - Home:
+      - index.md
+      - reference/commands.md
+      - reference/options.md
     - 'pub.dev': https://pub.dev/packages/puro
     - 'Discord': https://discord.com/invite/N7Yshp4
 theme:
@@ -27,6 +30,14 @@ theme:
     - navigation.instant
     - navigation.tracking
     - toc.follow
+    - content.code.annotate
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 extra:
   generator: false
   analytics:

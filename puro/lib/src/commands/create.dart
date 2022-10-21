@@ -7,6 +7,7 @@ class EnvCreateCommand extends PuroCommand {
       'channel',
       help:
           'The Flutter channel, in case multiple channels have builds with the same version number.',
+      valueHelp: 'name',
     );
   }
 
@@ -17,7 +18,7 @@ class EnvCreateCommand extends PuroCommand {
   String? get argumentUsage => '<name> [version]';
 
   @override
-  final description = 'Sets up a new Flutter environment.';
+  final description = 'Sets up a new Flutter environment.\n';
 
   @override
   Future<EnvCreateResult> run() async {
