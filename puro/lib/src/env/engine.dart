@@ -100,9 +100,9 @@ Future<Uri> getEngineReleaseZipUrl({
       throwOnFailure: true,
     );
     final unameStdout = unameResult.stdout as String;
-    if (unameStdout.contains('arm64')) {
+    if (const ['arm64', 'aarch64', 'armv8'].any(unameStdout.contains)) {
       arch = EngineArch.arm64;
-    } else if (unameStdout.contains('x64') || unameStdout.contains('x86_64')) {
+    } else if (const ['x64', 'x86_64'].any(unameStdout.contains)) {
       arch = EngineArch.x64;
     } else {
       throw AssertionError('Unrecognized architecture: `$unameStdout`');
@@ -127,13 +127,27 @@ Future<void> unzip({
 }) async {
   destination.createSync(recursive: true);
   if (Platform.isWindows) {
-    await runProcess(
+    final result = await runProcess(
       scope,
       'powershell',
       [
         'Expand-Archive',
         zipFile.path,
         '-DestinationPath',
+        destination.path,
+      ],
+      runInShell: true,
+      throwOnFailure: true,
+    );
+  } else if (Platform.isLinux || Platform.isMacOS) {
+    await runProcess(
+      scope,
+      'unzip',
+      [
+        '-o',
+        '-q',
+        zipFile.path,
+        '-d',
         destination.path,
       ],
       runInShell: true,
