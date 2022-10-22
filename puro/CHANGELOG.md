@@ -1,3 +1,8 @@
+## 0.2.0
+
+* Bug fixes
+* Performance improvements
+
 ## 0.1.0
 
 * Added progress bars
