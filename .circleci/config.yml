@@ -12,7 +12,8 @@ commands:
             if [[ $OSTYPE == 'darwin'* ]]; then
             curl https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-x64-release.zip -o dart-sdk.zip
             unzip dart-sdk.zip
-            sudo ln -s `pwd`/dart-sdk/bin/dart /usr/bin/dart
+            echo $PATH
+            sudo ln -s `pwd`/dart-sdk/bin/dart /usr/local/bin/dart
             else
             wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/latest/linux_packages/dart_${DART_VERSION}-1_amd64.deb
             sudo dpkg -i dart_${DART_VERSION}-1_amd64.deb
