@@ -53,7 +53,6 @@ class GitClient {
       scope,
       gitExecutable.path,
       args,
-      runInShell: true,
       workingDirectory: directory?.path,
     );
 

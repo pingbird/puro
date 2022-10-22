@@ -110,19 +110,19 @@ jobs:
       - aws-s3/copy:
           from: workspace/builds/linux-x64/puro
           to: s3://puro/builds/master/linux-x64/puro
-      - aws-s3/copy:
-          from: workspace/builds/darwin-x64/puro
-          to: s3://puro/builds/master/darwin-x64/puro
+      # - aws-s3/copy:
+      #    from: workspace/builds/darwin-x64/puro
+      #    to: s3://puro/builds/master/darwin-x64/puro
 
 workflows:
   master:
     jobs:
       - linux_build
-      - macos_build
+      #- macos_build
       - upload_master_builds:
           requires:
             - linux_build
-            - macos_build
+            #- macos_build
     when:
       equal: [ "master", << pipeline.git.branch >> ]
   tests:
