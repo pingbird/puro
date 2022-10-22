@@ -50,10 +50,8 @@ Future<void> writeFileAtomic({
   await lockFile(
     scope,
     file,
-    (handle) async {
-      await handle.writeFrom(bytes);
-      await handle.truncate(bytes.length);
-    },
+    (handle) => handle.writeFrom(bytes),
+    mode: FileMode.write,
   );
 }
 

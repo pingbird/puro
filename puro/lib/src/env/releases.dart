@@ -104,7 +104,7 @@ Future<FlutterReleaseModel> findFrameworkRelease({
 
   // Don't fetch from the cache if it's stale and we are looking for the latest
   // release.
-  if (!isChannelOnly || cacheIsFresh) {
+  if (hasCache && (!isChannelOnly || cacheIsFresh)) {
     FlutterReleasesModel? cachedReleases;
     await lockFile(
       scope,
@@ -121,7 +121,6 @@ Future<FlutterReleaseModel> findFrameworkRelease({
           cacheIsFresh = false;
         }
       },
-      exclusive: false,
     );
     if (cachedReleases != null) {
       final foundRelease = searchFlutterVersions(
