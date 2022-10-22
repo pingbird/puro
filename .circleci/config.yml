@@ -9,6 +9,7 @@ commands:
       - run:
           name: "Install Dart"
           command: |-
+            cd ~/
             if [[ $OSTYPE == 'darwin'* ]]; then
             curl https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-x64-release.zip -o dart-sdk.zip
             unzip dart-sdk.zip
