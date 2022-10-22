@@ -116,7 +116,7 @@ jobs:
   build_website:
     docker:
       - image: circleci/python:3.9-buster
-    step:
+    steps:
       - checkout
       - run: sudo pip install -q mkdocs mkdocs-material
       - run: cd website && mkdocs build
