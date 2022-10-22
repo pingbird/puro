@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:neoansi/neoansi.dart';
 
@@ -44,18 +43,11 @@ class Terminal extends StringSink {
 
   var _status = '';
 
-  String _clear(int currentLength, int newLength) {
-    if (newLength >= currentLength) {
-      return '\b' * currentLength;
-    }
-    final clearLength = max(0, currentLength - newLength);
-    return '\b' * clearLength + ' ' * clearLength + '\b' * currentLength;
-  }
-
   String _clearStatus() {
-    final currentLength = _status.length;
+    if (_status.isEmpty) return '';
+    final lines = '\n'.allMatches(_status).length;
     _status = '';
-    return _clear(currentLength, 0);
+    return '\r${lines == 0 ? '' : '\x1b[${lines}A'}\x1b[0J';
   }
 
   void clearStatus() {
@@ -65,9 +57,9 @@ class Terminal extends StringSink {
 
   String _flushStatus(String pendingStatus) {
     if (pendingStatus == _status) return '';
-    final currentLength = _status.length;
+    final clear = _clearStatus();
     _status = pendingStatus;
-    return _clear(currentLength, pendingStatus.length) + pendingStatus;
+    return '$clear$pendingStatus';
   }
 
   void flushStatus(String pendingStatus) {

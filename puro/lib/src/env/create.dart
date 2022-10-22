@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:file/file.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -5,6 +7,7 @@ import '../../models.dart';
 import '../command.dart';
 import '../config.dart';
 import '../git.dart';
+import '../http.dart';
 import '../logger.dart';
 import '../progress.dart';
 import '../provider.dart';
@@ -177,6 +180,32 @@ class FlutterVersion {
   }
 }
 
+/// Attempts to get the engine version of a flutter commit.
+Future<String?> getEngineVersionOfCommit({
+  required Scope scope,
+  required String commit,
+}) async {
+  final config = PuroConfig.of(scope);
+  final git = GitClient.of(scope);
+  final http = scope.read(clientProvider);
+  final sharedRepository = config.sharedFlutterDir;
+  final result = await git.tryCat(
+    repository: sharedRepository,
+    path: 'bin/internal/engine.version',
+  );
+  if (result != null) {
+    return utf8.decode(result).trim();
+  }
+  final url = config.tryGetFlutterGitDownloadUrl(
+    commit: commit,
+    path: 'bin/internal/engine.version',
+  );
+  if (url == null) return null;
+  final response = await http.get(url);
+  HttpException.ensureSuccess(response);
+  return response.body.trim();
+}
+
 /// Creates a new Puro environment named [envName] and installs flutter.
 Future<EnvCreateResult> createEnvironment({
   required Scope scope,
@@ -192,6 +221,22 @@ Future<EnvCreateResult> createEnvironment({
   final existing = environment.envDir.existsSync();
   environment.envDir.createSync(recursive: true);
 
+  final engineTask = runOptional(
+    scope,
+    'Pre-caching engine',
+    () async {
+      final engineVersion = await getEngineVersionOfCommit(
+        scope: scope,
+        commit: flutterVersion.commit,
+      );
+      if (engineVersion == null) return;
+      await downloadSharedEngine(
+        scope: scope,
+        engineVersion: engineVersion,
+      );
+    },
+  );
+
   // Clone flutter
   await cloneFlutterWithSharedRefs(
     scope: scope,
@@ -199,7 +244,9 @@ Future<EnvCreateResult> createEnvironment({
     flutterVersion: flutterVersion,
   );
 
-  // Set up engine
+  await engineTask;
+
+  // Set up engine and compile tool
   await setUpFlutterTool(
     scope: scope,
     environment: environment,
@@ -216,7 +263,7 @@ Future<EnvCreateResult> createEnvironment({
 Future<void> fetchOrCloneShared({
   required Scope scope,
   required Directory repository,
-  required Uri remote,
+  required String remote,
 }) async {
   await ProgressNode.of(scope).wrap((scope, node) async {
     final git = GitClient.of(scope);
@@ -236,6 +283,22 @@ Future<void> fetchOrCloneShared({
   });
 }
 
+/// Checks if the specified commit exists in the shared cache.
+Future<bool> isSharedFlutterCommitCached({
+  required Scope scope,
+  required String commit,
+}) async {
+  final git = GitClient.of(scope);
+  final config = PuroConfig.of(scope);
+  final sharedRepository = config.sharedFlutterDir;
+  if (!sharedRepository.existsSync()) return false;
+  final result = await git.tryRevParseSingle(
+    repository: sharedRepository,
+    arg: commit,
+  );
+  return result == commit;
+}
+
 /// Clone Flutter using git objects from a shared repository.
 Future<void> cloneFlutterWithSharedRefs({
   required Scope scope,
@@ -245,14 +308,11 @@ Future<void> cloneFlutterWithSharedRefs({
   final git = GitClient.of(scope);
   final config = PuroConfig.of(scope);
 
-  // Ensure commit is cached
   final sharedRepository = config.sharedFlutterDir;
-  if (!sharedRepository.existsSync() ||
-      await git.tryRevParseSingle(
-            repository: sharedRepository,
-            arg: flutterVersion.commit,
-          ) !=
-          flutterVersion.commit) {
+  if (!await isSharedFlutterCommitCached(
+    scope: scope,
+    commit: flutterVersion.commit,
+  )) {
     await fetchOrCloneShared(
       scope: scope,
       repository: sharedRepository,
@@ -260,7 +320,6 @@ Future<void> cloneFlutterWithSharedRefs({
     );
   }
 
-  // Clone repository if it doesn't exist yet
   if (!repository.existsSync()) {
     await ProgressNode.of(scope).wrap((scope, node) async {
       node.description = 'Cloning $flutterVersion from cache';

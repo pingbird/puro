@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file/file.dart';
 
 import 'config.dart';
+import 'extensions.dart';
 import 'logger.dart';
 import 'process.dart';
 import 'provider.dart';
@@ -34,7 +36,17 @@ class GitClient {
     Directory? directory,
     void Function(String line)? onStdout,
     void Function(String line)? onStderr,
+    bool binary = false,
   }) async {
+    if (directory != null && !directory.existsSync()) {
+      return ProcessResult(
+        -1,
+        -1,
+        binary ? Uint8List(0) : '',
+        'working directory ${directory.path} does not exist',
+      );
+    }
+
     log.v('${directory?.path ?? ''}> ${gitExecutable.path} ${args.join(' ')}');
 
     final process = await startProcess(
@@ -47,14 +59,18 @@ class GitClient {
 
     process.stdin.close();
 
-    final stdout =
-        const LineSplitter().bind(utf8.decoder.bind(process.stdout)).map(
-      (e) {
-        log.d('git: $e');
-        if (onStdout != null) onStdout(e);
-        return e;
-      },
-    ).join('\n');
+    final Future<dynamic> stdout;
+    if (binary) {
+      stdout = process.stdout.toBytes();
+    } else {
+      stdout = const LineSplitter().bind(utf8.decoder.bind(process.stdout)).map(
+        (e) {
+          log.d('git: $e');
+          if (onStdout != null) onStdout(e);
+          return e;
+        },
+      ).join('\n');
+    }
 
     final stderr =
         const LineSplitter().bind(utf8.decoder.bind(process.stderr)).map(
@@ -92,7 +108,7 @@ class GitClient {
 
   /// https://git-scm.com/docs/git-clone
   Future<void> clone({
-    required Uri remote,
+    required String remote,
     required Directory repository,
     bool shared = false,
     String? branch,
@@ -104,7 +120,7 @@ class GitClient {
     final cloneResult = await _git(
       [
         'clone',
-        '$remote',
+        remote,
         if (branch != null) ...['--branch', branch],
         if (reference != null) ...['--reference', reference.path],
         if (!checkout) '--no-checkout',
@@ -203,7 +219,7 @@ class GitClient {
     return result.single;
   }
 
-  /// Same as [tryRevParse] but returns null instead of throwing an exception.
+  /// Same as [tryRevParse] but returns null on failure.
   Future<List<String>?> tryRevParse({
     required Directory repository,
     required List<String> args,
@@ -225,7 +241,7 @@ class GitClient {
     return (revParseResult.stdout as String).trim().split('\n').toList();
   }
 
-  /// Same as [revParseSingle] but returns null instead of throwing an exception.
+  /// Same as [revParseSingle] but returns null on failure.
   Future<String?> tryRevParseSingle({
     required Directory repository,
     required String arg,
@@ -288,6 +304,64 @@ class GitClient {
       return null;
     }
     return result;
+  }
+
+  /// https://git-scm.com/docs/git-show
+  Future<Uint8List> show({
+    required Directory repository,
+    required List<String> objects,
+  }) async {
+    final result = await _git(
+      [
+        'show',
+        ...objects,
+      ],
+      directory: repository,
+      binary: true,
+    );
+    _ensureSuccess(result);
+    return result.stdout as Uint8List;
+  }
+
+  /// Same as [show] but returns null on failure.
+  Future<Uint8List?> tryShow({
+    required Directory repository,
+    required List<String> objects,
+  }) async {
+    final result = await _git(
+      [
+        'show',
+        ...objects,
+      ],
+      directory: repository,
+      binary: true,
+    );
+    if (result.exitCode != 0) return null;
+    return result.stdout as Uint8List;
+  }
+
+  /// Reads a file from a reference the git repository.
+  Future<Uint8List> cat({
+    required Directory repository,
+    String ref = 'HEAD',
+    required String path,
+  }) {
+    return show(
+      repository: repository,
+      objects: ['$ref:$path'],
+    );
+  }
+
+  /// Same as [cat] but returns null on failure.
+  Future<Uint8List?> tryCat({
+    required Directory repository,
+    String ref = 'HEAD',
+    required String path,
+  }) {
+    return tryShow(
+      repository: repository,
+      objects: ['$ref:$path'],
+    );
   }
 
   static final provider = Provider<GitClient>((scope) {

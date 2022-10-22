@@ -94,12 +94,8 @@ class PuroConfig {
       homeDir: fileSystem.directory(homeDir),
       projectDir: resultProjectDir,
       parentProjectDir: parentProjectDir,
-      flutterGitUrl: Uri.parse(
-        flutterGitUrl ?? 'https://github.com/flutter/flutter.git',
-      ),
-      engineGitUrl: Uri.parse(
-        engineGitUrl ?? 'https://github.com/flutter/engine.git',
-      ),
+      flutterGitUrl: flutterGitUrl ?? 'https://github.com/flutter/flutter.git',
+      engineGitUrl: engineGitUrl ?? 'https://github.com/flutter/engine.git',
       releasesJsonUrl: Uri.parse(
         releasesJsonUrl ??
             'https://storage.googleapis.com/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
@@ -117,8 +113,8 @@ class PuroConfig {
   final Directory homeDir;
   final Directory? projectDir;
   final Directory? parentProjectDir;
-  final Uri flutterGitUrl;
-  final Uri engineGitUrl;
+  final String flutterGitUrl;
+  final String engineGitUrl;
   final Uri releasesJsonUrl;
   final Uri flutterStorageBaseUrl;
   final String? environmentOverride;
@@ -153,6 +149,13 @@ class PuroConfig {
   }
 
   FlutterCacheConfig getFlutterCache(String engineVersion) {
+    if (!isValidCommitHash(engineVersion)) {
+      throw ArgumentError.value(
+        engineVersion,
+        'engineVersion',
+        'Invalid commit hash',
+      );
+    }
     return FlutterCacheConfig(sharedCachesDir.childDirectory(engineVersion));
   }
 
@@ -223,6 +226,26 @@ class PuroConfig {
         dotfile.toProto3Json(),
       ),
     );
+  }
+
+  Uri? tryGetFlutterGitDownloadUrl({
+    required String commit,
+    required String path,
+  }) {
+    const httpPrefix = 'https://github.com/';
+    const sshPrefix = 'git@github.com:';
+    final isHttp = flutterGitUrl.startsWith(httpPrefix);
+    if ((isHttp || flutterGitUrl.startsWith(sshPrefix)) &&
+        flutterGitUrl.endsWith('.git')) {
+      return Uri.https(
+        'raw.githubusercontent.com',
+        '${flutterGitUrl.substring(
+          isHttp ? httpPrefix.length : sshPrefix.length,
+          flutterGitUrl.length - 4,
+        )}/$commit/$path',
+      );
+    }
+    return null;
   }
 
   static final provider = Provider<PuroConfig>.late();
@@ -334,6 +357,11 @@ final _nameRegex = RegExp(
 );
 bool isValidName(String name) {
   return _nameRegex.hasMatch(name);
+}
+
+final _commitHashRegex = RegExp(r'^[0-9a-f]{5,40}$');
+bool isValidCommitHash(String commit) {
+  return _commitHashRegex.hasMatch(commit);
 }
 
 Version? tryParseVersion(String text) {

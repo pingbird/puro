@@ -139,12 +139,14 @@ FutureOr<T?> runOptional<T>(
   LogLevel? exceptionLevel,
 }) async {
   final log = PuroLogger.of(scope);
-  log.v(action.substring(0, 1).toUpperCase() + action.substring(1) + '...');
+  final lowercaseAction =
+      action.substring(0, 1).toUpperCase() + action.substring(1);
+  log.v('$lowercaseAction...');
   try {
     return await fn();
   } catch (exception, stackTrace) {
     final time = clock.now();
-    log.add(LogEntry(time, level, 'Exception while $action'));
+    log.add(LogEntry(time, level, 'Exception while $lowercaseAction'));
     log.add(LogEntry(time, exceptionLevel ?? level, '$exception\n$stackTrace'));
     return null;
   }
