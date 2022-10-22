@@ -1,0 +1,1 @@
+dart compile exe bin/puro.dart

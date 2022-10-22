@@ -1,13 +1,22 @@
 version: 2.1
 
+orbs:
+  aws-s3: circleci/aws-s3@3.0
+
 commands:
   install_dart:
     steps:
       - run:
           name: "Install Dart"
           command: |-
-            wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/latest/linux_packages/dart_${DART_VERSION}_amd64.deb
+            if [[ $OSTYPE == 'darwin'* ]]; then
+            wget -O dart-sdk.zip https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-x64-release.zip
+            unzip dart-sdk.zip
+            sudo ln -s `pwd`/dart-sdk/bin/dart /usr/bin/dart
+            else
+            wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/latest/linux_packages/dart_${DART_VERSION}-1_amd64.deb
             sudo dpkg -i dart_${DART_VERSION}_amd64.deb
+            fi
             dart --version
   pub_get:
     steps:
@@ -35,14 +44,22 @@ commands:
           command: |-
             cd puro
             dart test -r expanded
+  build_puro:
+    parameters:
+      os_name:
+        type: string
+    steps:
+      - run:
+          name: "Build"
+          command: |-
+            mkdir -p builds/<< parameters.os_name >>
+            dart compile exe -o builds/<< parameters.os_name >>/puro puro/bin/puro.dart
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - builds
 
-jobs:
-  linux_tests:
-    environment:
-      DART_VERSION: "2.18.3-1"
-      DART_RELEASE: "stable"
-    docker:
-      - image: cimg/base:stable
+  test_all:
     steps:
       - checkout
       - install_dart
@@ -51,7 +68,65 @@ jobs:
       - analyze
       - test
 
+jobs:
+  linux_tests:
+    environment:
+      DART_VERSION: "2.18.3"
+      DART_RELEASE: "stable"
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - test_all
+
+  linux_build:
+    environment:
+      DART_VERSION: "2.18.3"
+      DART_RELEASE: "stable"
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - test_all
+      - build_puro:
+          os_name: linux-x64
+
+  macos_build:
+    macos:
+      xcode: 14.1.0
+    environment:
+      DART_VERSION: "2.18.3"
+      DART_RELEASE: "stable"
+    steps:
+      - test_all
+      - build_puro:
+          os_name: darwin-x64
+
+  upload_master_builds:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - attach_workspace:
+          at: workspace
+      - aws-s3/copy:
+          from: workspace/builds/linux-x64/puro
+          to: s3://puro/builds/master/linux-x64/puro
+      - aws-s3/copy:
+          from: workspace/builds/darwin-x64/puro
+          to: s3://puro/builds/master/darwin-x64/puro
+
 workflows:
-  main:
+  master:
+    jobs:
+      - linux_build
+      - macos_build
+      - upload_master_builds:
+          requires:
+            - linux_build
+            - macos_build
+    when:
+      equal: [ "master", << pipeline.git.branch >> ]
+  tests:
     jobs:
       - linux_tests
+    when:
+      not:
+        equal: [ "master", << pipeline.git.branch >> ]
