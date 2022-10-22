@@ -113,6 +113,16 @@ jobs:
       # - aws-s3/copy:
       #    from: workspace/builds/darwin-x64/puro
       #    to: s3://puro/builds/master/darwin-x64/puro
+  build_website:
+    docker:
+      - image: circleci/python:3.9-buster
+    step:
+      - checkout
+      - run: sudo pip install -q mkdocs mkdocs-material
+      - run: cd website && mkdocs build
+      - aws-s3/sync:
+          from: website/site/
+          to: s3://puro
 
 workflows:
   master:
@@ -123,6 +133,7 @@ workflows:
           requires:
             - linux_build
             #- macos_build
+      - build_website
     when:
       equal: [ "master", << pipeline.git.branch >> ]
   tests:
