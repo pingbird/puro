@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:http/http.dart';
 import 'package:neoansi/neoansi.dart';
 
@@ -37,6 +38,8 @@ abstract class ProgressNode {
     bool removeWhenComplete = true,
     bool optional = false,
   }) async {
+    final start = clock.now();
+    final log = PuroLogger.of(scope);
     final node = ActiveProgressNode(
       scope: OverrideScope(parent: scope),
     );
@@ -45,7 +48,6 @@ abstract class ProgressNode {
     try {
       return await fn(scope, node);
     } catch (exception, stackTrace) {
-      final log = PuroLogger.of(scope);
       if (node.description != null) {
         log.e('Exception while ${node.description}');
       }
@@ -57,6 +59,9 @@ abstract class ProgressNode {
     } finally {
       node.complete = true;
       if (removeWhenComplete) removeNode(node);
+      log.v(
+        '${node.description} took ${clock.now().difference(start).inMilliseconds}ms',
+      );
     }
   }
 
@@ -74,7 +79,12 @@ class ActiveProgressNode extends ProgressNode {
   String? _description;
   String? get description => _description;
   set description(String? description) {
-    if (description != null) PuroLogger.of(scope).v('started $description');
+    if (description != null) {
+      PuroLogger.of(scope).v(
+        'started ${description.substring(0, 1).toLowerCase()}'
+        '${description.substring(1)}',
+      );
+    }
     if (_description == description) return;
     _description = description;
     if (_onChanged != null) _onChanged!();

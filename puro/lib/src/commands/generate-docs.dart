@@ -38,7 +38,7 @@ class GenerateDocsCommand extends PuroCommand {
         .childFile('commands.md')
         .writeAsString(generateCommands());
 
-    return BasicMessageResult(success: true);
+    return BasicMessageResult(success: true, message: 'Generated docs');
   }
 
   String allowedTitle(Option option, String allowed) {
