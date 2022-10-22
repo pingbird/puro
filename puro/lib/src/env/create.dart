@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -222,6 +223,9 @@ Future<EnvCreateResult> createEnvironment({
   final existing = environment.envDir.existsSync();
   environment.envDir.createSync(recursive: true);
 
+  final startTime = clock.now();
+  DateTime? cacheEngineTime;
+
   final engineTask = runOptional(
     scope,
     'Pre-caching engine',
@@ -235,6 +239,7 @@ Future<EnvCreateResult> createEnvironment({
         scope: scope,
         engineVersion: engineVersion,
       );
+      cacheEngineTime = clock.now();
     },
   );
 
@@ -245,7 +250,18 @@ Future<EnvCreateResult> createEnvironment({
     flutterVersion: flutterVersion,
   );
 
+  final cloneTime = clock.now();
+
   await engineTask;
+
+  if (cacheEngineTime != null) {
+    final wouldveTaken = (cloneTime.difference(startTime)) +
+        (cacheEngineTime!.difference(startTime));
+    final took = clock.now().difference(startTime);
+    log.v(
+      'Saved ${(wouldveTaken - took).inMilliseconds}ms by pre-caching engine',
+    );
+  }
 
   // Set up engine and compile tool
   await setUpFlutterTool(

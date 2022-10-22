@@ -69,7 +69,7 @@ class Terminal extends StringSink {
 
   String get status => _status;
   set status(String newStatus) {
-    statusDebouncer.add(newStatus);
+    if (enableStatus) statusDebouncer.add(newStatus);
   }
 
   void preserveStatus() {

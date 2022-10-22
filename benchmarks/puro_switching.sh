@@ -3,16 +3,16 @@ set -e
 
 curl https://puro.s3.amazonaws.com/builds/master/linux-x64/puro -O
 chmod +x puro
-./puro -v create example 3.3.4
-./puro -v rm example
+./puro --no-progress -v create example 3.3.4
+./puro --no-progress -v rm example
 
 start_time=$(date +%s.%3N)
 
-./puro -v create example2 3.3.5
+./puro --no-progress -v create example2 3.3.5
 
 create_time=$(date +%s.%3N)
 
-./puro -v -e example2 flutter --version
+./puro --no-progress -v -e example2 flutter --version
 
 end_time=$(date +%s.%3N)
 

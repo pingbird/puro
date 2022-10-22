@@ -8,11 +8,11 @@ chmod +x puro
 
 install_time=$(date +%s.%3N)
 
-./puro -v create example 3.3.5
+./puro --no-progress -v create example 3.3.5
 
 create_time=$(date +%s.%3N)
 
-./puro -v -e example flutter --version
+./puro --no-progress -v -e example flutter --version
 
 end_time=$(date +%s.%3N)
 
