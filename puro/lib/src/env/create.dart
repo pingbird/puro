@@ -12,6 +12,7 @@ import '../http.dart';
 import '../logger.dart';
 import '../progress.dart';
 import '../provider.dart';
+import '../terminal.dart';
 import 'engine.dart';
 import 'releases.dart';
 
@@ -284,6 +285,7 @@ Future<void> fetchOrCloneShared({
 }) async {
   await ProgressNode.of(scope).wrap((scope, node) async {
     final git = GitClient.of(scope);
+    final terminal = Terminal.of(scope);
     if (repository.existsSync()) {
       node.description = 'Fetching $remote';
       await git.fetch(repository: repository);
@@ -294,7 +296,7 @@ Future<void> fetchOrCloneShared({
         repository: repository,
         shared: true,
         checkout: false,
-        onProgress: node.onCloneProgress,
+        onProgress: terminal.enableStatus ? node.onCloneProgress : null,
       );
     }
   });
@@ -337,23 +339,30 @@ Future<void> cloneFlutterWithSharedRefs({
     );
   }
 
-  if (!repository.existsSync()) {
-    await ProgressNode.of(scope).wrap((scope, node) async {
-      node.description = 'Cloning $flutterVersion from cache';
-      await git.clone(
-        remote: config.flutterGitUrl,
-        repository: repository,
-        reference: sharedRepository,
-        checkout: false,
-      );
-    });
-  }
-
   await ProgressNode.of(scope).wrap((scope, node) async {
     node.description = 'Checking out $flutterVersion from cache';
+    if (!repository.childDirectory('.git').existsSync()) {
+      repository.createSync(recursive: true);
+      await git.init(repository: repository);
+      final alternatesFile = repository
+          .childDirectory('.git')
+          .childDirectory('objects')
+          .childDirectory('info')
+          .childFile('alternates');
+      final sharedObjects =
+          sharedRepository.childDirectory('.git').childDirectory('objects');
+      alternatesFile.writeAsStringSync('${sharedObjects.path}\n');
+      await git.addRemote(
+        repository: repository,
+        remote: config.flutterGitUrl,
+        fetch: true,
+      );
+    } else {
+      await git.fetch(repository: repository);
+    }
     await git.checkout(
       repository: repository,
-      refname: flutterVersion.commit,
+      ref: flutterVersion.commit,
     );
   });
 }

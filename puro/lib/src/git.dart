@@ -97,7 +97,7 @@ class GitClient {
 
   void _ensureSuccess(ProcessResult result) {
     if (result.exitCode != 0) {
-      if (log.level == null || log.level! < LogLevel.verbose) {
+      if (log.level == null || log.level! < LogLevel.debug) {
         log.e('git: ${result.stderr}');
       }
       throw StateError(
@@ -106,7 +106,36 @@ class GitClient {
     }
   }
 
-  /// https://git-scm.com/docs/git-clone
+  /// https://git-scm.com/docs/git-init
+  Future<void> init({required Directory repository}) async {
+    final result = await _git(
+      ['init'],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git-remote
+  Future<void> addRemote({
+    required Directory repository,
+    String name = 'origin',
+    required String remote,
+    bool fetch = false,
+  }) async {
+    final result = await _git(
+      [
+        'remote',
+        'add',
+        if (fetch) '-f',
+        name,
+        remote,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git -clone
   Future<void> clone({
     required String remote,
     required Directory repository,
@@ -125,6 +154,7 @@ class GitClient {
         if (reference != null) ...['--reference', reference.path],
         if (!checkout) '--no-checkout',
         if (onProgress != null) '--progress',
+        if (shared) '--shared',
         repository.path,
       ],
       onStderr: (line) {
@@ -154,14 +184,14 @@ class GitClient {
   /// https://git-scm.com/docs/git-checkout
   Future<void> checkout({
     required Directory repository,
-    required String refname,
+    required String ref,
     bool detach = false,
   }) async {
     final checkoutResult = await _git(
       [
         'checkout',
         if (detach) '--detach',
-        refname,
+        ref,
       ],
       directory: repository,
     );
