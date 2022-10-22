@@ -9,6 +9,7 @@ brew tap leoafarias/fvm
 brew install fvm
 
 install_time=$(date +%s.%3N)
+install_network=$(cat /proc/net/dev | perl -nle 'm/eth0: *([^ ]*)/; print $1' | tr -d '[:space:]')
 
 fvm install 3.3.5
 
@@ -26,3 +27,7 @@ echo "Install: ${install_duration}s"
 echo "Install Flutter: ${install_flutter_duration}s"
 echo "Run: ${run_duration}s"
 echo "Total: ${total_duration}s"
+
+total_network=$(cat /proc/net/dev | perl -nle 'm/eth0: *([^ ]*)/; print $1' | tr -d '[:space:]')
+echo "Install Network: ${install_network} bytes"
+echo "Total Network: ${total_network} bytes"

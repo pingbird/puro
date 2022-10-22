@@ -6,7 +6,10 @@ chmod +x puro
 ./puro --no-progress -v create example 3.3.5
 ./puro --no-progress -v rm example
 
+echo "=============================================================="
+
 start_time=$(date +%s.%3N)
+start_network=$(cat /proc/net/dev | perl -nle 'm/eth0: *([^ ]*)/; print $1' | tr -d '[:space:]')
 
 ./puro --no-progress -v create example2 3.3.5
 
@@ -22,3 +25,7 @@ total_duration=$(echo "scale=3; $end_time - $start_time" | bc)
 echo "Create: ${create_duration}s"
 echo "Run: ${run_duration}s"
 echo "Total: ${total_duration}s"
+
+end_network=$(cat /proc/net/dev | perl -nle 'm/eth0: *([^ ]*)/; print $1' | tr -d '[:space:]')
+total_network=$(echo "scale=3; $end_network - $start_network" | bc)
+echo "Network: ${end_network} - ${start_network} = ${total_network} bytes"

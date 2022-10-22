@@ -24,3 +24,6 @@ echo "Install: ${install_duration}s"
 echo "Create: ${create_duration}s"
 echo "Run: ${run_duration}s"
 echo "Total: ${total_duration}s"
+
+total_network=$(cat /proc/net/dev | perl -nle 'm/eth0: *([^ ]*)/; print $1' | tr -d '[:space:]')
+echo "Network: ${total_network} bytes"
