@@ -192,6 +192,7 @@ Future<String?> getEngineVersionOfCommit({
   final result = await git.tryCat(
     repository: sharedRepository,
     path: 'bin/internal/engine.version',
+    ref: commit,
   );
   if (result != null) {
     return utf8.decode(result).trim();
