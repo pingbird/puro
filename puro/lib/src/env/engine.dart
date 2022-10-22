@@ -127,7 +127,7 @@ Future<void> unzip({
 }) async {
   destination.createSync(recursive: true);
   if (Platform.isWindows) {
-    final result = await runProcess(
+    await runProcess(
       scope,
       'powershell',
       [
