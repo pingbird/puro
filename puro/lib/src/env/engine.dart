@@ -102,7 +102,7 @@ Future<Uri> getEngineReleaseZipUrl({
     final unameStdout = unameResult.stdout as String;
     if (unameStdout.contains('arm64')) {
       arch = EngineArch.arm64;
-    } else if (unameStdout.contains('x64')) {
+    } else if (unameStdout.contains('x64') || unameStdout.contains('x86_64')) {
       arch = EngineArch.x64;
     } else {
       throw AssertionError('Unrecognized architecture: `$unameStdout`');
