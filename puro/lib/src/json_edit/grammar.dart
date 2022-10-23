@@ -2,7 +2,7 @@ import 'package:petitparser/petitparser.dart';
 
 import 'element.dart';
 
-class JsonGrammar extends GrammarDefinition {
+class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
   static Token<JsonElement> parse(String input) =>
       JsonGrammar().build<Token<JsonElement>>().parse(input).value;
 
@@ -101,10 +101,8 @@ class JsonGrammar extends GrammarDefinition {
   Parser<Token<JsonElement>> mapElement() {
     return token((char('{') &
             ref0(mapEntryElement)
-                .separatedBy<Object?>(
-                  char(','),
-                  includeSeparators: false,
-                )
+                .plusSeparated(char(','))
+                .map((e) => e.elements)
                 .optional() &
             ref0<String>(space) &
             char('}'))
@@ -121,10 +119,8 @@ class JsonGrammar extends GrammarDefinition {
   Parser<Token<JsonElement>> arrayElement() {
     return token((char('[') &
             ref0(element)
-                .separatedBy<Object?>(
-                  char(','),
-                  includeSeparators: false,
-                )
+                .plusSeparated(char(','))
+                .map((e) => e.elements)
                 .optional() &
             ref0<String>(space) &
             char(']'))
