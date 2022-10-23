@@ -115,10 +115,10 @@ jobs:
       #    to: s3://puro/builds/master/darwin-x64/puro
   build_website:
     docker:
-      - image: cimg/python:3.9-browsers
+      - image: cimg/python:3.9
     steps:
       - checkout
-      - run: sudo pip install -q mkdocs mkdocs-material
+      - run: pip install -q mkdocs mkdocs-material
       - run: cd website && mkdocs build
       - aws-s3/sync:
           from: website/site/
