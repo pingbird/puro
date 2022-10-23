@@ -33,8 +33,8 @@ Puro implements a few optimizations that make installing Flutter as fast as poss
 
 These optimizations make first-time installs 20% faster while improving subsequent installations by a whopping 50-95%:
 
-![](assets/install_time_comparison.svg)
+![](https://puro.dev/assets/install_time_comparison.svg)
 
 This also translates into much lower network and disk usage:
 
-![](assets/network_usage_comparison.svg)
+![](https://puro.dev/assets/network_usage_comparison.svg)
