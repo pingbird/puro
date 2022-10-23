@@ -31,11 +31,7 @@ class GenerateDocsCommand extends PuroCommand {
     referenceDir.createSync(recursive: true);
 
     await referenceDir
-        .childFile('options.md')
-        .writeAsString(generateGlobalOptions());
-
-    await referenceDir
-        .childFile('commands.md')
+        .childFile('reference.md')
         .writeAsString(generateCommands());
 
     return BasicMessageResult(success: true, message: 'Generated docs');
@@ -121,22 +117,18 @@ class GenerateDocsCommand extends PuroCommand {
     return '$buffer';
   }
 
-  String generateGlobalOptions() {
-    final buffer = StringBuffer();
-    buffer.writeln('# Global Options');
-    buffer.write(generateOptions(runner.argParser.options.values));
-    return '$buffer';
-  }
-
   String generateCommands() {
     final buffer = StringBuffer();
     buffer.writeln('# Commands');
     buffer.writeln();
-    buffer.writeln('---');
-    buffer.writeln();
+    // buffer.writeln('---');
+    // buffer.writeln();
     final commands = runner.commands.values;
     for (final command in commands) {
       if (command.hidden) continue;
+      buffer.writeln('## ${command.name.substring(0, 1).toUpperCase()}'
+          '${command.name.substring(1)}');
+      buffer.writeln();
       buffer.writeln('```sh');
       buffer.writeln('${command.invocation}');
       buffer.writeln('```');
@@ -153,6 +145,9 @@ class GenerateDocsCommand extends PuroCommand {
       buffer.writeln('---');
       buffer.writeln();
     }
+    buffer.writeln('# Global Options');
+    buffer.writeln();
+    buffer.write(generateOptions(runner.argParser.options.values));
     return '$buffer';
   }
 }

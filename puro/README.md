@@ -21,16 +21,26 @@ And that's it! Your IDE will be automatically configured to use the new environm
 
 ## Performance
 
-Puro implements a few optimizations that make installing Flutter as fast as possible, including:
-
-* Parallel framework / engine downloading
-* Global repository with shared git objects, a technology similar to GitLab's [object deduplication](https://docs.gitlab.com/ee/development/git_object_deduplication.html)
-* Symlinking flutter's engine cache to a shared folder depending on its commit hash
-
-These optimizations make first-time installs 20% faster while improving subsequent installations by a whopping 50-95%:
+Puro implements a few optimizations that make installing Flutter as fast as possible, making first-time installs 20% faster while improving subsequent installations by a whopping 50-95%:
 
 ![](https://puro.dev/assets/install_time_comparison.svg)
 
-This also translates into much lower network and disk usage:
+This also translates into much lower network usage:
 
 ![](https://puro.dev/assets/network_usage_comparison.svg)
+
+## How it works
+
+Puro achieves these performance gains with a few smart optimizations:
+
+* Parallel git clone and engine download
+* Global cache for git history
+* Global cache for engine versions
+
+With other approaches, each flutter repository is in its own folder, requiring you to download and store the git history, engine, and framework of each version:
+
+![](https://puro.dev/assets/storage_without_puro.png)
+
+Puro implements a technology similar to GitLab's [object deduplication](https://docs.gitlab.com/ee/development/git_object_deduplication.html) to avoid downloading the same git objects over and over again. It also uses symlinks to share the same engine version between multiple installs:
+
+![](https://puro.dev/assets/storage_with_puro.png)

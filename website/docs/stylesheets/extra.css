@@ -48,3 +48,9 @@ html {
 .md-header__button.md-logo {
 	padding: 0;
 }
+
+/* Make sidebar invisible instead of collapsed when hidden */
+.md-sidebar--primary[hidden] {
+	display: initial;
+	visibility: hidden;
+}

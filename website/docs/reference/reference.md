@@ -1,4 +1,84 @@
+# Commands
+
+## Create
+
+```sh
+puro create <name> [version]
+```
+
+Sets up a new Flutter environment.
+
+
+#### Options
+
+#### `--channel=<name>`
+
+The Flutter channel, in case multiple channels have builds with the same version number.
+
+---
+
+## Ls
+
+```sh
+puro ls
+```
+
+List available environments.
+
+---
+
+## Use
+
+```sh
+puro use <name>
+```
+
+Select an environment to use in the current project.
+
+---
+
+## Clean
+
+```sh
+puro clean
+```
+
+Deletes puro configuration files from the current project and restores IDE settings.
+
+---
+
+## Rm
+
+```sh
+puro rm <name>
+```
+
+Delete an environment.
+
+---
+
+## Flutter
+
+```sh
+puro flutter [...args]
+```
+
+Forwards arguments to flutter in the current environment.
+
+---
+
+## Dart
+
+```sh
+puro dart [...args]
+```
+
+Forwards arguments to dart in the current environment.
+
+---
+
 # Global Options
+
 #### `-h`, `--help`
 
 Print this usage information.
