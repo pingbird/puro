@@ -81,7 +81,7 @@ class ActiveProgressNode extends ProgressNode {
   set description(String? description) {
     if (description != null) {
       PuroLogger.of(scope).v(
-        'started ${description.substring(0, 1).toLowerCase()}'
+        'Started ${description.substring(0, 1).toLowerCase()}'
         '${description.substring(1)}',
       );
     }

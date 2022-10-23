@@ -242,6 +242,9 @@ Future<void> setUpFlutterTool({
   final flutterCache = flutterConfig.cache;
   final engineVersion = flutterConfig.engineVersion!;
 
+  log.v('flutterCache.engineVersion: ${flutterCache.engineVersion}');
+  log.v('flutterConfig.engineVersion: $engineVersion');
+
   final shouldUpdateEngine = flutterCache.engineVersion != engineVersion;
   var didChangeEngine = false;
 
@@ -261,7 +264,13 @@ Future<void> setUpFlutterTool({
         : cachePath;
     final isLink = cachePath != resolvedPath;
     final linkNeedsUpdate = isLink && resolvedPath != sharedCache.cacheDir.path;
+    log.v('cacheExists: $cacheExists');
+    log.v('cachePath: $cachePath');
+    log.v('resolvedPath: $resolvedPath');
+    log.v('isLink: $isLink');
+    log.v('linkNeedsUpdate: $linkNeedsUpdate');
     if (!cacheExists || linkNeedsUpdate) {
+      if (link.existsSync()) link.deleteSync();
       link.createSync(sharedCache.cacheDir.path);
     } else if (!isLink) {
       throw AssertionError(
@@ -272,6 +281,7 @@ Future<void> setUpFlutterTool({
 
   final flutterCommit =
       await git.getCurrentCommitHash(repository: flutterConfig.sdkDir);
+  log.v('flutterCommit: $flutterCommit');
 
   var flutterToolsStamp = '$flutterCommit:${environment.flutterToolArgs}';
 
@@ -280,8 +290,12 @@ Future<void> setUpFlutterTool({
     flutterToolsStamp = '"$flutterToolsStamp"';
   }
 
+  final cachedFlutterToolsStamp = flutterCache.flutterToolsStamp;
   final shouldRecompileTool =
-      didChangeEngine || flutterCache.flutterToolsStamp != flutterToolsStamp;
+      didChangeEngine || cachedFlutterToolsStamp != flutterToolsStamp;
+
+  log.v('cachedFlutterToolsStamp: $cachedFlutterToolsStamp');
+  log.v('flutterToolsStamp: $flutterToolsStamp');
 
   if (shouldRecompileTool) {
     log.v('flutter tool out of date');

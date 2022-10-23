@@ -5,6 +5,7 @@ import 'package:args/args.dart';
 import '../command.dart';
 import '../config.dart';
 import '../env/engine.dart';
+import '../logger.dart';
 import '../process.dart';
 
 class FlutterCommand extends PuroCommand {
@@ -24,23 +25,30 @@ class FlutterCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final config = PuroConfig.of(scope);
+    final log = PuroLogger.of(scope);
     final environment = config.getCurrentEnv();
     final flutterConfig = environment.flutter;
     await setUpFlutterTool(
       scope: scope,
       environment: environment,
     );
+    final dartPath = flutterConfig.cache.dartSdk.dartExecutable.path;
+    final snapshotPath = flutterConfig.cache.flutterToolsSnapshotFile.path;
+    log.v('Root: ${flutterConfig.sdkDir.path}');
     final flutterProcess = await startProcess(
       scope,
-      flutterConfig.cache.dartSdk.dartExecutable.path,
+      dartPath,
       [
         '--disable-dart-dev',
         '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
         if (environment.flutterToolArgs.isNotEmpty)
           ...environment.flutterToolArgs.split(RegExp(r'\S+')),
-        flutterConfig.cache.flutterToolsSnapshotFile.path,
+        snapshotPath,
         ...argResults!.arguments,
       ],
+      environment: {
+        'FLUTTER_ROOT': flutterConfig.sdkDir.path,
+      },
     );
     final stdoutFuture =
         flutterProcess.stdout.listen(stdout.add).asFuture<void>();

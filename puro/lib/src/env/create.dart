@@ -360,6 +360,11 @@ Future<void> cloneFlutterWithSharedRefs({
     } else {
       await git.fetch(repository: repository);
     }
+
+    final cacheDir = repository.childDirectory('bin').childDirectory('cache');
+    if (cacheDir.existsSync()) {
+      await cacheDir.delete();
+    }
     await git.checkout(
       repository: repository,
       ref: flutterVersion.commit,
