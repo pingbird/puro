@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 
 import '../command.dart';
-import '../config.dart';
+import '../env/default.dart';
 import '../env/engine.dart';
 import '../logger.dart';
 import '../process.dart';
@@ -24,9 +24,8 @@ class FlutterCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
-    final config = PuroConfig.of(scope);
     final log = PuroLogger.of(scope);
-    final environment = config.getCurrentEnv();
+    final environment = await getProjectEnvOrDefault(scope: scope);
     final flutterConfig = environment.flutter;
     await setUpFlutterTool(
       scope: scope,

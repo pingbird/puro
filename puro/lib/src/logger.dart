@@ -41,13 +41,15 @@ class LogEntry {
 class PuroLogger {
   PuroLogger({
     this.level,
-    required this.terminal,
-    this.addOverride,
+    this.terminal,
+    this.onAdd,
+    this.format = plainFormatter,
   });
 
   LogLevel? level;
-  final Terminal terminal;
-  void Function(LogEntry event)? addOverride;
+  Terminal? terminal;
+  void Function(LogEntry event)? onAdd;
+  OutputFormatter format;
 
   void add(LogEntry event) {
     if (level == null || level! < event.level) return;
@@ -55,24 +57,17 @@ class PuroLogger {
   }
 
   void _add(LogEntry event) {
-    if (addOverride != null) {
-      addOverride!(event);
-      return;
+    if (onAdd != null) {
+      onAdd!(event);
     }
-    final label = terminal.formatString(
-      levelPrefixes[event.level]!,
-      foregroundColor: levelColors[event.level]!,
-      bold: true,
-    );
-    final labelLength = label.length;
-    final lines = '$label ${event.message}'.trim().split('\n');
-    terminal.writeln(
-      [
-        lines.first,
-        for (final line in lines.skip(1))
-          '${' ' * labelLength} ${line.replaceAll('\t', '    ')}',
-      ].join('\n'),
-    );
+    if (terminal != null) {
+      final label = format.color(
+        levelPrefixes[event.level]!,
+        foregroundColor: levelColors[event.level]!,
+        bold: true,
+      );
+      terminal!.writeln(format.prefix('$label ', event.message));
+    }
   }
 
   void d(String message) {
@@ -100,14 +95,6 @@ class PuroLogger {
     _add(LogEntry(DateTime.now(), LogLevel.wtf, message));
   }
 
-  void complete(String message) {
-    terminal.writeln('${terminal.formatString(
-      completePrefix,
-      foregroundColor: completeColor,
-      bold: true,
-    )} $message');
-  }
-
   static const levelPrefixes = {
     LogLevel.wtf: '[WTF]',
     LogLevel.error: '[E]',
@@ -123,9 +110,6 @@ class PuroLogger {
     LogLevel.verbose: Ansi8BitColor.yellow,
     LogLevel.debug: Ansi8BitColor.grey35,
   };
-
-  static const completePrefix = '[\u2713]';
-  static const completeColor = Ansi8BitColor.green;
 
   static final provider = Provider<PuroLogger>.late();
   static PuroLogger of(Scope scope) => scope.read(provider);

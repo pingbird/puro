@@ -5,6 +5,109 @@ import 'package:neoansi/neoansi.dart';
 import 'debouncer.dart';
 import 'provider.dart';
 
+class _StripAnsiWriter extends AnsiListener {
+  final buffer = StringBuffer();
+
+  @override
+  void write(String text) {
+    buffer.write(text);
+  }
+}
+
+String stripAnsiEscapes(String str) {
+  final writer = _StripAnsiWriter();
+  AnsiReader(writer).read(str);
+  return '${writer.buffer}';
+}
+
+const plainFormatter = OutputFormatter();
+const colorFormatter = ColorOutputFormatter();
+
+enum CompletionType {
+  plain('', null),
+  success('[\u2713] ', Ansi8BitColor.green),
+  failure('[x] ', Ansi8BitColor.red),
+  indeterminate('[~] ', Ansi8BitColor.grey),
+  info('[i] ', Ansi8BitColor.blue);
+
+  const CompletionType(this.prefix, this.color);
+  final String prefix;
+  final Ansi8BitColor? color;
+}
+
+class OutputFormatter {
+  const OutputFormatter();
+
+  String color(
+    String content, {
+    Ansi8BitColor? foregroundColor,
+    Ansi8BitColor? backgroundColor,
+    bool bold = false,
+    bool underline = false,
+  }) {
+    return content;
+  }
+
+  String prefix(String prefix, String content) {
+    if (prefix.isEmpty) return content;
+    final prefixLength = stripAnsiEscapes(prefix).length;
+    final lines = '$prefix$content'.split('\n');
+    return [
+      lines.first,
+      for (final line in lines.skip(1))
+        '${' ' * prefixLength}${line.replaceAll('\t', '    ')}',
+    ].join('\n');
+  }
+
+  String complete(
+    String content, {
+    CompletionType type = CompletionType.success,
+  }) {
+    return prefix(
+      color(
+        type.prefix,
+        foregroundColor: type.color,
+        bold: true,
+      ),
+      content,
+    );
+  }
+
+  String success(String content) =>
+      complete(content, type: CompletionType.success);
+  String failure(String content) =>
+      complete(content, type: CompletionType.failure);
+  String indeterminate(String content) =>
+      complete(content, type: CompletionType.indeterminate);
+  String info(String content) => complete(content, type: CompletionType.info);
+
+  static const indeterminatePrefix = '[~]';
+  static const indeterminateColor = Ansi8BitColor.grey;
+}
+
+class ColorOutputFormatter extends OutputFormatter {
+  const ColorOutputFormatter();
+
+  @override
+  String color(
+    String content, {
+    Ansi8BitColor? foregroundColor,
+    Ansi8BitColor? backgroundColor,
+    bool bold = false,
+    bool underline = false,
+  }) {
+    final buffer = StringBuffer();
+    final writer = AnsiWriter.from(buffer);
+    if (foregroundColor != null) writer.setForegroundColor8(foregroundColor);
+    if (backgroundColor != null) writer.setBackgroundColor8(backgroundColor);
+    if (bold) writer.setBold();
+    if (underline) writer.setUnderlined();
+    writer.write(content);
+    writer.resetStyles();
+    return '$buffer';
+  }
+}
+
 class Terminal extends StringSink {
   Terminal({
     required this.stdout,
@@ -20,26 +123,7 @@ class Terminal extends StringSink {
     initialValue: '',
   );
 
-  String formatString(
-    String input, {
-    Ansi8BitColor? foregroundColor,
-    Ansi8BitColor? backgroundColor,
-    bool bold = false,
-    bool underline = false,
-  }) {
-    if (!enableColor) {
-      return input;
-    }
-    final buffer = StringBuffer();
-    final writer = AnsiWriter.from(buffer);
-    if (foregroundColor != null) writer.setForegroundColor8(foregroundColor);
-    if (backgroundColor != null) writer.setBackgroundColor8(backgroundColor);
-    if (bold) writer.setBold();
-    if (underline) writer.setUnderlined();
-    writer.write(input);
-    writer.resetStyles();
-    return '$buffer';
-  }
+  OutputFormatter get format => enableColor ? colorFormatter : plainFormatter;
 
   var _status = '';
 
@@ -50,8 +134,9 @@ class Terminal extends StringSink {
     return '\r${lines == 0 ? '' : '\x1b[${lines}A'}\x1b[0J';
   }
 
-  void clearStatus() {
+  void resetStatus() {
     final output = _clearStatus();
+    statusDebouncer.reset('');
     if (output.isNotEmpty) stdout.write(output);
   }
 
@@ -82,7 +167,7 @@ class Terminal extends StringSink {
   }
 
   void close() {
-    clearStatus();
+    resetStatus();
   }
 
   static final provider = Provider<Terminal>.late();

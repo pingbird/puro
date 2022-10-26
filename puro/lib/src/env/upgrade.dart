@@ -4,6 +4,7 @@ import '../command.dart';
 import '../config.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';
+import '../terminal.dart';
 import 'releases.dart';
 
 class EnvUpgradeResult extends CommandResult {
@@ -26,7 +27,7 @@ class EnvUpgradeResult extends CommandResult {
   final String toCommit;
 
   @override
-  String get description => [
+  String description(OutputFormatter format) => [
         'Upgraded `${environment.name}` from',
         if (fromChannel != null) fromChannel?.name,
         if (fromVersion != null) '$fromVersion',
@@ -68,7 +69,6 @@ Future<EnvUpgradeResult> upgradeEnvironment({
   FlutterChannel? channel,
 }) async {
   final config = PuroConfig.of(scope);
-  // ignore: unused_local_variable
   final env = config.getEnv(name);
   throw UnimplementedError();
 }

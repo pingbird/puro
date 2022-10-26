@@ -6,6 +6,7 @@ orbs:
 commands:
   install_dart:
     steps:
+      - when:
       - run:
           name: "Install Dart"
           command: |-
@@ -19,6 +20,12 @@ commands:
             sudo dpkg -i dart_${DART_VERSION}-1_amd64.deb
             fi
             dart --version
+  install_dart_windows:
+    steps:
+      - run:
+          name: "Install Dart"
+          command: |-
+            choco install dart-sdk --version $DART_RELEASE
   pub_get:
     steps:
       - run:
@@ -118,6 +125,9 @@ jobs:
       - image: cimg/python:3.9
     steps:
       - checkout
+      - install_dart
+      - pub_get
+      - run: dart puro/bin/puro.dart _generate-docs
       - run: pip install -q mkdocs mkdocs-material
       - run: cd website && mkdocs build
       - aws-s3/sync:

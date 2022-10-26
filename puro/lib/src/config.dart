@@ -132,6 +132,8 @@ class PuroConfig {
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
 
+  late final File defaultEnvNameFile = puroRoot.childFile('puro_env');
+
   @override
   String toString() {
     return 'PuroConfig(\n'
@@ -164,7 +166,7 @@ class PuroConfig {
     return EnvConfig(envDir: envsDir.childDirectory(name));
   }
 
-  EnvConfig? tryGetCurrentEnv() {
+  EnvConfig? tryGetProjectEnv() {
     if (environmentOverride != null) {
       final result = getEnv(environmentOverride!);
       return result.exists ? result : null;
@@ -173,18 +175,6 @@ class PuroConfig {
     final dotfile = readDotfile();
     if (!dotfile.hasEnv()) return null;
     return getEnv(dotfile.env);
-  }
-
-  EnvConfig getCurrentEnv() {
-    final env = tryGetCurrentEnv();
-    if (env == null) {
-      if (projectDir == null) {
-        throw AssertionError('No project selected.');
-      } else {
-        throw AssertionError('No environment selected.');
-      }
-    }
-    return env..ensureExists();
   }
 
   File get dotfileForWriting {

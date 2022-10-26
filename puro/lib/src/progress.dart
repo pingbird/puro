@@ -12,6 +12,8 @@ abstract class ProgressNode {
 
   final Scope scope;
 
+  late final terminal = Terminal.of(scope);
+
   void Function()? _onChanged;
 
   final children = <ActiveProgressNode>[];
@@ -157,7 +159,7 @@ class ActiveProgressNode extends ProgressNode {
       final progressChars = (progressFraction * width).round();
       text = '[${('=' * progressChars).padRight(width)}]';
     }
-    text = Terminal.of(scope).formatString(
+    text = terminal.format.color(
       text,
       foregroundColor: Ansi8BitColor.blue,
       bold: true,
@@ -183,8 +185,6 @@ class RootProgressNode extends ProgressNode {
       terminal.status = render();
     };
   }
-
-  late final Terminal terminal = Terminal.of(scope);
 
   @override
   String render() {

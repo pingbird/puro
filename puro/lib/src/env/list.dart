@@ -1,9 +1,11 @@
 import 'package:file/file.dart';
+import 'package:neoansi/neoansi.dart';
 
 import '../command.dart';
 import '../config.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';
+import '../terminal.dart';
 
 class ListEnvironmentResult extends CommandResult {
   ListEnvironmentResult({
@@ -15,14 +17,28 @@ class ListEnvironmentResult extends CommandResult {
   final String? selectedEnvironment;
 
   @override
-  String? get description {
+  CompletionType? get type => CompletionType.info;
+
+  @override
+  String description(OutputFormatter format) {
     if (environments.isEmpty) {
       return 'No environments, use `puro create` to create one';
     }
     return [
       'Environments:',
       ...environments.map(
-        (e) => '  [${selectedEnvironment == e.name ? '*' : ' '}] ${e.name}',
+        (e) {
+          if (e.name == selectedEnvironment) {
+            return format.color(
+                  '* ',
+                  foregroundColor: Ansi8BitColor.green,
+                  bold: true,
+                ) +
+                format.color(e.name, bold: true);
+          } else {
+            return '  ${e.name}';
+          }
+        },
       ),
       '',
       'Use `puro use <name>` to switch, or `puro create <name>` to create new environments',
@@ -54,10 +70,11 @@ Future<ListEnvironmentResult> listEnvironments({
   final config = PuroConfig.of(scope);
   return ListEnvironmentResult(
     environments: [
-      for (final childEntity in config.envsDir.listSync())
-        if (childEntity is Directory && isValidName(childEntity.basename))
-          config.getEnv(childEntity.basename),
+      if (config.envsDir.existsSync())
+        for (final childEntity in config.envsDir.listSync())
+          if (childEntity is Directory && isValidName(childEntity.basename))
+            config.getEnv(childEntity.basename),
     ],
-    selectedEnvironment: config.tryGetCurrentEnv()?.name,
+    selectedEnvironment: config.tryGetProjectEnv()?.name,
   );
 }

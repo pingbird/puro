@@ -11,13 +11,14 @@ import 'commands/generate-docs.dart';
 import 'commands/ls.dart';
 import 'commands/rm.dart';
 import 'commands/use.dart';
+import 'commands/version.dart';
 import 'logger.dart';
 import 'provider.dart';
 import 'terminal.dart';
 
 void main(List<String> args) async {
   final scope = RootScope();
-  final terminal = Terminal(stdout: stdout);
+  final terminal = Terminal(stdout: stderr);
   scope.add(Terminal.provider, terminal);
 
   final index = args.indexOf('--');
@@ -33,11 +34,9 @@ void main(List<String> args) async {
 
   final PuroLogger log;
   if (isJson) {
-    terminal.enableStatus = false;
-    terminal.enableColor = false;
     log = PuroLogger(
       terminal: terminal,
-      addOverride: runner.logEntries.add,
+      onAdd: runner.logEntries.add,
     );
   } else {
     log = PuroLogger(
@@ -159,6 +158,9 @@ void main(List<String> args) async {
       callback: runner.wrapCallback((flag) {
         if (runner.results!.wasParsed('color')) {
           terminal.enableColor = flag;
+          if (!flag && !runner.results!.wasParsed('progress')) {
+            terminal.enableStatus = false;
+          }
         }
       }),
     )
@@ -177,6 +179,7 @@ void main(List<String> args) async {
       negatable: false,
     );
   runner
+    ..addCommand(VersionCommand())
     ..addCommand(EnvCreateCommand())
     ..addCommand(EnvLsCommand())
     ..addCommand(EnvUseCommand())
@@ -195,7 +198,7 @@ void main(List<String> args) async {
   } on UsageException catch (exception) {
     runner.writeResultAndExit(
       CommandHelpResult(
-        didRequestHelp: false,
+        didRequestHelp: runner.didRequestHelp,
         message: exception.message,
         usage: exception.usage,
       ),

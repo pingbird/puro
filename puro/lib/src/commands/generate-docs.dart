@@ -121,8 +121,6 @@ class GenerateDocsCommand extends PuroCommand {
     final buffer = StringBuffer();
     buffer.writeln('# Commands');
     buffer.writeln();
-    // buffer.writeln('---');
-    // buffer.writeln();
     final commands = runner.commands.values;
     for (final command in commands) {
       if (command.hidden) continue;

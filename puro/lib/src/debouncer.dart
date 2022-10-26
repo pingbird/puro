@@ -81,4 +81,11 @@ class Debouncer<T> {
       _timer = Timer(duration, _update);
     }
   }
+
+  void reset(T value) {
+    _timer?.cancel();
+    _timer = null;
+    _shouldUpdate = false;
+    _value = value;
+  }
 }

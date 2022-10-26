@@ -30,7 +30,7 @@ class CommandErrorResult extends CommandResult {
   }
 
   @override
-  String? get description => '$exception\n$stackTrace';
+  String description(OutputFormatter format) => '$exception\n$stackTrace';
 }
 
 class CommandHelpResult extends CommandResult {
@@ -45,6 +45,9 @@ class CommandHelpResult extends CommandResult {
   final String? usage;
 
   @override
+  CompletionType? get type => CompletionType.plain;
+
+  @override
   CommandResultModel toModel() {
     return CommandResultModel(
       success: didRequestHelp,
@@ -54,29 +57,36 @@ class CommandHelpResult extends CommandResult {
   }
 
   @override
-  String? get description =>
-      [message, usage].where((e) => e != null).join('\n');
+  String description(OutputFormatter format) =>
+      [message, usage].where((e) => e != null).join('\n').trim();
 }
 
 abstract class CommandResult {
   CommandResultModel toModel();
-  String? get description;
+
+  CompletionType? get type => null;
+
+  String description(OutputFormatter format);
 
   @override
-  String toString() => description ?? super.toString();
+  String toString() => description(plainFormatter);
 }
 
 class BasicMessageResult extends CommandResult {
   BasicMessageResult({
     required this.success,
-    this.message,
+    required this.message,
+    this.type,
   });
 
   final bool success;
-  final String? message;
+  final String message;
 
   @override
-  String? get description => message;
+  final CompletionType? type;
+
+  @override
+  String description(OutputFormatter format) => message;
 
   @override
   CommandResultModel toModel() {
@@ -221,7 +231,8 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
 
   bool get didRequestHelp =>
       puroArgs.where((e) => !e.startsWith('-')).isEmpty ||
-      (results?.wasParsed('help') ?? false) ||
+      puroArgs.contains('--help') ||
+      puroArgs.contains('-h') ||
       puroArgs.where((e) => !e.startsWith('-')).take(1).contains('help');
 
   @override
@@ -251,15 +262,19 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
           ],
         }),
       );
-    } else if (model.success) {
-      if (didRequestHelp) {
-        terminal.writeln('$result');
-      } else {
-        log.complete('$result');
-      }
     } else {
-      terminal.preserveStatus();
-      log.e('$result');
+      if (model.success) {
+        terminal.resetStatus();
+      } else {
+        terminal.preserveStatus();
+      }
+      stdout.write(
+        terminal.format.complete(
+          result.description(terminal.format),
+          type: result.type ??
+              (model.success ? CompletionType.success : CompletionType.failure),
+        ),
+      );
     }
     exit(model.success ? 0 : 1);
   }

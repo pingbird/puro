@@ -33,7 +33,7 @@ class EnvCreateResult extends CommandResult {
   }
 
   @override
-  String? get description => existing
+  String description(OutputFormatter format) => existing
       ? 'Updated existing environment `${directory.basename}`'
       : 'Created new environment `${directory.basename}` in `${directory.path}`';
 }

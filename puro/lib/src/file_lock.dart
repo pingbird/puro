@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
@@ -41,22 +42,7 @@ Future<T> lockFile<T>(
   }
 }
 
-/// Acquires an exclusive lock on a file before writing to it.
-Future<void> writeFileAtomic({
-  required Scope scope,
-  required Uint8List bytes,
-  required File file,
-}) async {
-  await lockFile(
-    scope,
-    file,
-    (handle) => handle.writeFrom(bytes),
-    mode: FileMode.write,
-  );
-}
-
-/// Acquires an shared lock on a file before reading from it.
-Future<Uint8List> readFileAtomic({
+Future<Uint8List> readBytesAtomic({
   required Scope scope,
   required File file,
 }) async {
@@ -67,5 +53,40 @@ Future<Uint8List> readFileAtomic({
       return handle.read(handle.lengthSync());
     },
     exclusive: false,
+  );
+}
+
+/// Acquires an shared lock on a file before reading from it.
+Future<String> readAtomic({
+  required Scope scope,
+  required File file,
+}) async {
+  final bytes = await readBytesAtomic(scope: scope, file: file);
+  return utf8.decode(bytes);
+}
+
+Future<void> writeBytesAtomic({
+  required Scope scope,
+  required File file,
+  required List<int> bytes,
+}) async {
+  await lockFile(
+    scope,
+    file,
+    (handle) => handle.writeFrom(bytes),
+    mode: FileMode.write,
+  );
+}
+
+/// Acquires an exclusive lock on a file before writing to it.
+Future<void> writeAtomic({
+  required Scope scope,
+  required File file,
+  required String content,
+}) {
+  return writeBytesAtomic(
+    scope: scope,
+    file: file,
+    bytes: utf8.encode(content),
   );
 }

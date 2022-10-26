@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 extension ListIntStreamExtensions on Stream<List<int>> {
@@ -15,5 +16,15 @@ extension ListIntStreamExtensions on Stream<List<int>> {
       cancelOnError: true,
     );
     return completer.future;
+  }
+}
+
+extension RandomAccessFileExtensions on RandomAccessFile {
+  Future<String> readAsString() async {
+    return utf8.decode(await read(lengthSync() - positionSync()));
+  }
+
+  String readAsStringSync() {
+    return utf8.decode(readSync(lengthSync() - positionSync()));
   }
 }

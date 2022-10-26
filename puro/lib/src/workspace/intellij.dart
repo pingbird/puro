@@ -11,6 +11,7 @@ class IntelliJConfig extends IdeConfig {
     required super.workspaceDir,
     super.dartSdkDir,
     super.flutterSdkDir,
+    required super.exists,
   });
 
   late final configDir = workspaceDir.childDirectory('.idea');
@@ -20,6 +21,9 @@ class IntelliJConfig extends IdeConfig {
   late final dartPackagesFile = librariesDir.childFile('Dart_Packages.xml');
   late final dartPackagesBakFile =
       librariesDir.childFile('Dart_Packages.xml.bak');
+
+  @override
+  String get name => 'intellij';
 
   @override
   Future<void> backup({required Scope scope}) async {
@@ -128,18 +132,27 @@ class IntelliJConfig extends IdeConfig {
     dartSdkFile.writeAsStringSync(document.toXmlString(pretty: true));
     // IntellIJ will re-populate this file immediately after we delete it
     if (dartPackagesFile.existsSync()) {
-      dartPackagesFile.deleteSync(recursive: true);
+      dartPackagesFile.deleteSync();
     }
   }
 
-  static Future<IntelliJConfig?> load({
+  static Future<IntelliJConfig> load({
     required Scope scope,
     required Directory projectDir,
   }) async {
     final config = PuroConfig.of(scope);
     final workspaceDir = findProjectDir(projectDir, '.idea');
-    if (workspaceDir == null) return null;
-    final intellijConfig = IntelliJConfig(workspaceDir: workspaceDir);
+    if (workspaceDir == null) {
+      return IntelliJConfig(
+        workspaceDir:
+            findProjectDir(projectDir, '.git') ?? config.parentProjectDir!,
+        exists: false,
+      );
+    }
+    final intellijConfig = IntelliJConfig(
+      workspaceDir: workspaceDir,
+      exists: true,
+    );
     if (intellijConfig.dartSdkFile.existsSync()) {
       final xml = XmlDocument.parse(
         intellijConfig.dartSdkFile.readAsStringSync(),

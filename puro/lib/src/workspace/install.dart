@@ -4,6 +4,7 @@ import '../config.dart';
 import '../env/releases.dart';
 import '../logger.dart';
 import '../provider.dart';
+import 'common.dart';
 import 'gitignore.dart';
 import 'intellij.dart';
 import 'vscode.dart';
@@ -15,29 +16,66 @@ Future<void> installIdeConfigs({
   required Directory projectDir,
   required EnvConfig environment,
 }) async {
-  final log = PuroLogger.of(scope);
+  runOptional(
+    scope,
+    'installing intellij config',
+    () async {
+      final ideConfig = await IntelliJConfig.load(
+        scope: scope,
+        projectDir: projectDir,
+      );
+      if (ideConfig.exists) {
+        await installIdeConfig(
+          scope: scope,
+          ideConfig: ideConfig,
+          environment: environment,
+        );
+      }
+    },
+  );
+
+  runOptional(
+    scope,
+    'installing vscode config',
+    () async {
+      final ideConfig = await VSCodeConfig.load(
+        scope: scope,
+        projectDir: projectDir,
+      );
+      final gitignoreFile = ideConfig.workspaceDir.childFile('.gitignore');
+      if (ideConfig.exists ||
+          (gitignoreFile.existsSync() &&
+              (await gitignoreFile.readAsString())
+                  .split('\n')
+                  .contains('.vscode'))) {
+        await installIdeConfig(
+          scope: scope,
+          ideConfig: ideConfig,
+          environment: environment,
+        );
+      }
+    },
+  );
+}
+
+Future<void> installIdeConfig({
+  required Scope scope,
+  required IdeConfig ideConfig,
+  required EnvConfig environment,
+}) async {
   final flutterSdkPath = environment.flutterDir.path;
   final dartSdkPath = environment.flutter.cache.dartSdkDir.path;
-  for (final entry in {
-    'IntelliJ': await IntelliJConfig.load(scope: scope, projectDir: projectDir),
-    'VSCode': await VSCodeConfig.load(scope: scope, projectDir: projectDir),
-  }.entries) {
-    final ideConfig = entry.value;
-    if (ideConfig == null) {
-      log.v('${entry.key} config not found in current project');
-      continue;
-    }
-    if (ideConfig.flutterSdkDir?.path != flutterSdkPath ||
-        (ideConfig.dartSdkDir != null &&
-            ideConfig.dartSdkDir?.path != dartSdkPath)) {
-      log.v('Configuring ${entry.key}...');
-      ideConfig.dartSdkDir = null;
-      ideConfig.flutterSdkDir = environment.flutterDir;
-      await ideConfig.backup(scope: scope);
-      await ideConfig.save(scope: scope);
-    } else {
-      log.v('${entry.key} already configured');
-    }
+  final log = PuroLogger.of(scope);
+  if (ideConfig.flutterSdkDir?.path != flutterSdkPath ||
+      (ideConfig.dartSdkDir != null &&
+          ideConfig.dartSdkDir?.path != dartSdkPath)) {
+    log.v('Configuring ${environment.name}...');
+    ideConfig.dartSdkDir = null;
+    ideConfig.flutterSdkDir = environment.flutterDir;
+    await ideConfig.backup(scope: scope);
+    await ideConfig.save(scope: scope);
+  } else {
+    log.v('${environment.name} already configured');
   }
 }
 
@@ -74,7 +112,7 @@ Future<void> switchEnvironment({
   final config = PuroConfig.of(scope);
   final model = config.readDotfile();
   final environment =
-      name == null ? config.tryGetCurrentEnv() : config.getEnv(name);
+      name == null ? config.tryGetProjectEnv() : config.getEnv(name);
   if (environment == null) {
     throw AssertionError('No environment provided');
   }

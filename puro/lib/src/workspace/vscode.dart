@@ -10,12 +10,22 @@ class VSCodeConfig extends IdeConfig {
     required super.workspaceDir,
     super.flutterSdkDir,
     super.dartSdkDir,
+    required super.exists,
   });
 
   late final configDir = workspaceDir.childDirectory('.vscode');
   late final settingsFile = configDir.childFile('settings.json');
 
+  @override
+  String get name => 'intellij';
+
   JsonEditor readSettings() {
+    if (!settingsFile.existsSync()) {
+      return JsonEditor(
+        source: '{}',
+        indentLevel: 4,
+      );
+    }
     return JsonEditor(
       source: settingsFile.readAsStringSync(),
       indentLevel: 4,
@@ -70,10 +80,6 @@ class VSCodeConfig extends IdeConfig {
 
   @override
   Future<void> save({required Scope scope}) async {
-    if (!settingsFile.existsSync()) {
-      settingsFile.writeAsStringSync('{}');
-    }
-
     final editor = readSettings();
 
     if (flutterSdkDir == null) {
@@ -94,17 +100,34 @@ class VSCodeConfig extends IdeConfig {
       throw AssertionError('Corrupt settings.json');
     }
 
+    // Delete settings.json and .vscode if they are empty
+    if (editor.source.trim() == '{}' && settingsFile.existsSync()) {
+      settingsFile.deleteSync();
+      if (configDir.listSync().isEmpty) {
+        configDir.deleteSync();
+      }
+    }
+
     settingsFile.writeAsStringSync(editor.source);
   }
 
-  static Future<VSCodeConfig?> load({
+  static Future<VSCodeConfig> load({
     required Scope scope,
     required Directory projectDir,
   }) async {
     final config = PuroConfig.of(scope);
     final workspaceDir = findProjectDir(projectDir, '.vscode');
-    if (workspaceDir == null) return null;
-    final vscodeConfig = VSCodeConfig(workspaceDir: workspaceDir);
+    if (workspaceDir == null) {
+      return VSCodeConfig(
+        workspaceDir:
+            findProjectDir(projectDir, '.git') ?? config.parentProjectDir!,
+        exists: true,
+      );
+    }
+    final vscodeConfig = VSCodeConfig(
+      workspaceDir: workspaceDir,
+      exists: true,
+    );
     if (vscodeConfig.settingsFile.existsSync()) {
       final editor = vscodeConfig.readSettings();
       final flutterSdkPathStr =

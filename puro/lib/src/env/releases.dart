@@ -5,6 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../config.dart';
+import '../extensions.dart';
 import '../file_lock.dart';
 import '../git.dart';
 import '../http.dart';
@@ -41,7 +42,7 @@ Future<FlutterReleasesModel> fetchFlutterReleases({
     final response = await client.get(config.releasesJsonUrl);
     HttpException.ensureSuccess(response);
     config.cachedReleasesJsonFile.parent.createSync(recursive: true);
-    await writeFileAtomic(
+    await writeBytesAtomic(
       scope: scope,
       bytes: response.bodyBytes,
       file: config.cachedReleasesJsonFile,
@@ -110,11 +111,10 @@ Future<FlutterReleaseModel> findFrameworkRelease({
       scope,
       config.cachedReleasesJsonFile,
       (handle) async {
-        final contents = await handle.read(handle.lengthSync());
+        final contents = await handle.readAsString();
         try {
-          final contentsString = utf8.decode(contents);
           cachedReleases = FlutterReleasesModel.create()
-            ..mergeFromProto3Json(jsonDecode(contentsString));
+            ..mergeFromProto3Json(jsonDecode(contents));
         } catch (error, stackTrace) {
           log.w('Error while parsing cached releases');
           log.w('$error\n$stackTrace');
