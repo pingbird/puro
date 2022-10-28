@@ -3,6 +3,7 @@ import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
 
 import '../config.dart';
+import '../logger.dart';
 import '../provider.dart';
 import 'common.dart';
 
@@ -37,16 +38,24 @@ class IntelliJConfig extends IdeConfig {
 
   @override
   Future<void> restore({required Scope scope}) async {
+    final log = PuroLogger.of(scope);
+
     if (dartSdkBakFile.existsSync()) {
       if (dartSdkFile.existsSync()) {
+        log.v('Deleting `${dartSdkFile.path}`');
         dartSdkFile.deleteSync();
       }
+      log.v('Renaming `${dartSdkBakFile.path}` to `${dartSdkFile.path}`');
       dartSdkBakFile.renameSync(dartSdkFile.path);
     }
     if (dartPackagesBakFile.existsSync()) {
       if (dartPackagesFile.existsSync()) {
+        log.v('Deleting `${dartPackagesFile.path}`');
         dartPackagesFile.deleteSync();
       }
+      log.v(
+        'Renaming `${dartPackagesBakFile.path}` to `${dartPackagesFile.path}`',
+      );
       dartPackagesBakFile.renameSync(dartPackagesFile.path);
     }
   }
@@ -61,6 +70,7 @@ class IntelliJConfig extends IdeConfig {
   Future<void> save({required Scope scope}) async {
     final dartSdk = DartSdkConfig(effectiveDartSdkDir!);
     final config = PuroConfig.of(scope);
+    final log = PuroLogger.of(scope);
 
     // The IntelliJ Dart plugin parses this file and walks its AST to extract
     // the keys of this library map, this is dumb. 💀
@@ -129,6 +139,8 @@ class IntelliJConfig extends IdeConfig {
         ),
       ],
     );
+    log.v('Writing to `${dartSdkFile.path}`');
+    dartSdkFile.parent.createSync(recursive: true);
     dartSdkFile.writeAsStringSync(document.toXmlString(pretty: true));
     // IntellIJ will re-populate this file immediately after we delete it
     if (dartPackagesFile.existsSync()) {
