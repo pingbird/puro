@@ -200,10 +200,11 @@ workflows:
         equal: [ "master", << pipeline.git.branch >> ]
 
   release:
-    tags:
-      only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-    branches:
-      ignore: /.*/
+    when:
+      tags:
+        only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+      branches:
+        ignore: /.*/
     jobs:
       - linux_build
       - macos_build
