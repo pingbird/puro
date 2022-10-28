@@ -81,7 +81,7 @@ commands:
           command: |-
             mkdir builds\windows-x64
             dart compile exe puro/bin/puro.dart
-            cp puro/bin/puro.exe builds/<< parameters.os_name >>/puro.exe
+            cp puro/bin/puro.exe builds/windows-x64/puro.exe
       - persist_to_workspace:
           root: C:\Users\circleci\project
           paths:
