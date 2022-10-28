@@ -6,8 +6,9 @@ Future<EnvConfig> getProjectEnvOrDefault({
   required Scope scope,
 }) async {
   final config = PuroConfig.of(scope);
-  final env = config.tryGetProjectEnv();
-  if (env == null) {
+  final env = config.tryGetProjectEnv() ??
+      config.getEnv(await getDefaultEnvName(scope: scope));
+  if (!env.exists) {
     if (config.projectDir == null) {
       throw AssertionError(
         'Not inside a Dart project and no default environment.',
@@ -18,7 +19,7 @@ Future<EnvConfig> getProjectEnvOrDefault({
       );
     }
   }
-  return env..ensureExists();
+  return env;
 }
 
 Future<String> getDefaultEnvName({

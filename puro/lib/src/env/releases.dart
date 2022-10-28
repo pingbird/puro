@@ -13,23 +13,7 @@ import '../logger.dart';
 import '../progress.dart';
 import '../proto/flutter_releases.pb.dart';
 import '../provider.dart';
-
-enum FlutterChannel {
-  master,
-  dev,
-  beta,
-  stable;
-
-  static FlutterChannel? parse(String name) {
-    name = name.toLowerCase();
-    for (final channel in values) {
-      if (channel.name == name) {
-        return channel;
-      }
-    }
-    return null;
-  }
-}
+import 'version.dart';
 
 /// Fetches all of the available Flutter releases.
 Future<FlutterReleasesModel> fetchFlutterReleases({

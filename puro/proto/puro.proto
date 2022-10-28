@@ -12,24 +12,28 @@ message LogEntryModel {
   string message = 3;
 }
 
-message EnvironmentSummaryModel {
+message FlutterVersionModel {
+  string commit = 1;
+  optional string version = 2;
+  optional string branch = 3;
+  optional string tag = 4;
+}
+
+message EnvironmentInfoModel {
   string name = 1;
   string path = 2;
+  optional FlutterVersionModel version = 3;
 }
 
 message EnvironmentListModel {
-  repeated EnvironmentSummaryModel environments = 1;
+  repeated EnvironmentInfoModel environments = 1;
   optional string selectedEnvironment = 2;
 }
 
 message EnvironmentUpgradeModel {
-  string environment = 1;
-  optional string fromChannel = 2;
-  optional string fromVersion = 3;
-  string fromCommit = 4;
-  optional string toChannel = 5;
-  optional string toVersion = 6;
-  string toCommit = 7;
+  string name = 1;
+  FlutterVersionModel from = 2;
+  FlutterVersionModel to = 3;
 }
 
 message CommandResultModel {

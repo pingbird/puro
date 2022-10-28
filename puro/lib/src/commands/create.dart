@@ -1,5 +1,6 @@
 import '../command.dart';
 import '../env/create.dart';
+import '../env/version.dart';
 
 class EnvCreateCommand extends PuroCommand {
   EnvCreateCommand() {

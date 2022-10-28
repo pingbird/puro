@@ -132,7 +132,7 @@ class PuroConfig {
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
 
-  late final File defaultEnvNameFile = puroRoot.childFile('puro_env');
+  late final File defaultEnvNameFile = puroRoot.childFile('default_env');
 
   @override
   String toString() {
@@ -294,6 +294,7 @@ class FlutterConfig {
   late final File flutterToolsPackageConfigJsonFile = flutterToolsDir
       .childDirectory('.dart_tool')
       .childFile('package_config.json');
+  late final File versionFile = sdkDir.childFile('version');
 
   String? get engineVersion => engineVersionFile.existsSync()
       ? engineVersionFile.readAsStringSync().trim()

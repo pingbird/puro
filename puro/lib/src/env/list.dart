@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:file/file.dart';
 import 'package:neoansi/neoansi.dart';
 
@@ -6,14 +8,30 @@ import '../config.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';
 import '../terminal.dart';
+import 'version.dart';
+
+class EnvironmentInfoResult {
+  EnvironmentInfoResult(this.environment, this.version);
+
+  final EnvConfig environment;
+  final FlutterVersion? version;
+
+  EnvironmentInfoModel toModel() {
+    return EnvironmentInfoModel(
+      name: environment.name,
+      path: environment.envDir.path,
+      version: version?.toModel(),
+    );
+  }
+}
 
 class ListEnvironmentResult extends CommandResult {
   ListEnvironmentResult({
-    required this.environments,
+    required this.results,
     required this.selectedEnvironment,
   });
 
-  final List<EnvConfig> environments;
+  final List<EnvironmentInfoResult> results;
   final String? selectedEnvironment;
 
   @override
@@ -21,27 +39,40 @@ class ListEnvironmentResult extends CommandResult {
 
   @override
   String description(OutputFormatter format) {
-    if (environments.isEmpty) {
+    if (results.isEmpty) {
       return 'No environments, use `puro create` to create one';
     }
+
+    final lines = <String>[];
+
+    for (final result in results) {
+      final name = result.environment.name;
+      if (name == selectedEnvironment) {
+        lines.add(
+          format.color(
+                '* ',
+                foregroundColor: Ansi8BitColor.green,
+                bold: true,
+              ) +
+              format.color(name, bold: true),
+        );
+      } else {
+        lines.add('  $name');
+      }
+    }
+
+    final linePadding = lines.fold<int>(0, (v, e) => max(v, e.length));
+
     return [
       'Environments:',
-      ...environments.map(
-        (e) {
-          if (e.name == selectedEnvironment) {
-            return format.color(
-                  '* ',
-                  foregroundColor: Ansi8BitColor.green,
-                  bold: true,
-                ) +
-                format.color(e.name, bold: true);
-          } else {
-            return '  ${e.name}';
-          }
-        },
-      ),
+      for (var i = 0; i < lines.length; i++)
+        lines[i].padRight(linePadding) +
+            format.color(
+              ' (${results[i].version ?? 'unknown'})',
+              foregroundColor: Ansi8BitColor.grey,
+            ),
       '',
-      'Use `puro use <name>` to switch, or `puro create <name>` to create new environments',
+      'Use `puro use <name>` to switch, or `puro create <name>` to create an environment',
     ].join('\n');
   }
 
@@ -51,11 +82,7 @@ class ListEnvironmentResult extends CommandResult {
       success: true,
       environmentList: EnvironmentListModel(
         environments: [
-          for (final environment in environments)
-            EnvironmentSummaryModel(
-              name: environment.name,
-              path: environment.envDir.path,
-            )
+          for (final info in results) info.toModel(),
         ],
         selectedEnvironment: selectedEnvironment,
       ),
@@ -68,13 +95,23 @@ Future<ListEnvironmentResult> listEnvironments({
   required Scope scope,
 }) async {
   final config = PuroConfig.of(scope);
+  final results = <EnvironmentInfoResult>[];
+
+  if (config.envsDir.existsSync()) {
+    for (final childEntity in config.envsDir.listSync()) {
+      if (childEntity is! Directory || !isValidName(childEntity.basename)) {
+        continue;
+      }
+      final environment = config.getEnv(childEntity.basename);
+      final version = await getEnvironmentFlutterVersion(
+        scope: scope,
+        environment: environment,
+      );
+      results.add(EnvironmentInfoResult(environment, version));
+    }
+  }
   return ListEnvironmentResult(
-    environments: [
-      if (config.envsDir.existsSync())
-        for (final childEntity in config.envsDir.listSync())
-          if (childEntity is Directory && isValidName(childEntity.basename))
-            config.getEnv(childEntity.basename),
-    ],
+    results: results,
     selectedEnvironment: config.tryGetProjectEnv()?.name,
   );
 }

@@ -222,11 +222,137 @@ class LogEntryModel extends $pb.GeneratedMessage {
   void clearMessage() => clearField(3);
 }
 
-class EnvironmentSummaryModel extends $pb.GeneratedMessage {
+class FlutterVersionModel extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       const $core.bool.fromEnvironment('protobuf.omit_message_names')
           ? ''
-          : 'EnvironmentSummaryModel',
+          : 'FlutterVersionModel',
+      createEmptyInstance: create)
+    ..aOS(
+        1,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'commit')
+    ..aOS(
+        2,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'version')
+    ..aOS(
+        3,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'branch')
+    ..aOS(
+        4,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'tag')
+    ..hasRequiredFields = false;
+
+  FlutterVersionModel._() : super();
+  factory FlutterVersionModel({
+    $core.String? commit,
+    $core.String? version,
+    $core.String? branch,
+    $core.String? tag,
+  }) {
+    final _result = create();
+    if (commit != null) {
+      _result.commit = commit;
+    }
+    if (version != null) {
+      _result.version = version;
+    }
+    if (branch != null) {
+      _result.branch = branch;
+    }
+    if (tag != null) {
+      _result.tag = tag;
+    }
+    return _result;
+  }
+  factory FlutterVersionModel.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory FlutterVersionModel.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  FlutterVersionModel clone() => FlutterVersionModel()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  FlutterVersionModel copyWith(void Function(FlutterVersionModel) updates) =>
+      super.copyWith((message) => updates(message as FlutterVersionModel))
+          as FlutterVersionModel; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static FlutterVersionModel create() => FlutterVersionModel._();
+  FlutterVersionModel createEmptyInstance() => create();
+  static $pb.PbList<FlutterVersionModel> createRepeated() =>
+      $pb.PbList<FlutterVersionModel>();
+  @$core.pragma('dart2js:noInline')
+  static FlutterVersionModel getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FlutterVersionModel>(create);
+  static FlutterVersionModel? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get commit => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set commit($core.String v) {
+    $_setString(0, v);
+  }
+
+  @$pb.TagNumber(1)
+  $core.bool hasCommit() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCommit() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get version => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set version($core.String v) {
+    $_setString(1, v);
+  }
+
+  @$pb.TagNumber(2)
+  $core.bool hasVersion() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearVersion() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get branch => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set branch($core.String v) {
+    $_setString(2, v);
+  }
+
+  @$pb.TagNumber(3)
+  $core.bool hasBranch() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBranch() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get tag => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set tag($core.String v) {
+    $_setString(3, v);
+  }
+
+  @$pb.TagNumber(4)
+  $core.bool hasTag() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTag() => clearField(4);
+}
+
+class EnvironmentInfoModel extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      const $core.bool.fromEnvironment('protobuf.omit_message_names')
+          ? ''
+          : 'EnvironmentInfoModel',
       createEmptyInstance: create)
     ..aOS(
         1,
@@ -238,12 +364,19 @@ class EnvironmentSummaryModel extends $pb.GeneratedMessage {
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
             : 'path')
+    ..aOM<FlutterVersionModel>(
+        3,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'version',
+        subBuilder: FlutterVersionModel.create)
     ..hasRequiredFields = false;
 
-  EnvironmentSummaryModel._() : super();
-  factory EnvironmentSummaryModel({
+  EnvironmentInfoModel._() : super();
+  factory EnvironmentInfoModel({
     $core.String? name,
     $core.String? path,
+    FlutterVersionModel? version,
   }) {
     final _result = create();
     if (name != null) {
@@ -252,36 +385,38 @@ class EnvironmentSummaryModel extends $pb.GeneratedMessage {
     if (path != null) {
       _result.path = path;
     }
+    if (version != null) {
+      _result.version = version;
+    }
     return _result;
   }
-  factory EnvironmentSummaryModel.fromBuffer($core.List<$core.int> i,
+  factory EnvironmentInfoModel.fromBuffer($core.List<$core.int> i,
           [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromBuffer(i, r);
-  factory EnvironmentSummaryModel.fromJson($core.String i,
+  factory EnvironmentInfoModel.fromJson($core.String i,
           [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromJson(i, r);
   @$core.Deprecated('Using this can add significant overhead to your binary. '
       'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
       'Will be removed in next major version')
-  EnvironmentSummaryModel clone() =>
-      EnvironmentSummaryModel()..mergeFromMessage(this);
+  EnvironmentInfoModel clone() =>
+      EnvironmentInfoModel()..mergeFromMessage(this);
   @$core.Deprecated('Using this can add significant overhead to your binary. '
       'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
       'Will be removed in next major version')
-  EnvironmentSummaryModel copyWith(
-          void Function(EnvironmentSummaryModel) updates) =>
-      super.copyWith((message) => updates(message as EnvironmentSummaryModel))
-          as EnvironmentSummaryModel; // ignore: deprecated_member_use
+  EnvironmentInfoModel copyWith(void Function(EnvironmentInfoModel) updates) =>
+      super.copyWith((message) => updates(message as EnvironmentInfoModel))
+          as EnvironmentInfoModel; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
-  static EnvironmentSummaryModel create() => EnvironmentSummaryModel._();
-  EnvironmentSummaryModel createEmptyInstance() => create();
-  static $pb.PbList<EnvironmentSummaryModel> createRepeated() =>
-      $pb.PbList<EnvironmentSummaryModel>();
+  static EnvironmentInfoModel create() => EnvironmentInfoModel._();
+  EnvironmentInfoModel createEmptyInstance() => create();
+  static $pb.PbList<EnvironmentInfoModel> createRepeated() =>
+      $pb.PbList<EnvironmentInfoModel>();
   @$core.pragma('dart2js:noInline')
-  static EnvironmentSummaryModel getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<EnvironmentSummaryModel>(create);
-  static EnvironmentSummaryModel? _defaultInstance;
+  static EnvironmentInfoModel getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<EnvironmentInfoModel>(create);
+  static EnvironmentInfoModel? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get name => $_getSZ(0);
@@ -306,6 +441,20 @@ class EnvironmentSummaryModel extends $pb.GeneratedMessage {
   $core.bool hasPath() => $_has(1);
   @$pb.TagNumber(2)
   void clearPath() => clearField(2);
+
+  @$pb.TagNumber(3)
+  FlutterVersionModel get version => $_getN(2);
+  @$pb.TagNumber(3)
+  set version(FlutterVersionModel v) {
+    setField(3, v);
+  }
+
+  @$pb.TagNumber(3)
+  $core.bool hasVersion() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearVersion() => clearField(3);
+  @$pb.TagNumber(3)
+  FlutterVersionModel ensureVersion() => $_ensure(2);
 }
 
 class EnvironmentListModel extends $pb.GeneratedMessage {
@@ -314,13 +463,13 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
           ? ''
           : 'EnvironmentListModel',
       createEmptyInstance: create)
-    ..pc<EnvironmentSummaryModel>(
+    ..pc<EnvironmentInfoModel>(
         1,
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
             : 'environments',
         $pb.PbFieldType.PM,
-        subBuilder: EnvironmentSummaryModel.create)
+        subBuilder: EnvironmentInfoModel.create)
     ..aOS(
         2,
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
@@ -331,7 +480,7 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
 
   EnvironmentListModel._() : super();
   factory EnvironmentListModel({
-    $core.Iterable<EnvironmentSummaryModel>? environments,
+    $core.Iterable<EnvironmentInfoModel>? environments,
     $core.String? selectedEnvironment,
   }) {
     final _result = create();
@@ -372,7 +521,7 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
   static EnvironmentListModel? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<EnvironmentSummaryModel> get environments => $_getList(0);
+  $core.List<EnvironmentInfoModel> get environments => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.String get selectedEnvironment => $_getSZ(1);
@@ -397,76 +546,36 @@ class EnvironmentUpgradeModel extends $pb.GeneratedMessage {
         1,
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
-            : 'environment')
-    ..aOS(
+            : 'name')
+    ..aOM<FlutterVersionModel>(
         2,
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
-            : 'fromChannel',
-        protoName: 'fromChannel')
-    ..aOS(
+            : 'from',
+        subBuilder: FlutterVersionModel.create)
+    ..aOM<FlutterVersionModel>(
         3,
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
-            : 'fromVersion',
-        protoName: 'fromVersion')
-    ..aOS(
-        4,
-        const $core.bool.fromEnvironment('protobuf.omit_field_names')
-            ? ''
-            : 'fromCommit',
-        protoName: 'fromCommit')
-    ..aOS(
-        5,
-        const $core.bool.fromEnvironment('protobuf.omit_field_names')
-            ? ''
-            : 'toChannel',
-        protoName: 'toChannel')
-    ..aOS(
-        6,
-        const $core.bool.fromEnvironment('protobuf.omit_field_names')
-            ? ''
-            : 'toVersion',
-        protoName: 'toVersion')
-    ..aOS(
-        7,
-        const $core.bool.fromEnvironment('protobuf.omit_field_names')
-            ? ''
-            : 'toCommit',
-        protoName: 'toCommit')
+            : 'to',
+        subBuilder: FlutterVersionModel.create)
     ..hasRequiredFields = false;
 
   EnvironmentUpgradeModel._() : super();
   factory EnvironmentUpgradeModel({
-    $core.String? environment,
-    $core.String? fromChannel,
-    $core.String? fromVersion,
-    $core.String? fromCommit,
-    $core.String? toChannel,
-    $core.String? toVersion,
-    $core.String? toCommit,
+    $core.String? name,
+    FlutterVersionModel? from,
+    FlutterVersionModel? to,
   }) {
     final _result = create();
-    if (environment != null) {
-      _result.environment = environment;
+    if (name != null) {
+      _result.name = name;
     }
-    if (fromChannel != null) {
-      _result.fromChannel = fromChannel;
+    if (from != null) {
+      _result.from = from;
     }
-    if (fromVersion != null) {
-      _result.fromVersion = fromVersion;
-    }
-    if (fromCommit != null) {
-      _result.fromCommit = fromCommit;
-    }
-    if (toChannel != null) {
-      _result.toChannel = toChannel;
-    }
-    if (toVersion != null) {
-      _result.toVersion = toVersion;
-    }
-    if (toCommit != null) {
-      _result.toCommit = toCommit;
+    if (to != null) {
+      _result.to = to;
     }
     return _result;
   }
@@ -500,88 +609,44 @@ class EnvironmentUpgradeModel extends $pb.GeneratedMessage {
   static EnvironmentUpgradeModel? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get environment => $_getSZ(0);
+  $core.String get name => $_getSZ(0);
   @$pb.TagNumber(1)
-  set environment($core.String v) {
+  set name($core.String v) {
     $_setString(0, v);
   }
 
   @$pb.TagNumber(1)
-  $core.bool hasEnvironment() => $_has(0);
+  $core.bool hasName() => $_has(0);
   @$pb.TagNumber(1)
-  void clearEnvironment() => clearField(1);
+  void clearName() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get fromChannel => $_getSZ(1);
+  FlutterVersionModel get from => $_getN(1);
   @$pb.TagNumber(2)
-  set fromChannel($core.String v) {
-    $_setString(1, v);
+  set from(FlutterVersionModel v) {
+    setField(2, v);
   }
 
   @$pb.TagNumber(2)
-  $core.bool hasFromChannel() => $_has(1);
+  $core.bool hasFrom() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFromChannel() => clearField(2);
+  void clearFrom() => clearField(2);
+  @$pb.TagNumber(2)
+  FlutterVersionModel ensureFrom() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $core.String get fromVersion => $_getSZ(2);
+  FlutterVersionModel get to => $_getN(2);
   @$pb.TagNumber(3)
-  set fromVersion($core.String v) {
-    $_setString(2, v);
+  set to(FlutterVersionModel v) {
+    setField(3, v);
   }
 
   @$pb.TagNumber(3)
-  $core.bool hasFromVersion() => $_has(2);
+  $core.bool hasTo() => $_has(2);
   @$pb.TagNumber(3)
-  void clearFromVersion() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get fromCommit => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set fromCommit($core.String v) {
-    $_setString(3, v);
-  }
-
-  @$pb.TagNumber(4)
-  $core.bool hasFromCommit() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearFromCommit() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get toChannel => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set toChannel($core.String v) {
-    $_setString(4, v);
-  }
-
-  @$pb.TagNumber(5)
-  $core.bool hasToChannel() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearToChannel() => clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.String get toVersion => $_getSZ(5);
-  @$pb.TagNumber(6)
-  set toVersion($core.String v) {
-    $_setString(5, v);
-  }
-
-  @$pb.TagNumber(6)
-  $core.bool hasToVersion() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearToVersion() => clearField(6);
-
-  @$pb.TagNumber(7)
-  $core.String get toCommit => $_getSZ(6);
-  @$pb.TagNumber(7)
-  set toCommit($core.String v) {
-    $_setString(6, v);
-  }
-
-  @$pb.TagNumber(7)
-  $core.bool hasToCommit() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearToCommit() => clearField(7);
+  void clearTo() => clearField(3);
+  @$pb.TagNumber(3)
+  FlutterVersionModel ensureTo() => $_ensure(2);
 }
 
 class CommandResultModel extends $pb.GeneratedMessage {

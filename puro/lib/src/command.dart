@@ -57,8 +57,13 @@ class CommandHelpResult extends CommandResult {
   }
 
   @override
-  String description(OutputFormatter format) =>
-      [message, usage].where((e) => e != null).join('\n').trim();
+  String description(OutputFormatter format) {
+    return [
+      if (message != null) format.failure(message!),
+      if (usage != null)
+        if (message == null && didRequestHelp) usage! else format.info(usage!),
+    ].join('\n').trim();
+  }
 }
 
 abstract class CommandResult {
@@ -125,12 +130,17 @@ abstract class PuroCommand extends Command<CommandResult> {
         : '$invocation${argumentUsage == null ? '' : ' $argumentUsage'}';
   }
 
+  String get usageWithoutDescription {
+    final usageLines = usage.split('\n');
+    return usageLines.skipWhile((line) => line.isNotEmpty).join('\n').trim();
+  }
+
   @override
   void printUsage() {
     runner.writeResultAndExit(
       CommandHelpResult(
         didRequestHelp: runner.didRequestHelp,
-        usage: usage,
+        usage: usageWithoutDescription,
       ),
     );
   }
@@ -140,7 +150,7 @@ abstract class PuroCommand extends Command<CommandResult> {
     if (rest.length != 1) {
       throw UsageException(
         'Exactly one argument expected, got ${rest.length}',
-        usage,
+        usageWithoutDescription,
       );
     }
     return rest.first;
@@ -156,7 +166,7 @@ abstract class PuroCommand extends Command<CommandResult> {
     if (rest.length < startingAt + atLeast) {
       throw UsageException(
         'At least ${startingAt + atLeast} arguments expected, got ${rest.length}',
-        usage,
+        usageWithoutDescription,
       );
     }
     rest = rest.skip(startingAt);
@@ -164,7 +174,7 @@ abstract class PuroCommand extends Command<CommandResult> {
     if (exactly != null && rest.length != exactly) {
       throw UsageException(
         'Exactly ${exactly + startingAt} arguments expected, got ${rest.length}',
-        usage,
+        usageWithoutDescription,
       );
     }
 
@@ -172,7 +182,7 @@ abstract class PuroCommand extends Command<CommandResult> {
       if (rest.length > atMost) {
         throw UsageException(
           'At most ${atMost + startingAt} arguments expected, got ${rest.length}',
-          usage,
+          usageWithoutDescription,
         );
       }
       rest = rest.take(atMost);

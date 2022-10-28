@@ -1,61 +1,36 @@
-import 'package:pub_semver/pub_semver.dart';
-
 import '../command.dart';
 import '../config.dart';
+import '../logger.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';
 import '../terminal.dart';
-import 'releases.dart';
+import 'create.dart';
+import 'engine.dart';
+import 'version.dart';
 
 class EnvUpgradeResult extends CommandResult {
   EnvUpgradeResult({
     required this.environment,
-    required this.fromChannel,
-    required this.fromVersion,
-    required this.fromCommit,
-    required this.toChannel,
-    required this.toVersion,
-    required this.toCommit,
+    required this.from,
+    required this.to,
   });
 
   final EnvConfig environment;
-  final FlutterChannel? fromChannel;
-  final Version? fromVersion;
-  final String fromCommit;
-  final FlutterChannel? toChannel;
-  final Version? toVersion;
-  final String toCommit;
+  final FlutterVersion from;
+  final FlutterVersion to;
 
   @override
-  String description(OutputFormatter format) => [
-        'Upgraded `${environment.name}` from',
-        if (fromChannel != null) fromChannel?.name,
-        if (fromVersion != null) '$fromVersion',
-        if (fromChannel != null || fromVersion != null)
-          '(commit $fromCommit)'
-        else
-          fromCommit,
-        'to',
-        if (toChannel != null) toChannel?.name,
-        if (toVersion != null) '$toVersion',
-        if (toChannel != null || toVersion != null)
-          '(commit $toCommit)'
-        else
-          toCommit,
-      ].join(' ');
+  String description(OutputFormatter format) =>
+      'Upgraded `${environment.name}` from $from to $to';
 
   @override
   CommandResultModel toModel() {
     return CommandResultModel(
       success: true,
       environmentUpgrade: EnvironmentUpgradeModel(
-        environment: environment.name,
-        fromChannel: fromChannel?.name,
-        fromVersion: fromVersion?.toString(),
-        fromCommit: fromCommit,
-        toChannel: toChannel?.name,
-        toVersion: toVersion?.toString(),
-        toCommit: toCommit,
+        name: environment.name,
+        from: from.toModel(),
+        to: to.toModel(),
       ),
     );
   }
@@ -64,11 +39,33 @@ class EnvUpgradeResult extends CommandResult {
 /// Upgrades an environment to a different version of flutter.
 Future<EnvUpgradeResult> upgradeEnvironment({
   required Scope scope,
-  required String name,
-  Version? version,
-  FlutterChannel? channel,
+  required EnvConfig environment,
+  required FlutterVersion flutterVersion,
 }) async {
-  final config = PuroConfig.of(scope);
-  final env = config.getEnv(name);
-  throw UnimplementedError();
+  final log = PuroLogger.of(scope);
+  environment.ensureExists();
+
+  log.v('Upgrading environment in ${environment.envDir.path}');
+
+  final fromVersion = await getEnvironmentFlutterVersion(
+    scope: scope,
+    environment: environment,
+  );
+
+  await cloneFlutterWithSharedRefs(
+    scope: scope,
+    repository: environment.envDir,
+    flutterVersion: flutterVersion,
+  );
+
+  await setUpFlutterTool(
+    scope: scope,
+    environment: environment,
+  );
+
+  return EnvUpgradeResult(
+    environment: environment,
+    from: fromVersion,
+    to: flutterVersion,
+  );
 }

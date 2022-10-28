@@ -316,6 +316,19 @@ class GitClient {
     );
   }
 
+  /// Same as [getCurrentCommitHash] but returns null on failure.
+  Future<String?> tryGetCurrentCommitHash({
+    required Directory repository,
+    bool short = false,
+    String branch = 'HEAD',
+  }) {
+    return tryRevParseSingle(
+      repository: repository,
+      short: short,
+      arg: branch,
+    );
+  }
+
   /// Attempts to get the branch of the current commit, returns null if we are
   /// detached from a branch.
   Future<String?> getBranch({

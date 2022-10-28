@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:args/args.dart';
 
 import '../command.dart';
+import '../env/command.dart';
 import '../env/default.dart';
-import '../env/engine.dart';
-import '../process.dart';
 
 class DartCommand extends PuroCommand {
   @override
@@ -23,30 +22,13 @@ class DartCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final environment = await getProjectEnvOrDefault(scope: scope);
-    final flutterConfig = environment.flutter;
-    await setUpFlutterTool(
+    final exitCode = await runDartCommand(
       scope: scope,
       environment: environment,
+      args: argResults!.arguments,
+      onStdout: stdout.add,
+      onStderr: stderr.add,
     );
-    final flutterProcess = await startProcess(
-      scope,
-      flutterConfig.cache.dartSdk.dartExecutable.path,
-      [
-        '--disable-dart-dev',
-        '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
-        if (environment.flutterToolArgs.isNotEmpty)
-          ...environment.flutterToolArgs.split(RegExp(r'\S+')),
-        flutterConfig.cache.flutterToolsSnapshotFile.path,
-        ...argResults!.arguments,
-      ],
-    );
-    final stdoutFuture =
-        flutterProcess.stdout.listen(stdout.add).asFuture<void>();
-    final stderrFuture =
-        flutterProcess.stderr.listen(stderr.add).asFuture<void>();
-    final exitCode = await flutterProcess.exitCode;
-    await stdoutFuture;
-    await stderrFuture;
     exit(exitCode);
   }
 }

@@ -35,19 +35,66 @@ const LogEntryModel$json = const {
 /// Descriptor for `LogEntryModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List logEntryModelDescriptor = $convert.base64Decode(
     'Cg1Mb2dFbnRyeU1vZGVsEhwKCXRpbWVzdGFtcBgBIAEoCVIJdGltZXN0YW1wEhQKBWxldmVsGAIgASgFUgVsZXZlbBIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
-@$core.Deprecated('Use environmentSummaryModelDescriptor instead')
-const EnvironmentSummaryModel$json = const {
-  '1': 'EnvironmentSummaryModel',
+@$core.Deprecated('Use flutterVersionModelDescriptor instead')
+const FlutterVersionModel$json = const {
+  '1': 'FlutterVersionModel',
   '2': const [
-    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
-    const {'1': 'path', '3': 2, '4': 1, '5': 9, '10': 'path'},
+    const {'1': 'commit', '3': 1, '4': 1, '5': 9, '10': 'commit'},
+    const {
+      '1': 'version',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'version',
+      '17': true
+    },
+    const {
+      '1': 'branch',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'branch',
+      '17': true
+    },
+    const {'1': 'tag', '3': 4, '4': 1, '5': 9, '9': 2, '10': 'tag', '17': true},
+  ],
+  '8': const [
+    const {'1': '_version'},
+    const {'1': '_branch'},
+    const {'1': '_tag'},
   ],
 };
 
-/// Descriptor for `EnvironmentSummaryModel`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List environmentSummaryModelDescriptor =
-    $convert.base64Decode(
-        'ChdFbnZpcm9ubWVudFN1bW1hcnlNb2RlbBISCgRuYW1lGAEgASgJUgRuYW1lEhIKBHBhdGgYAiABKAlSBHBhdGg=');
+/// Descriptor for `FlutterVersionModel`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List flutterVersionModelDescriptor = $convert.base64Decode(
+    'ChNGbHV0dGVyVmVyc2lvbk1vZGVsEhYKBmNvbW1pdBgBIAEoCVIGY29tbWl0Eh0KB3ZlcnNpb24YAiABKAlIAFIHdmVyc2lvbogBARIbCgZicmFuY2gYAyABKAlIAVIGYnJhbmNoiAEBEhUKA3RhZxgEIAEoCUgCUgN0YWeIAQFCCgoIX3ZlcnNpb25CCQoHX2JyYW5jaEIGCgRfdGFn');
+@$core.Deprecated('Use environmentInfoModelDescriptor instead')
+const EnvironmentInfoModel$json = const {
+  '1': 'EnvironmentInfoModel',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'path', '3': 2, '4': 1, '5': 9, '10': 'path'},
+    const {
+      '1': 'version',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.FlutterVersionModel',
+      '9': 0,
+      '10': 'version',
+      '17': true
+    },
+  ],
+  '8': const [
+    const {'1': '_version'},
+  ],
+};
+
+/// Descriptor for `EnvironmentInfoModel`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List environmentInfoModelDescriptor = $convert.base64Decode(
+    'ChRFbnZpcm9ubWVudEluZm9Nb2RlbBISCgRuYW1lGAEgASgJUgRuYW1lEhIKBHBhdGgYAiABKAlSBHBhdGgSMwoHdmVyc2lvbhgDIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIHdmVyc2lvbogBAUIKCghfdmVyc2lvbg==');
 @$core.Deprecated('Use environmentListModelDescriptor instead')
 const EnvironmentListModel$json = const {
   '1': 'EnvironmentListModel',
@@ -57,7 +104,7 @@ const EnvironmentListModel$json = const {
       '3': 1,
       '4': 3,
       '5': 11,
-      '6': '.EnvironmentSummaryModel',
+      '6': '.EnvironmentInfoModel',
       '10': 'environments'
     },
     const {
@@ -77,63 +124,35 @@ const EnvironmentListModel$json = const {
 
 /// Descriptor for `EnvironmentListModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List environmentListModelDescriptor = $convert.base64Decode(
-    'ChRFbnZpcm9ubWVudExpc3RNb2RlbBI8CgxlbnZpcm9ubWVudHMYASADKAsyGC5FbnZpcm9ubWVudFN1bW1hcnlNb2RlbFIMZW52aXJvbm1lbnRzEjUKE3NlbGVjdGVkRW52aXJvbm1lbnQYAiABKAlIAFITc2VsZWN0ZWRFbnZpcm9ubWVudIgBAUIWChRfc2VsZWN0ZWRFbnZpcm9ubWVudA==');
+    'ChRFbnZpcm9ubWVudExpc3RNb2RlbBI5CgxlbnZpcm9ubWVudHMYASADKAsyFS5FbnZpcm9ubWVudEluZm9Nb2RlbFIMZW52aXJvbm1lbnRzEjUKE3NlbGVjdGVkRW52aXJvbm1lbnQYAiABKAlIAFITc2VsZWN0ZWRFbnZpcm9ubWVudIgBAUIWChRfc2VsZWN0ZWRFbnZpcm9ubWVudA==');
 @$core.Deprecated('Use environmentUpgradeModelDescriptor instead')
 const EnvironmentUpgradeModel$json = const {
   '1': 'EnvironmentUpgradeModel',
   '2': const [
-    const {'1': 'environment', '3': 1, '4': 1, '5': 9, '10': 'environment'},
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
     const {
-      '1': 'fromChannel',
+      '1': 'from',
       '3': 2,
       '4': 1,
-      '5': 9,
-      '9': 0,
-      '10': 'fromChannel',
-      '17': true
+      '5': 11,
+      '6': '.FlutterVersionModel',
+      '10': 'from'
     },
     const {
-      '1': 'fromVersion',
+      '1': 'to',
       '3': 3,
       '4': 1,
-      '5': 9,
-      '9': 1,
-      '10': 'fromVersion',
-      '17': true
+      '5': 11,
+      '6': '.FlutterVersionModel',
+      '10': 'to'
     },
-    const {'1': 'fromCommit', '3': 4, '4': 1, '5': 9, '10': 'fromCommit'},
-    const {
-      '1': 'toChannel',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '9': 2,
-      '10': 'toChannel',
-      '17': true
-    },
-    const {
-      '1': 'toVersion',
-      '3': 6,
-      '4': 1,
-      '5': 9,
-      '9': 3,
-      '10': 'toVersion',
-      '17': true
-    },
-    const {'1': 'toCommit', '3': 7, '4': 1, '5': 9, '10': 'toCommit'},
-  ],
-  '8': const [
-    const {'1': '_fromChannel'},
-    const {'1': '_fromVersion'},
-    const {'1': '_toChannel'},
-    const {'1': '_toVersion'},
   ],
 };
 
 /// Descriptor for `EnvironmentUpgradeModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List environmentUpgradeModelDescriptor =
     $convert.base64Decode(
-        'ChdFbnZpcm9ubWVudFVwZ3JhZGVNb2RlbBIgCgtlbnZpcm9ubWVudBgBIAEoCVILZW52aXJvbm1lbnQSJQoLZnJvbUNoYW5uZWwYAiABKAlIAFILZnJvbUNoYW5uZWyIAQESJQoLZnJvbVZlcnNpb24YAyABKAlIAVILZnJvbVZlcnNpb26IAQESHgoKZnJvbUNvbW1pdBgEIAEoCVIKZnJvbUNvbW1pdBIhCgl0b0NoYW5uZWwYBSABKAlIAlIJdG9DaGFubmVsiAEBEiEKCXRvVmVyc2lvbhgGIAEoCUgDUgl0b1ZlcnNpb26IAQESGgoIdG9Db21taXQYByABKAlSCHRvQ29tbWl0Qg4KDF9mcm9tQ2hhbm5lbEIOCgxfZnJvbVZlcnNpb25CDAoKX3RvQ2hhbm5lbEIMCgpfdG9WZXJzaW9u');
+        'ChdFbnZpcm9ubWVudFVwZ3JhZGVNb2RlbBISCgRuYW1lGAEgASgJUgRuYW1lEigKBGZyb20YAiABKAsyFC5GbHV0dGVyVmVyc2lvbk1vZGVsUgRmcm9tEiQKAnRvGAMgASgLMhQuRmx1dHRlclZlcnNpb25Nb2RlbFICdG8=');
 @$core.Deprecated('Use commandResultModelDescriptor instead')
 const CommandResultModel$json = const {
   '1': 'CommandResultModel',

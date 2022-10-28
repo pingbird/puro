@@ -10,6 +10,7 @@ import 'commands/flutter.dart';
 import 'commands/generate-docs.dart';
 import 'commands/ls.dart';
 import 'commands/rm.dart';
+import 'commands/upgrade.dart';
 import 'commands/use.dart';
 import 'commands/version.dart';
 import 'logger.dart';
@@ -181,6 +182,7 @@ void main(List<String> args) async {
   runner
     ..addCommand(VersionCommand())
     ..addCommand(EnvCreateCommand())
+    ..addCommand(EnvUpgradeCommand())
     ..addCommand(EnvLsCommand())
     ..addCommand(EnvUseCommand())
     ..addCommand(CleanCommand())

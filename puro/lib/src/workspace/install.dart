@@ -1,7 +1,7 @@
 import 'package:file/file.dart';
 
 import '../config.dart';
-import '../env/releases.dart';
+import '../env/version.dart';
 import '../logger.dart';
 import '../provider.dart';
 import 'common.dart';
