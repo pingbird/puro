@@ -6,7 +6,6 @@ orbs:
 commands:
   install_dart:
     steps:
-      - when:
       - run:
           name: "Install Dart"
           command: |-
