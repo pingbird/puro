@@ -107,6 +107,15 @@ jobs:
       - build_puro:
           os_name: darwin-x64
 
+  windows_build:
+    environment:
+      DART_VERSION: "2.18.3"
+      DART_RELEASE: "stable"
+    executor:
+      name: win/default
+    steps:
+      - install_dart_windows
+
   upload_master_builds:
     docker:
       - image: cimg/base:stable
@@ -140,6 +149,7 @@ workflows:
   master:
     jobs:
       - linux_build
+      - windows_build
       #- macos_build
       - upload_master_builds:
           requires:
