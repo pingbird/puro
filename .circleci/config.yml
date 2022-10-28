@@ -97,11 +97,11 @@ jobs:
           os_name: linux-x64
 
   macos_build:
-    macos:
-      xcode: 14.1.0
     environment:
       DART_VERSION: "2.18.3"
       DART_RELEASE: "stable"
+    macos:
+      xcode: 14.1.0
     steps:
       - test_all
       - build_puro:
@@ -120,6 +120,9 @@ jobs:
       #    from: workspace/builds/darwin-x64/puro
       #    to: s3://puro/builds/master/darwin-x64/puro
   build_website:
+    environment:
+      DART_VERSION: "2.18.3"
+      DART_RELEASE: "stable"
     docker:
       - image: cimg/python:3.9
     steps:
