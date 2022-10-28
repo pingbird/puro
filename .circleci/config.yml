@@ -75,9 +75,6 @@ commands:
             - builds
 
   build_puro_windows:
-    parameters:
-      os_name:
-        type: string
     steps:
       - run:
           name: "Build"
