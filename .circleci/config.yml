@@ -165,6 +165,7 @@ jobs:
     steps:
       - attach_workspace:
           at: workspace
+      - run: echo "$CIRCLE_TAG" > workspace/builds/latest
       - aws-s3/sync:
           from: workspace/builds/
           to: s3://puro/builds/$CIRCLE_TAG/
