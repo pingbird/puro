@@ -214,4 +214,5 @@ workflows:
             - macos_build
             - windows_build
       - build_website:
-          requires: upload_release_builds
+          requires:
+            - upload_release_builds
