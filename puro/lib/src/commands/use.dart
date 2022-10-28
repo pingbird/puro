@@ -2,6 +2,18 @@ import '../command.dart';
 import '../workspace/install.dart';
 
 class EnvUseCommand extends PuroCommand {
+  EnvUseCommand() {
+    argParser.addFlag(
+      'vscode',
+      help: 'Enable or disable generation of VSCode configs',
+    );
+    argParser.addFlag(
+      'intellij',
+      help:
+          'Enable or disable generation of IntelliJ (and Android Studio) configs',
+    );
+  }
+
   @override
   final name = 'use';
 
@@ -18,6 +30,12 @@ class EnvUseCommand extends PuroCommand {
     await switchEnvironment(
       scope: scope,
       name: name,
+      vscode: argResults!.wasParsed('vscode')
+          ? argResults!['vscode'] as bool
+          : null,
+      intellij: argResults!.wasParsed('intellij')
+          ? argResults!['intellij'] as bool
+          : null,
     );
     return BasicMessageResult(
       success: true,

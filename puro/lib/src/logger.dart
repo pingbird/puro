@@ -43,13 +43,13 @@ class PuroLogger {
     this.level,
     this.terminal,
     this.onAdd,
-    this.format = plainFormatter,
   });
 
   LogLevel? level;
   Terminal? terminal;
   void Function(LogEntry event)? onAdd;
-  OutputFormatter format;
+
+  OutputFormatter get format => terminal?.format ?? plainFormatter;
 
   void add(LogEntry event) {
     if (level == null || level! < event.level) return;
@@ -121,16 +121,21 @@ FutureOr<T?> runOptional<T>(
   Future<T> fn(), {
   LogLevel level = LogLevel.error,
   LogLevel? exceptionLevel,
+  bool skip = false,
 }) async {
   final log = PuroLogger.of(scope);
-  final lowercaseAction =
+  if (skip) {
+    log.v('Skipped $action');
+    return null;
+  }
+  final uppercaseAction =
       action.substring(0, 1).toUpperCase() + action.substring(1);
-  log.v('$lowercaseAction...');
+  log.v('$uppercaseAction...');
   try {
     return await fn();
   } catch (exception, stackTrace) {
     final time = clock.now();
-    log.add(LogEntry(time, level, 'Exception while $lowercaseAction'));
+    log.add(LogEntry(time, level, 'Exception while $action'));
     log.add(LogEntry(time, exceptionLevel ?? level, '$exception\n$stackTrace'));
     return null;
   }

@@ -2,6 +2,7 @@ import 'package:file/file.dart';
 
 import '../config.dart';
 import '../json_edit/editor.dart';
+import '../logger.dart';
 import '../provider.dart';
 import 'common.dart';
 
@@ -17,7 +18,7 @@ class VSCodeConfig extends IdeConfig {
   late final settingsFile = configDir.childFile('settings.json');
 
   @override
-  String get name => 'intellij';
+  String get name => 'VSCode';
 
   JsonEditor readSettings() {
     if (!settingsFile.existsSync()) {
@@ -80,6 +81,7 @@ class VSCodeConfig extends IdeConfig {
 
   @override
   Future<void> save({required Scope scope}) async {
+    final log = PuroLogger.of(scope);
     final editor = readSettings();
 
     if (flutterSdkDir == null) {
@@ -108,6 +110,8 @@ class VSCodeConfig extends IdeConfig {
       }
     }
 
+    log.v('Writing to `${settingsFile.path}`');
+    settingsFile.parent.createSync(recursive: true);
     settingsFile.writeAsStringSync(editor.source);
   }
 

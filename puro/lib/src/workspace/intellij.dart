@@ -23,7 +23,7 @@ class IntelliJConfig extends IdeConfig {
       librariesDir.childFile('Dart_Packages.xml.bak');
 
   @override
-  String get name => 'intellij';
+  String get name => 'IntelliJ';
 
   @override
   Future<void> backup({required Scope scope}) async {

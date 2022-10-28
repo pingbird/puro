@@ -15,16 +15,18 @@ Future<void> installIdeConfigs({
   required Scope scope,
   required Directory projectDir,
   required EnvConfig environment,
+  bool? vscode,
+  bool? intellij,
 }) async {
-  runOptional(
+  await runOptional(
     scope,
-    'installing intellij config',
+    'installing IntelliJ config',
     () async {
       final ideConfig = await IntelliJConfig.load(
         scope: scope,
         projectDir: projectDir,
       );
-      if (ideConfig.exists) {
+      if (ideConfig.exists || intellij == true) {
         await installIdeConfig(
           scope: scope,
           ideConfig: ideConfig,
@@ -32,11 +34,12 @@ Future<void> installIdeConfigs({
         );
       }
     },
+    skip: intellij == false,
   );
 
-  runOptional(
+  await runOptional(
     scope,
-    'installing vscode config',
+    'installing VSCode config',
     () async {
       final ideConfig = await VSCodeConfig.load(
         scope: scope,
@@ -47,7 +50,8 @@ Future<void> installIdeConfigs({
           (gitignoreFile.existsSync() &&
               (await gitignoreFile.readAsString())
                   .split('\n')
-                  .contains('.vscode'))) {
+                  .contains('.vscode')) ||
+          vscode == true) {
         await installIdeConfig(
           scope: scope,
           ideConfig: ideConfig,
@@ -55,6 +59,7 @@ Future<void> installIdeConfigs({
         );
       }
     },
+    skip: vscode == false,
   );
 }
 
@@ -66,10 +71,11 @@ Future<void> installIdeConfig({
   final flutterSdkPath = environment.flutterDir.path;
   final dartSdkPath = environment.flutter.cache.dartSdkDir.path;
   final log = PuroLogger.of(scope);
+  log.v('Workspace path: `${ideConfig.workspaceDir.path}`');
   if (ideConfig.flutterSdkDir?.path != flutterSdkPath ||
       (ideConfig.dartSdkDir != null &&
           ideConfig.dartSdkDir?.path != dartSdkPath)) {
-    log.v('Configuring ${environment.name}...');
+    log.v('Configuring ${ideConfig.name}...');
     ideConfig.dartSdkDir = null;
     ideConfig.flutterSdkDir = environment.flutterDir;
     await ideConfig.backup(scope: scope);
@@ -84,6 +90,8 @@ Future<void> installWorkspaceEnvironment({
   required Scope scope,
   required Directory projectDir,
   required EnvConfig environment,
+  bool? vscode,
+  bool? intellij,
 }) async {
   await runOptional(
     scope,
@@ -100,6 +108,8 @@ Future<void> installWorkspaceEnvironment({
       scope: scope,
       projectDir: projectDir,
       environment: environment,
+      vscode: vscode,
+      intellij: intellij,
     ),
   );
 }
@@ -108,6 +118,8 @@ Future<void> installWorkspaceEnvironment({
 Future<void> switchEnvironment({
   required Scope scope,
   required String? name,
+  bool? vscode,
+  bool? intellij,
 }) async {
   final config = PuroConfig.of(scope);
   final model = config.readDotfile();
@@ -121,7 +133,8 @@ Future<void> switchEnvironment({
     throw AssertionError("Couldn't find dart project in current directory");
   }
   if (!environment.exists) {
-    if (name != null && FlutterChannel.parse(name) != null) {
+    if (name != null &&
+        (FlutterChannel.parse(name) != null || tryParseVersion(name) != null)) {
       throw ArgumentError(
         'No environment named `$name`\n'
         'That looks like a version, you probably meant to do `puro create my_env $name; puro use my_env`',
@@ -135,5 +148,7 @@ Future<void> switchEnvironment({
     scope: scope,
     projectDir: projectDir,
     environment: environment,
+    vscode: vscode,
+    intellij: intellij,
   );
 }

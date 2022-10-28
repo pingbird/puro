@@ -96,5 +96,7 @@ Future<void> cleanWorkspace({
       projectDir: projectDir!,
     );
   });
-  config.dotfileForWriting.deleteSync();
+  if (config.dotfileForWriting.existsSync()) {
+    config.dotfileForWriting.deleteSync();
+  }
 }
