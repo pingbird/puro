@@ -70,7 +70,7 @@ commands:
             mkdir -p builds/<< parameters.os_name >>
             dart compile exe -o builds/<< parameters.os_name >>/puro puro/bin/puro.dart
       - persist_to_workspace:
-          root: C:\Users\circleci\project
+          root: ~\project
           paths:
             - builds
 
