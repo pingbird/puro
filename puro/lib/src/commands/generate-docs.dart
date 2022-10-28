@@ -21,9 +21,9 @@ class GenerateDocsCommand extends PuroCommand {
       throw AssertionError('Development only');
     }
     final scriptFile = config.fileSystem.file(scriptPath);
-    final docsDir = scriptFile.parent.parent.parent
-        .childDirectory('website')
-        .childDirectory('docs');
+    final puroDir = scriptFile.parent.parent;
+    final rootDir = puroDir.parent;
+    final docsDir = rootDir.childDirectory('website').childDirectory('docs');
     if (!docsDir.existsSync()) {
       throw AssertionError('Development only');
     }
@@ -33,6 +33,10 @@ class GenerateDocsCommand extends PuroCommand {
     await referenceDir
         .childFile('reference.md')
         .writeAsString(generateCommands());
+
+    await puroDir.childFile('CHANGELOG.md').copy(
+          referenceDir.childFile('changelog.md').path,
+        );
 
     return BasicMessageResult(success: true, message: 'Generated docs');
   }

@@ -5,6 +5,7 @@ nav:
       - index.md
     - Reference:
       - reference/reference.md
+      - reference/changelog.md
     - 'pub.dev': https://pub.dev/packages/puro
     - 'Discord': https://discord.com/invite/N7Yshp4
 theme:

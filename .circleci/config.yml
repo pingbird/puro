@@ -79,8 +79,8 @@ commands:
       - run:
           name: "Build"
           command: |-
-            mkdir builds\windows
-            dart compile exe -o builds\windows\puro.exe puro\bin\puro.dart
+            mkdir builds\windows-x64
+            dart compile exe -o builds\windows-x64\puro.exe puro\bin\puro.dart
       - persist_to_workspace:
           root: C:\Users\circleci\project
           paths:
@@ -150,6 +150,16 @@ jobs:
           from: workspace/builds/
           to: s3://puro/builds/master/
 
+  upload_release_builds:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - attach_workspace:
+          at: workspace
+      - aws-s3/sync:
+          from: workspace/builds/
+          to: s3://puro/builds/$CIRCLE_TAG/
+
   build_website:
     environment:
       DART_VERSION: "2.18.3"
@@ -181,9 +191,27 @@ workflows:
       - build_website
     when:
       equal: [ "master", << pipeline.git.branch >> ]
+
   tests:
     jobs:
       - linux_tests
     when:
       not:
         equal: [ "master", << pipeline.git.branch >> ]
+
+  release:
+    tags:
+      only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+    branches:
+      ignore: /.*/
+    jobs:
+      - linux_build
+      - macos_build
+      - windows_build
+      - upload_release_builds:
+          requires:
+            - linux_build
+            - macos_build
+            - windows_build
+      - build_website:
+          requires: upload_release_builds
