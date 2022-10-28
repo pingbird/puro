@@ -25,6 +25,7 @@ commands:
       - run:
           name: "Install Dart"
           command: |-
+            Write-Output "Installing dart $DART_VERSION"
             choco install dart-sdk --version $DART_VERSION -y
   pub_get:
     steps:
