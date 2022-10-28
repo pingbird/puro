@@ -189,7 +189,7 @@ workflows:
             - macos_build
             - windows_build
       - upload_release_builds:
-          filter:
+          filters:
             tags:
               only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
             branches:
