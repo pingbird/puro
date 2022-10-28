@@ -199,7 +199,7 @@ Future<bool> downloadSharedEngine({
     final zipFile = config.sharedCachesDir.childFile('$engineVersion.zip');
     final zipFileSink = zipFile.openWrite();
 
-    log.v('saving $engineZipUrl to ${zipFile.path}');
+    log.v('Saving $engineZipUrl to ${zipFile.path}');
 
     await ProgressNode.of(scope).wrap((scope, node) async {
       node.description = 'Downloading engine';
@@ -249,7 +249,7 @@ Future<void> setUpFlutterTool({
   var didChangeEngine = false;
 
   if (shouldUpdateEngine) {
-    log.v('engine out of date');
+    log.v('Engine out of date');
     didChangeEngine = await downloadSharedEngine(
       scope: scope,
       engineVersion: engineVersion,
@@ -298,7 +298,7 @@ Future<void> setUpFlutterTool({
   log.v('flutterToolsStamp: $flutterToolsStamp');
 
   if (shouldRecompileTool) {
-    log.v('flutter tool out of date');
+    log.v('Flutter tool out of date');
 
     final pubEnvironment =
         '${Platform.environment['PUB_ENVIRONMENT'] ?? ''}:flutter_install:puro';

@@ -1,3 +1,11 @@
+## 0.4.0
+
+* Bug fixes
+* Performance improvements
+* Added the `upgrade` command for upgrading environments
+* Added the `--vscode` and `--intellij` flags to `puro use` which override whether their configs are generated
+* Added the `version` command
+
 ## 0.3.0
 
 * Bug fixes
