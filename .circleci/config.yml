@@ -82,19 +82,19 @@ commands:
             mkdir builds\windows-x64
             dart compile exe puro/bin/puro.dart
             cp puro/bin/puro.exe builds/windows-x64/puro.exe
-      - persist_to_workspace:
-          root: C:\Users\circleci\project
-          paths:
-            - builds
-
-  build_puro_windows_installer:
-    steps:
-      - run: |-
+      - run:
+        name: "Build Installer"
+        command: |-
           mkdir builds\windows-x64
           choco install innosetup -y
           cd installer\windows
           .\build_installer.ps1
           cp Output\* ..\..\builds\windows-x64
+      - build_puro_windows_installer
+      - persist_to_workspace:
+          root: C:\Users\circleci\project
+          paths:
+            - builds
 
   test_all:
     steps:
