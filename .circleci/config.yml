@@ -148,7 +148,6 @@ jobs:
       - install_dart_windows
       - test_all
       - build_puro_windows
-      - build_puro_windows_installer
 
   upload_master_builds:
     docker:
