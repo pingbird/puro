@@ -90,7 +90,6 @@ commands:
             cd installer\windows
             .\build_installer.ps1
             cp Output\* ..\..\builds\windows-x64
-      - build_puro_windows_installer
       - persist_to_workspace:
           root: C:\Users\circleci\project
           paths:
