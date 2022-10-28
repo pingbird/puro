@@ -180,9 +180,12 @@ jobs:
 workflows:
   master:
     jobs:
-      - linux_build
-      - macos_build
-      - windows_build
+      - linux_build:
+          filters: {tags: {only: '/.*/'}, branches: {only: '/.*/'}}
+      - macos_build:
+          filters: {tags: {only: '/.*/'}, branches: {only: '/.*/'}}
+      - windows_build:
+          filters: {tags: {only: '/.*/'}, branches: {only: '/.*/'}}
       - upload_master_builds:
           requires:
             - linux_build
