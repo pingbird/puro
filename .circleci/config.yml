@@ -20,6 +20,7 @@ commands:
             sudo dpkg -i dart_${DART_VERSION}-1_amd64.deb
             fi
             dart --version
+
   install_dart_windows:
     steps:
       - run:
@@ -27,6 +28,7 @@ commands:
           command: |-
             Write-Output "Installing dart $env:DART_VERSION"
             choco install dart-sdk --version $env:DART_VERSION -y
+
   pub_get:
     steps:
       - run:
@@ -34,18 +36,21 @@ commands:
           command: |-
             cd puro
             dart pub get
+
   format:
     steps:
       - run:
           name: "Format"
           command: |-
             dart format --set-exit-if-changed .
+
   analyze:
     steps:
       - run:
           name: "Analyze"
           command: |-
             dart analyze .
+
   test:
     steps:
       - run:
@@ -53,6 +58,7 @@ commands:
           command: |-
             cd puro
             dart test -r expanded
+
   build_puro:
     parameters:
       os_name:
@@ -64,14 +70,28 @@ commands:
             mkdir -p builds/<< parameters.os_name >>
             dart compile exe -o builds/<< parameters.os_name >>/puro puro/bin/puro.dart
       - persist_to_workspace:
-          root: ~/project
+          root: C:\Users\circleci\project
+          paths:
+            - builds
+
+  build_puro_windows:
+    parameters:
+      os_name:
+        type: string
+    steps:
+      - run:
+          name: "Build"
+          command: |-
+            mkdir builds\windows
+            dart compile exe -o builds\windows\puro.exe puro\bin\puro.dart
+      - persist_to_workspace:
+          root: C:\Users\circleci\project
           paths:
             - builds
 
   test_all:
     steps:
       - checkout
-      - install_dart
       - pub_get
       - format
       - analyze
@@ -85,6 +105,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - install_dart
       - test_all
 
   linux_build:
@@ -94,6 +115,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - install_dart
       - test_all
       - build_puro:
           os_name: linux-x64
@@ -105,6 +127,7 @@ jobs:
     macos:
       xcode: 14.1.0
     steps:
+      - install_dart
       - test_all
       - build_puro:
           os_name: darwin-x64
@@ -117,6 +140,8 @@ jobs:
       name: win/default
     steps:
       - install_dart_windows
+      - test_all
+      - build_puro_windows
 
   upload_master_builds:
     docker:
@@ -124,12 +149,10 @@ jobs:
     steps:
       - attach_workspace:
           at: workspace
-      - aws-s3/copy:
-          from: workspace/builds/linux-x64/puro
-          to: s3://puro/builds/master/linux-x64/puro
-      # - aws-s3/copy:
-      #    from: workspace/builds/darwin-x64/puro
-      #    to: s3://puro/builds/master/darwin-x64/puro
+      - aws-s3/sync:
+          from: workspace/builds/
+          to: s3://puro/builds/master/
+
   build_website:
     environment:
       DART_VERSION: "2.18.3"
@@ -151,12 +174,13 @@ workflows:
   master:
     jobs:
       - linux_build
+      - macos_build
       - windows_build
-      #- macos_build
       - upload_master_builds:
           requires:
             - linux_build
-            #- macos_build
+            - macos_build
+            - windows_build
       - build_website
     when:
       equal: [ "master", << pipeline.git.branch >> ]
