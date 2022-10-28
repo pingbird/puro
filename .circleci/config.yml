@@ -80,7 +80,8 @@ commands:
           name: "Build"
           command: |-
             mkdir builds\windows-x64
-            dart compile exe -o builds\windows-x64\puro.exe puro\bin\puro.dart
+            dart compile exe puro/bin/puro.dart
+            cp puro/bin/puro.exe builds/<< parameters.os_name >>/puro.exe
       - persist_to_workspace:
           root: C:\Users\circleci\project
           paths:
@@ -212,38 +213,22 @@ workflows:
   release:
     jobs:
       - linux_build:
-          filters:
+          filters: &release-filters
             tags:
               only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
             branches:
               ignore: /.*/
       - macos_build:
-          filters:
-            tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-            branches:
-              ignore: /.*/
+          filters: *release-filters
       - windows_build:
-          filters:
-            tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-            branches:
-              ignore: /.*/
+          filters: *release-filters
       - upload_release_builds:
-          filters:
-            tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-            branches:
-              ignore: /.*/
+          filters: *release-filters
           requires:
             - linux_build
             - macos_build
             - windows_build
       - build_website:
-          filters:
-            tags:
-              only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
-            branches:
-              ignore: /.*/
+          filters: *release-filters
           requires:
             - upload_release_builds
