@@ -209,6 +209,7 @@ jobs:
       - aws-s3/sync:
           from: website/site/
           to: s3://puro
+      - run: aws cloudfront create-invalidation --distribution-id $PURO_CF_DISTRIBUTION --paths "/*"
 
 workflows:
   master:
