@@ -63,25 +63,32 @@ commands:
     parameters:
       os_name:
         type: string
+      build_args:
+        type: string
     steps:
       - run:
           name: "Build"
           command: |-
             mkdir -p builds/<< parameters.os_name >>
-            dart compile exe -o builds/<< parameters.os_name >>/puro puro/bin/puro.dart
+            cd puro
+            ./build.sh << parameters.build_args >>
+            cp bin/puro ../builds/<< parameters.os_name >>/puro
       - persist_to_workspace:
           root: ~\project
           paths:
             - builds
 
   build_puro_windows:
+    build_args:
+      type: string
     steps:
       - run:
           name: "Build"
           command: |-
             mkdir builds\windows-x64
-            dart compile exe puro/bin/puro.dart
-            cp puro/bin/puro.exe builds/windows-x64/puro.exe
+            cd puro
+            .\build.ps1 << parameters.build_args >>
+            cp bin/puro.exe ../builds/windows-x64/puro.exe
       - run:
           name: "Build Installer"
           command: |-
@@ -115,6 +122,10 @@ jobs:
       - test_all
 
   linux_build:
+    parameters:
+      build_args:
+        type: string
+        default: ""
     environment:
       DART_VERSION: "2.18.3"
       DART_RELEASE: "stable"
@@ -125,8 +136,13 @@ jobs:
       - test_all
       - build_puro:
           os_name: linux-x64
+          build_args: << parameters.build_args >>
 
   macos_build:
+    parameters:
+      build_args:
+        type: string
+        default: ""
     environment:
       DART_VERSION: "2.18.3"
       DART_RELEASE: "stable"
@@ -137,8 +153,13 @@ jobs:
       - test_all
       - build_puro:
           os_name: darwin-x64
+          build_args: << parameters.build_args >>
 
   windows_build:
+    parameters:
+      build_args:
+        type: string
+        default: ""
     environment:
       DART_VERSION: "2.18.3"
       DART_RELEASE: "stable"
@@ -147,7 +168,8 @@ jobs:
     steps:
       - install_dart_windows
       - test_all
-      - build_puro_windows
+      - build_puro_windows:
+          build_args: << parameters.build_args >>
 
   upload_master_builds:
     docker:
@@ -217,10 +239,13 @@ workflows:
               only: /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
             branches:
               ignore: /.*/
+          build_args: --release
       - macos_build:
           filters: *release-filters
+          build_args: --release
       - windows_build:
           filters: *release-filters
+          build_args: --release
       - upload_release_builds:
           filters: *release-filters
           requires:

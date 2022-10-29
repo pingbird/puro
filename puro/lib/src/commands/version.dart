@@ -9,7 +9,10 @@ class VersionCommand extends PuroCommand {
     argParser.addFlag(
       'plain',
       negatable: false,
-      hide: true,
+    );
+    argParser.addFlag(
+      'release',
+      negatable: false,
     );
   }
 
@@ -22,9 +25,10 @@ class VersionCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final plain = argResults!['plain'] as bool;
+    final release = argResults!['release'] as bool;
     final version = await getPuroVersion(
       scope: scope,
-      withCommit: !plain,
+      withCommit: !release,
     );
     if (plain) {
       return BasicMessageResult(
