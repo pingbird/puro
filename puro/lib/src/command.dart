@@ -278,7 +278,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       } else {
         terminal.preserveStatus();
       }
-      stdout.write(
+      stdout.writeln(
         terminal.format.complete(
           result.description(terminal.format),
           type: result.type ??

@@ -1,14 +1,51 @@
 #!/usr/bin/env bash
 
-if [ -n "$PURO_ROOT" ]; then
+if [ -z "${PURO_ROOT-}" ]; then
   PURO_ROOT=${HOME}/.puro
 fi
 
-if [ -n "$PURO_VERSION" ]; then
+if [ -z "${PURO_VERSION-}" ]; then
   PURO_VERSION="master"
 fi
 
-mkdir -p "$PURO_ROOT"
+DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/linux-x64/puro"
+PURO_BIN="$PURO_ROOT/bin"
+PURO_EXE="$PURO_BIN/puro"
+
+is_sourced() {
+  if [ -n "$ZSH_VERSION" ]; then
+    case $ZSH_EVAL_CONTEXT in *:file:*) return 0;; esac
+  else  # Add additional POSIX-compatible shell names here, if needed.
+    case ${0##*/} in dash|-dash|bash|-bash|ksh|-ksh|sh|-sh) return 0;; esac
+  fi
+  return 1  # NOT sourced.
+}
+
+if is_sourced; then
+    # shellcheck disable=SC2209
+    ret=return
+else
+    # shellcheck disable=SC2209
+    # shellcheck disable=SC2034
+    ret=exit
+fi
+
+command -v curl > /dev/null 2>&1 || {
+  >&2 echo 'Error: could not find curl command'
+  case "$OS" in
+    Darwin)
+      >&2 echo 'Consider running "brew install curl".'
+      ;;
+    Linux)
+      >&2 echo 'Consider running "sudo apt-get install curl".'
+      ;;
+  esac
+  $ret 1
+}
+
+mkdir -p "$PURO_BIN"
+curl --retry 3 --output "$PURO_EXE" "$DOWNLOAD_URL" || $ret $?
+chmod +x "$PURO_EXE" || $ret $?
 
 print_string() {
   command printf %s\\n "$*" 2>/dev/null
@@ -53,14 +90,24 @@ detect_profile() {
   fi
 }
 
-PROFILE="$(nvm_detect_profile)"
+PROFILE="$(detect_profile)"
 
-PATH_EXPORT_STR="\nexport PATH=\"\$PATH:$PURO_ROOT/bin\""
+PATH_EXPORT_STR="export PATH=\"\$PATH:$PURO_ROOT/bin\""
 
-if which wget >/dev/null ; then
-    wget
-elif which curl >/dev/null ; then
-    curl --option argument
-else
-    echo "Cannot download, neither wget nor curl is available."
+if [ -n "${PROFILE-}" ] ; then
+  if ! grep -F -qc "$PATH_EXPORT_STR" "$PROFILE"; then
+    print_string "Adding $PURO_ROOT/bin to $PROFILE"
+    printf "\\n%s\\n # Added by puro" "$PATH_EXPORT_STR" >> "$PROFILE"
+  else
+    print_string "Found $PURO_ROOT/bin in $PROFILE"
+  fi
 fi
+
+if [[ "$PATH" != *":$PURO_ROOT/bin"* ]] && is_sourced; then
+  eval "$PATH_EXPORT_STR"
+  print_string "Updated PATH of current shell"
+fi
+
+print_string "Puro installed to $PURO_ROOT successfully"
+
+"$PURO_ROOT/bin/puro" version
