@@ -8,7 +8,18 @@ hide:
 
 Puro is an experimental tool for installing and managing flutter versions.
 
-## Quick start
+With Puro you can:
+
+* Use multiple versions of Flutter at the same time
+{: .puro-star}
+* Download new versions twice as fast
+{: .puro-star}
+* Configure globally or per-project
+{: .puro-star}
+* Switch with a single command, no more manually editing IDE settings!
+{: .puro-star}
+
+## Installation
 
 === "Windows"
 
@@ -31,7 +42,7 @@ Puro is an experimental tool for installing and managing flutter versions.
     Puro can be installed on Linux with the following command:
 
     ```sh
-    curl -o- https://puro.dev/install.sh | bash
+    curl -o- https://puro.dev/install.sh | PURO_VERSION="master" bash
     ```
 
     Or as a standalone executable:
@@ -43,21 +54,33 @@ Puro is an experimental tool for installing and managing flutter versions.
     Puro can be installed on Mac with the following command:
 
     ```sh
-    curl -o- https://puro.dev/install.sh | bash
+    curl -o- https://puro.dev/install.sh | PURO_VERSION="master" bash
     ```
 
     Or as a standalone executable:
 
     [:material-console: Standalone](https://puro.dev/builds/master/darwin-x64/puro){ .md-button }
 
-Once installed you can create and use an environment:
+<script src="/javascript/os_detect.js"></script>
+
+## Quick Start
+
+Once puro is installed, set up a new environment with the [create](/reference/commands/#create) command:
 
 ```sh
 puro create my_env stable
+```
+
+Inside a Flutter project, run the [use](/reference/commands/#use) command to switch to the environment you created:
+
+```sh
 puro use my_env
 ```
 
-And that's it! Your IDE will be automatically configured to use the new environment.
+Puro will automatically detect if you are using VSCode or Android Studio (IntelliJ) and generate the necessary configs.
+If this is a new project without a workspace, add `--vscode` or `--intellij` to generate them regardless.
+
+See the [Command Reference](/reference/commands/) for more information.
 
 ## Performance
 
@@ -77,7 +100,7 @@ Puro achieves these performance gains with a few smart optimizations:
 * Global cache for git history
 * Global cache for engine versions
 
-With other approaches, each flutter repository is in its own folder, requiring you to download and store the git history, engine, and framework of each version:
+With other approaches, each Flutter repository is in its own folder, requiring you to download and store the git history, engine, and framework of each version:
 
 ![](assets/storage_without_puro.png)
 

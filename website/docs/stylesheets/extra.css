@@ -115,3 +115,14 @@ html {
 .js .md-typeset .tabbed-labels:before {
 	background: var(--md-typeset-a-color);
 }
+
+/* 🌠 */
+li.puro-star {
+	text-indent: 4px;
+	list-style-image: url(/assets/star.svg);
+}
+li.puro-star::marker {
+	font-size: 2rem;
+	margin: 0;
+	line-height: 0.5;
+}
