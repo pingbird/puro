@@ -21,7 +21,7 @@ LicenseFile=..\..\puro\LICENSE
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
-OutputBaseFilename=puro_{#SetupSetting("AppVersion")}_installer
+OutputBaseFilename=puro_installer
 SetupIconFile=puro.ico
 Compression=lzma
 SolidCompression=yes

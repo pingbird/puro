@@ -31,7 +31,7 @@ class GenerateDocsCommand extends PuroCommand {
     referenceDir.createSync(recursive: true);
 
     await referenceDir
-        .childFile('reference.md')
+        .childFile('commands.md')
         .writeAsString(generateCommands());
 
     await puroDir.childFile('CHANGELOG.md').copy(

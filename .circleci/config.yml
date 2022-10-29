@@ -203,9 +203,11 @@ jobs:
       - checkout
       - install_dart
       - pub_get
-      - run: dart puro/bin/puro.dart _generate-docs
-      - run: pip install -q mkdocs mkdocs-material
-      - run: cd website && mkdocs build
+      - run: -|
+          dart puro/bin/puro.dart _generate-docs
+          pip install -q mkdocs mkdocs-material
+          cd website && mkdocs build
+          cp installer/install.sh website/site/
       - aws-s3/sync:
           from: website/site/
           to: s3://puro

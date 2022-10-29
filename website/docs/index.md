@@ -10,11 +10,45 @@ Puro is an experimental tool for installing and managing flutter versions.
 
 ## Quick start
 
-To install puro, run:
+=== "Windows"
 
-```sh
-dart pub global activate puro
-```
+    Puro has a graphical installer for Windows:
+
+    [:material-monitor-arrow-down-variant: Desktop Installer](https://puro.dev/builds/master/windows-x64/puro_installer.exe){ .md-button .md-button--primary }
+
+    It can also be installed from powershell:
+
+    ```ps1
+    Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro_0.4.0%2B933e6d1_installer.exe" -OutFile "$env:temp\puro_installer.exe"; &"$env:temp\puro_installer.exe" /VERYSILENT
+    ```
+
+    Or as a standalone executable:
+
+    [:material-console: Standalone](https://puro.dev/builds/master/windows-x64/puro.exe){ .md-button }
+    
+=== "Linux"
+
+    Puro can be installed on Linux with the following command:
+
+    ```sh
+    curl -o- https://puro.dev/install.sh | bash
+    ```
+
+    Or as a standalone executable:
+
+    [:material-console: Standalone](https://puro.dev/builds/master/linux-x64/puro){ .md-button }
+
+=== "Mac"
+
+    Puro can be installed on Mac with the following command:
+
+    ```sh
+    curl -o- https://puro.dev/install.sh | bash
+    ```
+
+    Or as a standalone executable:
+
+    [:material-console: Standalone](https://puro.dev/builds/master/darwin-x64/puro){ .md-button }
 
 Once installed you can create and use an environment:
 

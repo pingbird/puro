@@ -4,7 +4,7 @@ nav:
     - Home:
       - index.md
     - Reference:
-      - reference/reference.md
+      - reference/commands.md
       - reference/changelog.md
     - 'pub.dev': https://pub.dev/packages/puro
     - 'Discord': https://discord.com/invite/N7Yshp4
@@ -16,27 +16,30 @@ theme:
   palette:
     - scheme: slate
       primary: deep purple
-      accent: indigo
+      accent: deep purple
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to light mode
     - scheme: default
       primary: deep purple
-      accent: indigo
+      accent: deep purple
       toggle:
         icon: material/toggle-switch
         name: Switch to dark mode
   features:
     - navigation.tabs
     - navigation.instant
-    - navigation.tracking
     - toc.follow
     - content.code.annotate
 markdown_extensions:
+  - attr_list
   - tables
   - admonition
   - pymdownx.highlight:
       anchor_linenums: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji 
+      emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
