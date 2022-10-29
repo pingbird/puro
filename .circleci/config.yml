@@ -203,7 +203,7 @@ jobs:
       - checkout
       - install_dart
       - pub_get
-      - run: -|
+      - run: |-
           dart puro/bin/puro.dart _generate-docs
           pip install -q mkdocs mkdocs-material
           cd website && mkdocs build
