@@ -207,8 +207,7 @@ jobs:
           dart puro/bin/puro.dart _generate-docs
           pip install -q mkdocs mkdocs-material
           cd website && mkdocs build
-          ls
-          ls installer
+          cd ..
           cp installer/install.sh website/site/
       - aws-s3/sync:
           from: website/site/
