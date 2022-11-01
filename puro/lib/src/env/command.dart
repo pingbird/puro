@@ -58,13 +58,7 @@ Future<int> runDartCommand({
   final dartProcess = await startProcess(
     scope,
     flutterConfig.cache.dartSdk.dartExecutable.path,
-    [
-      '--disable-dart-dev',
-      '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
-      if (environment.flutterToolArgs.isNotEmpty)
-        ...environment.flutterToolArgs.split(RegExp(r'\S+')),
-      ...args,
-    ],
+    args,
   );
   final stdoutFuture = dartProcess.stdout.listen(onStdout).asFuture<void>();
   final stderrFuture = dartProcess.stderr.listen(onStderr).asFuture<void>();

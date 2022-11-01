@@ -9,6 +9,7 @@ import 'commands/dart.dart';
 import 'commands/flutter.dart';
 import 'commands/generate-docs.dart';
 import 'commands/ls.dart';
+import 'commands/pub.dart';
 import 'commands/rm.dart';
 import 'commands/upgrade.dart';
 import 'commands/use.dart';
@@ -189,6 +190,7 @@ void main(List<String> args) async {
     ..addCommand(EnvRmCommand())
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand())
+    ..addCommand(PubCommand())
     ..addCommand(GenerateDocsCommand());
   try {
     final result = await runner.run(args);
