@@ -1,3 +1,9 @@
+## 0.4.1
+
+* Bug fixes
+* Added the `--global` flag to `puro use` to set the default environment
+* Implemented default environments
+
 ## 0.4.0
 
 * Bug fixes
