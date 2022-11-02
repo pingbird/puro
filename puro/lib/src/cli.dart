@@ -29,7 +29,7 @@ void main(List<String> args) async {
 
   final runner = PuroCommandRunner(
     'puro',
-    'An experimental tool for managing flutter versions.',
+    'An experimental tool for managing Flutter versions.',
     scope: scope,
     isJson: isJson,
   );

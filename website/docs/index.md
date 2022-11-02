@@ -6,7 +6,7 @@ hide:
 
 # About
 
-Puro is an experimental tool for installing and managing flutter versions.
+Puro is an experimental tool for installing and managing [Flutter](https://flutter.dev/) versions.
 
 With Puro you can:
 
@@ -30,7 +30,7 @@ With Puro you can:
     It can also be installed from powershell:
 
     ```ps1
-    Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro_0.4.0%2B933e6d1_installer.exe" -OutFile "$env:temp\puro_installer.exe"; &"$env:temp\puro_installer.exe" /VERYSILENT
+    Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro_installer.exe" -OutFile "$env:temp\puro_installer.exe"; &"$env:temp\puro_installer.exe" /VERYSILENT
     ```
 
     Or as a standalone executable:
