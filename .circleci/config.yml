@@ -16,7 +16,7 @@ commands:
             unzip dart-sdk.zip
             sudo ln -s `pwd`/dart-sdk/bin/dart /usr/local/bin/dart
             else
-            wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/latest/linux_packages/dart_${DART_VERSION}-1_amd64.deb
+            wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/linux_packages/dart_${DART_VERSION}-1_amd64.deb
             sudo dpkg -i dart_${DART_VERSION}-1_amd64.deb
             fi
             dart --version
