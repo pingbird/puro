@@ -7,7 +7,7 @@ import 'commands/clean.dart';
 import 'commands/create.dart';
 import 'commands/dart.dart';
 import 'commands/flutter.dart';
-import 'commands/generate-docs.dart';
+import 'commands/generate_docs.dart';
 import 'commands/ls.dart';
 import 'commands/pub.dart';
 import 'commands/rm.dart';
