@@ -192,9 +192,9 @@ jobs:
           from: workspace/builds/
           to: s3://puro/builds/$CIRCLE_TAG/
       - run: echo "$CIRCLE_TAG" > latest
-      - aws-s3/sync:
+      - aws-s3/copy:
           from: latest
-          to: s3://puro/builds/latest
+          to: s3://puro/builds/
 
   build_website:
     environment:
