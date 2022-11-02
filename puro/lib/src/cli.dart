@@ -88,7 +88,7 @@ void main(List<String> args) async {
       help: 'Overrides the selected environment.',
       valueHelp: 'name',
       callback: runner.wrapCallback((name) {
-        runner.environmentOverride = name;
+        runner.environmentOverride = name?.toLowerCase();
       }),
     )
     ..addOption(

@@ -1,4 +1,8 @@
 import '../command.dart';
+import '../config.dart';
+import '../env/default.dart';
+import '../logger.dart';
+import '../terminal.dart';
 import '../workspace/install.dart';
 
 class EnvUseCommand extends PuroCommand {
@@ -11,6 +15,12 @@ class EnvUseCommand extends PuroCommand {
       'intellij',
       help:
           'Enable or disable generation of IntelliJ (and Android Studio) configs',
+    );
+    argParser.addFlag(
+      'global',
+      abbr: 'g',
+      help: 'Set the global default to the provided environment',
+      negatable: false,
     );
   }
 
@@ -26,10 +36,34 @@ class EnvUseCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final args = unwrapArguments(atMost: 1);
-    final name = args.isEmpty ? null : args.first;
+    final config = PuroConfig.of(scope);
+    final log = PuroLogger.of(scope);
+    final envName = args.isEmpty ? null : args.first;
+    if (argResults!['global'] as bool) {
+      if (envName == null) {
+        final current = await getDefaultEnvName(scope: scope);
+        return BasicMessageResult(
+          success: true,
+          message: 'The current global default environment is `$current`',
+          type: CompletionType.info,
+        );
+      }
+      final env = config.getEnv(envName);
+      if (!env.exists) {
+        log.w('Environment `${env.name}` does not exist');
+      }
+      await setDefaultEnvName(
+        scope: scope,
+        envName: env.name,
+      );
+      return BasicMessageResult(
+        success: true,
+        message: 'Set global default environment to `${env.name}`',
+      );
+    }
     await switchEnvironment(
       scope: scope,
-      name: name,
+      envName: envName,
       vscode: argResults!.wasParsed('vscode')
           ? argResults!['vscode'] as bool
           : null,
@@ -39,7 +73,7 @@ class EnvUseCommand extends PuroCommand {
     );
     return BasicMessageResult(
       success: true,
-      message: 'Switched to environment `$name`',
+      message: 'Switched to environment `$envName`',
     );
   }
 }

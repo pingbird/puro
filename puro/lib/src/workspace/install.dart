@@ -1,7 +1,7 @@
 import 'package:file/file.dart';
 
 import '../config.dart';
-import '../env/version.dart';
+import '../env/default.dart';
 import '../logger.dart';
 import '../provider.dart';
 import 'common.dart';
@@ -117,33 +117,19 @@ Future<void> installWorkspaceEnvironment({
 /// Switches the environment of the current project.
 Future<void> switchEnvironment({
   required Scope scope,
-  required String? name,
+  required String? envName,
   bool? vscode,
   bool? intellij,
 }) async {
   final config = PuroConfig.of(scope);
   final model = config.readDotfile();
-  final environment =
-      name == null ? config.tryGetProjectEnv() : config.getEnv(name);
-  if (environment == null) {
-    throw AssertionError('No environment provided');
-  }
-  final projectDir = config.parentProjectDir;
-  if (projectDir == null) {
-    throw AssertionError("Couldn't find dart project in current directory");
-  }
-  if (!environment.exists) {
-    if (name != null &&
-        (FlutterChannel.parse(name) != null || tryParseVersion(name) != null)) {
-      throw ArgumentError(
-        'No environment named `$name`\n'
-        'That looks like a version, you probably meant to do `puro create my_env $name; puro use my_env`',
-      );
-    }
-    environment.ensureExists();
-  }
+  final environment = await getProjectEnvOrDefault(
+    scope: scope,
+    envName: envName,
+  );
   model.env = environment.name;
   config.writeDotfile(model);
+  final projectDir = config.ensureParentProjectDir();
   await installWorkspaceEnvironment(
     scope: scope,
     projectDir: projectDir,

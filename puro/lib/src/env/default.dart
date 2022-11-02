@@ -1,21 +1,34 @@
 import '../config.dart';
 import '../file_lock.dart';
 import '../provider.dart';
+import 'version.dart';
 
 Future<EnvConfig> getProjectEnvOrDefault({
   required Scope scope,
+  String? envName,
 }) async {
   final config = PuroConfig.of(scope);
-  final env = config.tryGetProjectEnv() ??
-      config.getEnv(await getDefaultEnvName(scope: scope));
-  if (!env.exists) {
-    if (config.projectDir == null) {
-      throw AssertionError(
-        'Not inside a Dart project and no default environment.',
-      );
-    } else {
-      throw AssertionError(
-        'No environment selected and no default environment',
+  if (envName != null) {
+    final env = config.getEnv(envName);
+    if (!env.exists) {
+      if (FlutterChannel.parse(env.name) != null ||
+          tryParseVersion(env.name) != null) {
+        throw ArgumentError(
+          'No environment named `${env.name}`\n'
+          'That looks like a version, you probably meant to do `puro create my_env ${env.name}; puro use my_env`',
+        );
+      }
+      env.ensureExists();
+    }
+    return env;
+  }
+  var env = config.tryGetProjectEnv();
+  if (env == null) {
+    final envName = await getDefaultEnvName(scope: scope);
+    env = config.getEnv(envName);
+    if (!env.exists) {
+      throw ArgumentError(
+        'No environment selected and default environment `$envName` does not exist',
       );
     }
   }
@@ -41,6 +54,7 @@ Future<void> setDefaultEnvName({
   required String envName,
 }) async {
   final config = PuroConfig.of(scope);
+  ensureValidName(envName);
   await writeAtomic(
     scope: scope,
     file: config.defaultEnvNameFile,

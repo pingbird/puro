@@ -134,6 +134,14 @@ class PuroConfig {
 
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
 
+  Directory ensureParentProjectDir() {
+    final dir = parentProjectDir;
+    if (dir == null) {
+      throw AssertionError('No Dart project in current directory');
+    }
+    return dir;
+  }
+
   @override
   String toString() {
     return 'PuroConfig(\n'
@@ -162,6 +170,7 @@ class PuroConfig {
   }
 
   EnvConfig getEnv(String name) {
+    name = name.toLowerCase();
     ensureValidName(name);
     return EnvConfig(envDir: envsDir.childDirectory(name));
   }
@@ -342,10 +351,7 @@ class DartSdkConfig {
       .childFile('libraries.dart');
 }
 
-final _nameRegex = RegExp(
-  r'^[_\-\p{L}][_\-\p{L}\p{N}]+?$',
-  unicode: true,
-);
+final _nameRegex = RegExp(r'^[_\-a-z][_\-a-z0-9]*$');
 bool isValidName(String name) {
   return _nameRegex.hasMatch(name);
 }
@@ -364,6 +370,19 @@ Version? tryParseVersion(String text) {
 }
 
 void ensureValidName(String name) {
+  for (var i = 0; i < name.length; i++) {
+    final char = name[i];
+    final codeUnit = char.codeUnitAt(0);
+    if (char == '-' ||
+        char == '_' ||
+        (i != 0 && codeUnit >= 0x30 && codeUnit <= 0x39) ||
+        (codeUnit >= 0x61 && codeUnit <= 0x7a)) {
+      continue;
+    }
+    throw ArgumentError(
+      'Unexpected `$char` at index $i of name `$name`\nNames must match pattern [_\\-a-z][_\\-a-z0-9]*',
+    );
+  }
   if (!isValidName(name)) {
     throw ArgumentError('Not a valid name: `$name`');
   }
