@@ -3,7 +3,7 @@ set -e
 
 start_time=$(date +%s.%3N)
 
-curl https://puro.s3.amazonaws.com/builds/master/linux-x64/puro -O
+curl https://puro.dev/builds/master/linux-x64/puro -O
 chmod +x puro
 
 install_time=$(date +%s.%3N)

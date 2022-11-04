@@ -32,14 +32,14 @@ class VersionCommand extends PuroCommand {
     );
     if (plain) {
       return BasicMessageResult(
-        success: version != null,
-        message: '${version ?? 'unknown'}',
+        success: true,
+        message: '$version',
         type: CompletionType.plain,
       );
     }
     return BasicMessageResult(
       success: true,
-      message: 'Puro ${version ?? 'unknown'}\n'
+      message: 'Puro $version\n'
           'Dart ${Platform.version}\n'
           '${Platform.operatingSystemVersion}',
       type: CompletionType.info,

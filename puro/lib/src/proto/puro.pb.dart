@@ -649,6 +649,90 @@ class EnvironmentUpgradeModel extends $pb.GeneratedMessage {
   FlutterVersionModel ensureTo() => $_ensure(2);
 }
 
+class CommandMessageModel extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      const $core.bool.fromEnvironment('protobuf.omit_message_names')
+          ? ''
+          : 'CommandMessageModel',
+      createEmptyInstance: create)
+    ..aOS(
+        1,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'type')
+    ..aOS(
+        2,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'message')
+    ..hasRequiredFields = false;
+
+  CommandMessageModel._() : super();
+  factory CommandMessageModel({
+    $core.String? type,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (type != null) {
+      _result.type = type;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory CommandMessageModel.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory CommandMessageModel.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  CommandMessageModel clone() => CommandMessageModel()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  CommandMessageModel copyWith(void Function(CommandMessageModel) updates) =>
+      super.copyWith((message) => updates(message as CommandMessageModel))
+          as CommandMessageModel; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CommandMessageModel create() => CommandMessageModel._();
+  CommandMessageModel createEmptyInstance() => create();
+  static $pb.PbList<CommandMessageModel> createRepeated() =>
+      $pb.PbList<CommandMessageModel>();
+  @$core.pragma('dart2js:noInline')
+  static CommandMessageModel getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CommandMessageModel>(create);
+  static CommandMessageModel? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get type => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set type($core.String v) {
+    $_setString(0, v);
+  }
+
+  @$pb.TagNumber(1)
+  $core.bool hasType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) {
+    $_setString(1, v);
+  }
+
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
 class CommandResultModel extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       const $core.bool.fromEnvironment('protobuf.omit_message_names')
@@ -660,11 +744,13 @@ class CommandResultModel extends $pb.GeneratedMessage {
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
             : 'success')
-    ..aOS(
+    ..pc<CommandMessageModel>(
         2,
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
-            : 'message')
+            : 'messages',
+        $pb.PbFieldType.PM,
+        subBuilder: CommandMessageModel.create)
     ..aOS(
         3,
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
@@ -702,7 +788,7 @@ class CommandResultModel extends $pb.GeneratedMessage {
   CommandResultModel._() : super();
   factory CommandResultModel({
     $core.bool? success,
-    $core.String? message,
+    $core.Iterable<CommandMessageModel>? messages,
     $core.String? usage,
     CommandErrorModel? error,
     $core.Iterable<LogEntryModel>? logs,
@@ -713,8 +799,8 @@ class CommandResultModel extends $pb.GeneratedMessage {
     if (success != null) {
       _result.success = success;
     }
-    if (message != null) {
-      _result.message = message;
+    if (messages != null) {
+      _result.messages.addAll(messages);
     }
     if (usage != null) {
       _result.usage = usage;
@@ -773,16 +859,7 @@ class CommandResultModel extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get message => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set message($core.String v) {
-    $_setString(1, v);
-  }
-
-  @$pb.TagNumber(2)
-  $core.bool hasMessage() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearMessage() => clearField(2);
+  $core.List<CommandMessageModel> get messages => $_getList(1);
 
   @$pb.TagNumber(3)
   $core.String get usage => $_getSZ(2);
@@ -840,6 +917,115 @@ class CommandResultModel extends $pb.GeneratedMessage {
   void clearEnvironmentUpgrade() => clearField(7);
   @$pb.TagNumber(7)
   EnvironmentUpgradeModel ensureEnvironmentUpgrade() => $_ensure(6);
+}
+
+class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      const $core.bool.fromEnvironment('protobuf.omit_message_names')
+          ? ''
+          : 'PuroGlobalPrefsModel',
+      createEmptyInstance: create)
+    ..aOS(
+        1,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'defaultEnvironment',
+        protoName: 'defaultEnvironment')
+    ..aOS(
+        2,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'lastUpdateCheck',
+        protoName: 'lastUpdateCheck')
+    ..aOB(
+        3,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'enableUpdateCheck',
+        protoName: 'enableUpdateCheck')
+    ..hasRequiredFields = false;
+
+  PuroGlobalPrefsModel._() : super();
+  factory PuroGlobalPrefsModel({
+    $core.String? defaultEnvironment,
+    $core.String? lastUpdateCheck,
+    $core.bool? enableUpdateCheck,
+  }) {
+    final _result = create();
+    if (defaultEnvironment != null) {
+      _result.defaultEnvironment = defaultEnvironment;
+    }
+    if (lastUpdateCheck != null) {
+      _result.lastUpdateCheck = lastUpdateCheck;
+    }
+    if (enableUpdateCheck != null) {
+      _result.enableUpdateCheck = enableUpdateCheck;
+    }
+    return _result;
+  }
+  factory PuroGlobalPrefsModel.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory PuroGlobalPrefsModel.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  PuroGlobalPrefsModel clone() =>
+      PuroGlobalPrefsModel()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  PuroGlobalPrefsModel copyWith(void Function(PuroGlobalPrefsModel) updates) =>
+      super.copyWith((message) => updates(message as PuroGlobalPrefsModel))
+          as PuroGlobalPrefsModel; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PuroGlobalPrefsModel create() => PuroGlobalPrefsModel._();
+  PuroGlobalPrefsModel createEmptyInstance() => create();
+  static $pb.PbList<PuroGlobalPrefsModel> createRepeated() =>
+      $pb.PbList<PuroGlobalPrefsModel>();
+  @$core.pragma('dart2js:noInline')
+  static PuroGlobalPrefsModel getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PuroGlobalPrefsModel>(create);
+  static PuroGlobalPrefsModel? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get defaultEnvironment => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set defaultEnvironment($core.String v) {
+    $_setString(0, v);
+  }
+
+  @$pb.TagNumber(1)
+  $core.bool hasDefaultEnvironment() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDefaultEnvironment() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get lastUpdateCheck => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set lastUpdateCheck($core.String v) {
+    $_setString(1, v);
+  }
+
+  @$pb.TagNumber(2)
+  $core.bool hasLastUpdateCheck() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLastUpdateCheck() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get enableUpdateCheck => $_getBF(2);
+  @$pb.TagNumber(3)
+  set enableUpdateCheck($core.bool v) {
+    $_setBool(2, v);
+  }
+
+  @$pb.TagNumber(3)
+  $core.bool hasEnableUpdateCheck() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEnableUpdateCheck() => clearField(3);
 }
 
 class PuroDotfileModel extends $pb.GeneratedMessage {

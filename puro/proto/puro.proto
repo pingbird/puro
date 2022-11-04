@@ -36,14 +36,25 @@ message EnvironmentUpgradeModel {
   FlutterVersionModel to = 3;
 }
 
+message CommandMessageModel {
+  string type = 1;
+  string message = 2;
+}
+
 message CommandResultModel {
   bool success = 1;
-  optional string message = 2;
+  repeated CommandMessageModel messages = 2;
   optional string usage = 3;
   optional CommandErrorModel error = 4;
   repeated LogEntryModel logs = 5;
   optional EnvironmentListModel environmentList = 6;
   optional EnvironmentUpgradeModel environmentUpgrade = 7;
+}
+
+message PuroGlobalPrefsModel {
+  optional string defaultEnvironment = 1;
+  optional string lastUpdateCheck = 2;
+  optional bool enableUpdateCheck = 3;
 }
 
 message PuroDotfileModel {

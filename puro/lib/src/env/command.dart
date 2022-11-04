@@ -1,6 +1,7 @@
 import '../config.dart';
 import '../process.dart';
 import '../provider.dart';
+import '../terminal.dart';
 import 'engine.dart';
 
 Future<int> runFlutterCommand({
@@ -10,12 +11,14 @@ Future<int> runFlutterCommand({
   required void Function(List<int>) onStdout,
   required void Function(List<int>) onStderr,
   String? workingDirectory,
+  Stream<List<int>>? stdin,
 }) async {
   final flutterConfig = environment.flutter;
   await setUpFlutterTool(
     scope: scope,
     environment: environment,
   );
+  Terminal.of(scope).flushStatus();
   final dartPath = flutterConfig.cache.dartSdk.dartExecutable.path;
   final snapshotPath = flutterConfig.cache.flutterToolsSnapshotFile.path;
   final flutterProcess = await startProcess(
@@ -34,6 +37,9 @@ Future<int> runFlutterCommand({
     },
     workingDirectory: workingDirectory,
   );
+  if (stdin != null) {
+    flutterProcess.stdin.addStream(stdin);
+  }
   final stdoutFuture = flutterProcess.stdout.listen(onStdout).asFuture<void>();
   final stderrFuture = flutterProcess.stderr.listen(onStderr).asFuture<void>();
   final exitCode = await flutterProcess.exitCode;
@@ -49,17 +55,22 @@ Future<int> runDartCommand({
   required void Function(List<int>) onStdout,
   required void Function(List<int>) onStderr,
   String? workingDirectory,
+  Stream<List<int>>? stdin,
 }) async {
   final flutterConfig = environment.flutter;
   await setUpFlutterTool(
     scope: scope,
     environment: environment,
   );
+  Terminal.of(scope).flushStatus();
   final dartProcess = await startProcess(
     scope,
     flutterConfig.cache.dartSdk.dartExecutable.path,
     args,
   );
+  if (stdin != null) {
+    dartProcess.stdin.addStream(stdin);
+  }
   final stdoutFuture = dartProcess.stdout.listen(onStdout).asFuture<void>();
   final stderrFuture = dartProcess.stderr.listen(onStderr).asFuture<void>();
   final exitCode = await dartProcess.exitCode;

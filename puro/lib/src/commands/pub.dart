@@ -28,6 +28,7 @@ class PubCommand extends PuroCommand {
       args: ['pub', ...argResults!.arguments],
       onStdout: stdout.add,
       onStderr: stderr.add,
+      stdin: stdin,
     );
     exit(exitCode);
   }

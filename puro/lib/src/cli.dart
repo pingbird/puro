@@ -4,15 +4,16 @@ import 'package:args/command_runner.dart';
 
 import 'command.dart';
 import 'commands/clean.dart';
-import 'commands/create.dart';
 import 'commands/dart.dart';
+import 'commands/env_create.dart';
+import 'commands/env_ls.dart';
+import 'commands/env_rm.dart';
+import 'commands/env_upgrade.dart';
+import 'commands/env_use.dart';
 import 'commands/flutter.dart';
 import 'commands/generate_docs.dart';
-import 'commands/ls.dart';
 import 'commands/pub.dart';
-import 'commands/rm.dart';
-import 'commands/upgrade.dart';
-import 'commands/use.dart';
+import 'commands/puro_upgrade.dart';
 import 'commands/version.dart';
 import 'logger.dart';
 import 'provider.dart';
@@ -191,7 +192,8 @@ void main(List<String> args) async {
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand())
     ..addCommand(PubCommand())
-    ..addCommand(GenerateDocsCommand());
+    ..addCommand(GenerateDocsCommand())
+    ..addCommand(PuroUpgradeCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {
@@ -203,7 +205,7 @@ void main(List<String> args) async {
     runner.writeResultAndExit(
       CommandHelpResult(
         didRequestHelp: runner.didRequestHelp,
-        message: exception.message,
+        help: exception.message,
         usage: exception.usage,
       ),
     );

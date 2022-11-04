@@ -11,6 +11,25 @@ import 'logger.dart';
 import 'provider.dart';
 import 'terminal.dart';
 
+extension CommandResultModelExtensions on CommandResultModel {
+  void addMessage(CommandMessage message, OutputFormatter format) {
+    messages.add(
+      CommandMessageModel(
+        type: (message.type ??
+                (success ? CompletionType.success : CompletionType.failure))
+            .name,
+        message: message.message(format),
+      ),
+    );
+  }
+
+  void addMessages(Iterable<CommandMessage> messages, OutputFormatter format) {
+    for (final message in messages) {
+      addMessage(message, format);
+    }
+  }
+}
+
 class CommandErrorResult extends CommandResult {
   CommandErrorResult(this.exception, this.stackTrace);
 
@@ -18,88 +37,117 @@ class CommandErrorResult extends CommandResult {
   final StackTrace stackTrace;
 
   @override
-  CommandResultModel toModel() {
-    return CommandResultModel(
-      success: false,
-      error: CommandErrorModel(
-        exception: '$exception',
-        exceptionType: '${exception.runtimeType}',
-        stackTrace: '$stackTrace',
-      ),
-    );
-  }
+  CommandMessage get message =>
+      CommandMessage((format) => '$exception\n$stackTrace');
 
   @override
-  String description(OutputFormatter format) => '$exception\n$stackTrace';
+  bool get success => false;
+
+  @override
+  CommandResultModel? get model => CommandResultModel(
+        error: CommandErrorModel(
+          exception: '$exception',
+          exceptionType: '${exception.runtimeType}',
+          stackTrace: '$stackTrace',
+        ),
+      );
 }
 
 class CommandHelpResult extends CommandResult {
   CommandHelpResult({
     required this.didRequestHelp,
-    this.message,
+    this.help,
     this.usage,
   });
 
   final bool didRequestHelp;
-  final String? message;
+  final String? help;
   final String? usage;
 
   @override
-  CompletionType? get type => CompletionType.plain;
+  Iterable<CommandMessage> get messages => [
+        if (message != null)
+          CommandMessage(
+            (format) => help!,
+            type: CompletionType.failure,
+          ),
+        if (usage != null)
+          CommandMessage(
+            (format) => usage!,
+            type: message == null && didRequestHelp
+                ? CompletionType.plain
+                : CompletionType.info,
+          ),
+      ];
 
   @override
-  CommandResultModel toModel() {
-    return CommandResultModel(
-      success: didRequestHelp,
-      message: message,
-      usage: usage,
-    );
-  }
+  bool get success => didRequestHelp;
 
   @override
-  String description(OutputFormatter format) {
-    return [
-      if (message != null) format.failure(message!),
-      if (usage != null)
-        if (message == null && didRequestHelp) usage! else format.info(usage!),
-    ].join('\n').trim();
+  CommandResultModel? get model => CommandResultModel(usage: usage);
+}
+
+class CommandMessage {
+  CommandMessage(this.message, {this.type});
+  final CompletionType? type;
+  final String Function(OutputFormatter format) message;
+
+  static String formatMessages({
+    required Iterable<CommandMessage> messages,
+    required OutputFormatter format,
+    required bool success,
+  }) {
+    return messages
+        .map((e) => format.complete(
+              e.message(format),
+              type: e.type ??
+                  (success ? CompletionType.success : CompletionType.failure),
+            ))
+        .join('\n');
   }
 }
 
 abstract class CommandResult {
-  CommandResultModel toModel();
+  bool get success;
 
-  CompletionType? get type => null;
+  CommandMessage? get message => null;
 
-  String description(OutputFormatter format);
+  Iterable<CommandMessage> get messages => [message!];
+
+  CommandResultModel? get model => null;
+
+  CommandResultModel toModel([OutputFormatter format = plainFormatter]) {
+    final result = CommandResultModel();
+    if (model != null) {
+      result.mergeFromMessage(model!);
+    }
+    result.success = success;
+    result.addMessages(messages, format);
+    return result;
+  }
 
   @override
-  String toString() => description(plainFormatter);
+  String toString() => CommandMessage.formatMessages(
+        messages: messages,
+        format: plainFormatter,
+        success: toModel().success,
+      );
 }
 
 class BasicMessageResult extends CommandResult {
   BasicMessageResult({
     required this.success,
-    required this.message,
-    this.type,
-  });
+    required String message,
+    CompletionType? type,
+    this.model,
+  }) : messages = [CommandMessage((format) => message, type: type)];
 
+  @override
   final bool success;
-  final String message;
-
   @override
-  final CompletionType? type;
-
+  final List<CommandMessage> messages;
   @override
-  String description(OutputFormatter format) => message;
-
-  @override
-  CommandResultModel toModel() {
-    return CommandResultModel(
-      success: success,
-      message: message,
-    );
-  }
+  final CommandResultModel? model;
 }
 
 abstract class PuroCommand extends Command<CommandResult> {
@@ -150,6 +198,19 @@ abstract class PuroCommand extends Command<CommandResult> {
     if (rest.length != 1) {
       throw UsageException(
         'Exactly one argument expected, got ${rest.length}',
+        usageWithoutDescription,
+      );
+    }
+    return rest.first;
+  }
+
+  String? unwrapSingleOptionalArgument() {
+    final rest = argResults!.rest;
+    if (rest.isEmpty) {
+      return null;
+    } else if (rest.length != 1) {
+      throw UsageException(
+        'Zero or one arguments expected, got ${rest.length}',
         usageWithoutDescription,
       );
     }
@@ -222,6 +283,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   late List<String> args;
   ArgResults? results;
   final logEntries = <LogEntry>[];
+  final messages = <CommandMessage>[];
   final callbackQueue = <void Function()>[];
   final fileSystem = const LocalFileSystem();
 
@@ -255,6 +317,13 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     );
   }
 
+  void addMessage(
+    String message, {
+    CompletionType? type = CompletionType.info,
+  }) {
+    messages.add(CommandMessage((format) => message, type: type));
+  }
+
   void writeResultAndExit(CommandResult result) {
     final model = result.toModel();
     if (isJson) {
@@ -279,10 +348,10 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         terminal.preserveStatus();
       }
       stdout.writeln(
-        terminal.format.complete(
-          result.description(terminal.format),
-          type: result.type ??
-              (model.success ? CompletionType.success : CompletionType.failure),
+        CommandMessage.formatMessages(
+          messages: messages.followedBy(result.messages),
+          format: terminal.format,
+          success: model.success,
         ),
       );
     }

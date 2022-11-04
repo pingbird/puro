@@ -32,7 +32,7 @@ theme:
     - toc.follow
     - content.code.annotate
 markdown_extensions:
-  - attr_list
+  - pm_attr_list:PMAttrListExtension
   - tables
   - admonition
   - pymdownx.highlight:

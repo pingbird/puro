@@ -117,11 +117,11 @@ html {
 }
 
 /* 🌠 */
-li.puro-star {
+.star-list li {
 	text-indent: 4px;
 	list-style-image: url(/assets/star.svg);
 }
-li.puro-star::marker {
+.star-list li::marker {
 	font-size: 2rem;
 	margin: 0;
 	line-height: 0.5;

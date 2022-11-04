@@ -35,59 +35,60 @@ class ListEnvironmentResult extends CommandResult {
   final String? selectedEnvironment;
 
   @override
-  CompletionType? get type => CompletionType.info;
+  bool get success => true;
 
   @override
-  String description(OutputFormatter format) {
-    if (results.isEmpty) {
-      return 'No environments, use `puro create` to create one';
-    }
+  CommandMessage get message {
+    return CommandMessage(
+      (format) {
+        if (results.isEmpty) {
+          return 'No environments, use `puro create` to create one';
+        }
+        final lines = <String>[];
 
-    final lines = <String>[];
+        for (final result in results) {
+          final name = result.environment.name;
+          if (name == selectedEnvironment) {
+            lines.add(
+              format.color(
+                    '* ',
+                    foregroundColor: Ansi8BitColor.green,
+                    bold: true,
+                  ) +
+                  format.color(name, bold: true),
+            );
+          } else {
+            lines.add('  $name');
+          }
+        }
 
-    for (final result in results) {
-      final name = result.environment.name;
-      if (name == selectedEnvironment) {
-        lines.add(
-          format.color(
-                '* ',
-                foregroundColor: Ansi8BitColor.green,
-                bold: true,
-              ) +
-              format.color(name, bold: true),
-        );
-      } else {
-        lines.add('  $name');
-      }
-    }
+        final linePadding = lines.fold<int>(0, (v, e) => max(v, e.length));
 
-    final linePadding = lines.fold<int>(0, (v, e) => max(v, e.length));
-
-    return [
-      'Environments:',
-      for (var i = 0; i < lines.length; i++)
-        lines[i].padRight(linePadding) +
-            format.color(
-              ' (${results[i].version ?? 'unknown'})',
-              foregroundColor: Ansi8BitColor.grey,
-            ),
-      '',
-      'Use `puro use <name>` to switch, or `puro create <name>` to create an environment',
-    ].join('\n');
-  }
-
-  @override
-  CommandResultModel toModel() {
-    return CommandResultModel(
-      success: true,
-      environmentList: EnvironmentListModel(
-        environments: [
-          for (final info in results) info.toModel(),
-        ],
-        selectedEnvironment: selectedEnvironment,
-      ),
+        return [
+          'Environments:',
+          for (var i = 0; i < lines.length; i++)
+            lines[i].padRight(linePadding) +
+                format.color(
+                  ' (${results[i].version ?? 'unknown'})',
+                  foregroundColor: Ansi8BitColor.grey,
+                ),
+          '',
+          'Use `puro create <name>` to create an environment, or `puro use <name>` to switch',
+        ].join('\n');
+      },
+      type: CompletionType.info,
     );
   }
+
+  @override
+  late final model = CommandResultModel(
+    environmentList: EnvironmentListModel(
+      environments: [
+        for (final info in results) info.toModel(),
+      ],
+      selectedEnvironment: selectedEnvironment,
+    ),
+  );
 }
 
 /// Lists all available environments

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-curl https://puro.s3.amazonaws.com/builds/master/linux-x64/puro -O
+curl https://puro.dev/builds/master/linux-x64/puro -O
 chmod +x puro
 ./puro --no-progress -v create example 3.3.5
 ./puro --no-progress -v rm example

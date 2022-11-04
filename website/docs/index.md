@@ -11,13 +11,10 @@ Puro is an experimental tool for installing and managing [Flutter](https://flutt
 With Puro you can:
 
 * Use multiple versions of Flutter at the same time
-{: .puro-star}
+{ ^ .star-list }
 * Download new versions twice as fast
-{: .puro-star}
 * Configure globally or per-project
-{: .puro-star}
 * Switch with a single command, no more manually editing IDE settings!
-{: .puro-star}
 
 ## Installation
 
@@ -79,6 +76,12 @@ puro use my_env
 
 Puro will automatically detect if you are using VSCode or Android Studio (IntelliJ) and generate the necessary configs.
 If this is a new project without a workspace, add `--vscode` or `--intellij` to generate them regardless.
+
+You can also configure the global default with `--global` or `-g`:
+
+```sh
+puro use -g my_env
+```
 
 See the [Command Reference](/reference/commands/) for more information.
 

@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:http/http.dart';
-
 import '../config.dart';
+import '../downloader.dart';
 import '../git.dart';
 import '../http.dart';
 import '../logger.dart';
@@ -166,7 +165,6 @@ Future<bool> downloadSharedEngine({
 }) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
-  final httpClient = scope.read(clientProvider);
   final sharedCache = config.getFlutterCache(engineVersion);
   var didChangeEngine = false;
 
@@ -189,31 +187,21 @@ Future<bool> downloadSharedEngine({
   }
 
   if (!sharedCache.exists) {
-    log.v('downloading engine');
-
+    log.v('Downloading engine');
     final engineZipUrl = await getEngineReleaseZipUrl(
       scope: scope,
       engineVersion: engineVersion,
     );
     sharedCache.cacheDir.createSync(recursive: true);
     final zipFile = config.sharedCachesDir.childFile('$engineVersion.zip');
-    final zipFileSink = zipFile.openWrite();
-
-    log.v('Saving $engineZipUrl to ${zipFile.path}');
-
-    await ProgressNode.of(scope).wrap((scope, node) async {
-      node.description = 'Downloading engine';
-      final response = await httpClient.send(Request('GET', engineZipUrl));
-      if (response.statusCode ~/ 100 != 2) {
-        throw AssertionError(
-          'HTTP ${response.statusCode} on GET $engineZipUrl',
-        );
-      }
-      await node.wrapHttpResponse(response).pipe(zipFileSink);
-    });
+    await downloadFile(
+      scope: scope,
+      url: engineZipUrl,
+      file: zipFile,
+      description: 'Downloading engine',
+    );
 
     log.v('unzipping into ${config.sharedCachesDir}');
-
     await ProgressNode.of(scope).wrap((scope, node) async {
       node.description = 'Unzipping engine';
       await unzip(

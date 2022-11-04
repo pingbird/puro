@@ -42,7 +42,7 @@ class FlutterVersion {
 
   @override
   String toString() {
-    if (tag != null) {
+    if (tag != null && tag != '$version' && tag != 'v$version') {
       return 'tags/$tag';
     } else if (version != null) {
       if (branch != null) {

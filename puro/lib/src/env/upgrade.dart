@@ -3,7 +3,6 @@ import '../config.dart';
 import '../logger.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';
-import '../terminal.dart';
 import 'create.dart';
 import 'engine.dart';
 import 'version.dart';
@@ -20,20 +19,22 @@ class EnvUpgradeResult extends CommandResult {
   final FlutterVersion to;
 
   @override
-  String description(OutputFormatter format) =>
-      'Upgraded `${environment.name}` from $from to $to';
+  bool get success => true;
 
   @override
-  CommandResultModel toModel() {
-    return CommandResultModel(
-      success: true,
-      environmentUpgrade: EnvironmentUpgradeModel(
-        name: environment.name,
-        from: from.toModel(),
-        to: to.toModel(),
-      ),
-    );
-  }
+  CommandMessage get message => CommandMessage(
+        (format) => 'Upgraded `${environment.name}` from $from to $to',
+      );
+
+  @override
+  late final model = CommandResultModel(
+    success: true,
+    environmentUpgrade: EnvironmentUpgradeModel(
+      name: environment.name,
+      from: from.toModel(),
+      to: to.toModel(),
+    ),
+  );
 }
 
 /// Upgrades an environment to a different version of flutter.

@@ -8,6 +8,7 @@ import 'package:pub_semver/pub_semver.dart';
 import '../models.dart';
 import 'command.dart';
 import 'provider.dart';
+import 'version.dart';
 
 Directory? findProjectDir(Directory directory, String fileName) {
   while (directory.existsSync()) {
@@ -37,6 +38,8 @@ class PuroConfig {
     required this.releasesJsonUrl,
     required this.flutterStorageBaseUrl,
     required this.environmentOverride,
+    required this.puroBuildsUrl,
+    required this.buildTarget,
   }) : puroRoot = puroRoot.absolute;
 
   factory PuroConfig.fromCommandLine({
@@ -104,6 +107,8 @@ class PuroConfig {
         flutterStorageBaseUrl ?? 'https://storage.googleapis.com',
       ),
       environmentOverride: environmentOverride,
+      puroBuildsUrl: Uri.parse('https://puro.dev/builds'),
+      buildTarget: PuroBuildTarget.query(),
     );
   }
 
@@ -118,6 +123,8 @@ class PuroConfig {
   final Uri releasesJsonUrl;
   final Uri flutterStorageBaseUrl;
   final String? environmentOverride;
+  final Uri puroBuildsUrl;
+  final PuroBuildTarget buildTarget;
 
   static const dotfileName = '.puro.json';
 
@@ -125,9 +132,17 @@ class PuroConfig {
   late final File? puroDotfile = projectDir?.childFile(dotfileName);
   late final File? parentPuroDotfile = parentProjectDir?.childFile(dotfileName);
   late final Directory envsDir = puroRoot.childDirectory('envs');
+  late final Directory binDir = puroRoot.childDirectory('bin');
   late final Directory sharedDir = puroRoot.childDirectory('shared');
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
+
+  late final File puroExecutableFile = binDir.childFile(buildTarget.executable);
+
+  late final File puroExecutableTempFile =
+      binDir.childFile('${buildTarget.executable}.tmp');
+  late final File puroExecutableOldFile =
+      binDir.childFile('${buildTarget.executable}.old');
 
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
@@ -140,22 +155,6 @@ class PuroConfig {
       throw AssertionError('No Dart project in current directory');
     }
     return dir;
-  }
-
-  @override
-  String toString() {
-    return 'PuroConfig(\n'
-        '  gitExecutable: $gitExecutable,\n'
-        '  puroRoot: $puroRoot,\n'
-        '  homeDir: $homeDir,\n'
-        '  projectDir: $projectDir,\n'
-        '  parentProjectDir: $parentProjectDir,\n'
-        '  flutterGitUrl: $flutterGitUrl,\n'
-        '  engineGitUrl: $engineGitUrl,\n'
-        '  releasesJsonUrl: $releasesJsonUrl,\n'
-        '  flutterStorageBaseUrl: $flutterStorageBaseUrl,\n'
-        '  environmentOverride: $environmentOverride,\n'
-        ')';
   }
 
   FlutterCacheConfig getFlutterCache(String engineVersion) {
@@ -245,6 +244,22 @@ class PuroConfig {
       );
     }
     return null;
+  }
+
+  @override
+  String toString() {
+    return 'PuroConfig(\n'
+        '  gitExecutable: $gitExecutable,\n'
+        '  puroRoot: $puroRoot,\n'
+        '  homeDir: $homeDir,\n'
+        '  projectDir: $projectDir,\n'
+        '  parentProjectDir: $parentProjectDir,\n'
+        '  flutterGitUrl: $flutterGitUrl,\n'
+        '  engineGitUrl: $engineGitUrl,\n'
+        '  releasesJsonUrl: $releasesJsonUrl,\n'
+        '  flutterStorageBaseUrl: $flutterStorageBaseUrl,\n'
+        '  environmentOverride: $environmentOverride,\n'
+        ')';
   }
 
   static final provider = Provider<PuroConfig>.late();

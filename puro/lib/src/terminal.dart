@@ -27,12 +27,16 @@ enum CompletionType {
   plain('', null),
   success('[\u2713] ', Ansi8BitColor.green),
   failure('[x] ', Ansi8BitColor.red),
-  indeterminate('[~] ', Ansi8BitColor.grey),
+  indeterminate('[~] ', Ansi8BitColor.purple),
   info('[i] ', Ansi8BitColor.blue);
 
   const CompletionType(this.prefix, this.color);
   final String prefix;
   final Ansi8BitColor? color;
+
+  static final fromName = {
+    for (final value in CompletionType.values) value.name: value,
+  };
 }
 
 class OutputFormatter {
@@ -119,7 +123,7 @@ class Terminal extends StringSink {
   late final statusDebouncer = Debouncer<String>(
     minDuration: const Duration(milliseconds: 50),
     maxDuration: const Duration(milliseconds: 100),
-    onUpdate: flushStatus,
+    onUpdate: _flushStatus,
     initialValue: '',
   );
 
@@ -127,7 +131,7 @@ class Terminal extends StringSink {
 
   var _status = '';
 
-  String _clearStatus() {
+  String _clearStatusStr() {
     if (_status.isEmpty) return '';
     final lines = '\n'.allMatches(_status).length;
     _status = '';
@@ -135,21 +139,27 @@ class Terminal extends StringSink {
   }
 
   void resetStatus() {
-    final output = _clearStatus();
+    final output = _clearStatusStr();
     statusDebouncer.reset('');
     if (output.isNotEmpty) stdout.write(output);
   }
 
-  String _flushStatus(String pendingStatus) {
+  String _flushStatusStr(String pendingStatus) {
     if (pendingStatus == _status) return '';
-    final clear = _clearStatus();
+    final clear = _clearStatusStr();
     _status = pendingStatus;
     return '$clear$pendingStatus';
   }
 
-  void flushStatus(String pendingStatus) {
-    final output = _flushStatus(pendingStatus);
+  void _flushStatus(String pendingStatus) {
+    final output = _flushStatusStr(pendingStatus);
     if (output.isNotEmpty) stdout.write(output);
+  }
+
+  void flushStatus() {
+    final pendingStatus = statusDebouncer.value;
+    _flushStatus(pendingStatus);
+    statusDebouncer.reset(pendingStatus);
   }
 
   String get status => _status;
@@ -160,7 +170,7 @@ class Terminal extends StringSink {
   void preserveStatus() {
     final pendingStatus = statusDebouncer.value;
     if (pendingStatus.isNotEmpty) {
-      final flush = _flushStatus(pendingStatus);
+      final flush = _flushStatusStr(pendingStatus);
       stdout.writeln(flush);
       _status = '';
     }
@@ -170,13 +180,10 @@ class Terminal extends StringSink {
     resetStatus();
   }
 
-  static final provider = Provider<Terminal>.late();
-  static Terminal of(Scope scope) => scope.read(provider);
-
   @override
   void write(Object? object) {
     stdout.write(
-      '${_clearStatus()}$object${_flushStatus(statusDebouncer.value)}',
+      '${_clearStatusStr()}$object${_flushStatusStr(statusDebouncer.value)}',
     );
   }
 
@@ -194,4 +201,7 @@ class Terminal extends StringSink {
   void writeln([Object? object = '']) {
     write('$object\n');
   }
+
+  static final provider = Provider<Terminal>.late();
+  static Terminal of(Scope scope) => scope.read(provider);
 }

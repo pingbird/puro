@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 
-import '../../models.dart';
 import '../command.dart';
 import '../config.dart';
 import '../git.dart';
@@ -22,19 +21,17 @@ class EnvCreateResult extends CommandResult {
     required this.directory,
   });
 
+  @override
   final bool success;
   final bool existing;
   final Directory directory;
 
   @override
-  CommandResultModel toModel() {
-    return CommandResultModel(success: success);
-  }
-
-  @override
-  String description(OutputFormatter format) => existing
-      ? 'Re-created existing environment `${directory.basename}`'
-      : 'Created environment `${directory.basename}` in `${directory.path}`';
+  CommandMessage get message => CommandMessage(
+        (format) => existing
+            ? 'Re-created existing environment `${directory.basename}`'
+            : 'Created environment `${directory.basename}` in `${directory.path}`',
+      );
 }
 
 /// Attempts to get the engine version of a flutter commit.

@@ -153,26 +153,37 @@ const EnvironmentUpgradeModel$json = const {
 final $typed_data.Uint8List environmentUpgradeModelDescriptor =
     $convert.base64Decode(
         'ChdFbnZpcm9ubWVudFVwZ3JhZGVNb2RlbBISCgRuYW1lGAEgASgJUgRuYW1lEigKBGZyb20YAiABKAsyFC5GbHV0dGVyVmVyc2lvbk1vZGVsUgRmcm9tEiQKAnRvGAMgASgLMhQuRmx1dHRlclZlcnNpb25Nb2RlbFICdG8=');
+@$core.Deprecated('Use commandMessageModelDescriptor instead')
+const CommandMessageModel$json = const {
+  '1': 'CommandMessageModel',
+  '2': const [
+    const {'1': 'type', '3': 1, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `CommandMessageModel`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List commandMessageModelDescriptor = $convert.base64Decode(
+    'ChNDb21tYW5kTWVzc2FnZU1vZGVsEhIKBHR5cGUYASABKAlSBHR5cGUSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 @$core.Deprecated('Use commandResultModelDescriptor instead')
 const CommandResultModel$json = const {
   '1': 'CommandResultModel',
   '2': const [
     const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     const {
-      '1': 'message',
+      '1': 'messages',
       '3': 2,
-      '4': 1,
-      '5': 9,
-      '9': 0,
-      '10': 'message',
-      '17': true
+      '4': 3,
+      '5': 11,
+      '6': '.CommandMessageModel',
+      '10': 'messages'
     },
     const {
       '1': 'usage',
       '3': 3,
       '4': 1,
       '5': 9,
-      '9': 1,
+      '9': 0,
       '10': 'usage',
       '17': true
     },
@@ -182,7 +193,7 @@ const CommandResultModel$json = const {
       '4': 1,
       '5': 11,
       '6': '.CommandErrorModel',
-      '9': 2,
+      '9': 1,
       '10': 'error',
       '17': true
     },
@@ -200,7 +211,7 @@ const CommandResultModel$json = const {
       '4': 1,
       '5': 11,
       '6': '.EnvironmentListModel',
-      '9': 3,
+      '9': 2,
       '10': 'environmentList',
       '17': true
     },
@@ -210,13 +221,12 @@ const CommandResultModel$json = const {
       '4': 1,
       '5': 11,
       '6': '.EnvironmentUpgradeModel',
-      '9': 4,
+      '9': 3,
       '10': 'environmentUpgrade',
       '17': true
     },
   ],
   '8': const [
-    const {'1': '_message'},
     const {'1': '_usage'},
     const {'1': '_error'},
     const {'1': '_environmentList'},
@@ -226,7 +236,49 @@ const CommandResultModel$json = const {
 
 /// Descriptor for `CommandResultModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List commandResultModelDescriptor = $convert.base64Decode(
-    'ChJDb21tYW5kUmVzdWx0TW9kZWwSGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgdtZXNzYWdlGAIgASgJSABSB21lc3NhZ2WIAQESGQoFdXNhZ2UYAyABKAlIAVIFdXNhZ2WIAQESLQoFZXJyb3IYBCABKAsyEi5Db21tYW5kRXJyb3JNb2RlbEgCUgVlcnJvcogBARIiCgRsb2dzGAUgAygLMg4uTG9nRW50cnlNb2RlbFIEbG9ncxJECg9lbnZpcm9ubWVudExpc3QYBiABKAsyFS5FbnZpcm9ubWVudExpc3RNb2RlbEgDUg9lbnZpcm9ubWVudExpc3SIAQESTQoSZW52aXJvbm1lbnRVcGdyYWRlGAcgASgLMhguRW52aXJvbm1lbnRVcGdyYWRlTW9kZWxIBFISZW52aXJvbm1lbnRVcGdyYWRliAEBQgoKCF9tZXNzYWdlQggKBl91c2FnZUIICgZfZXJyb3JCEgoQX2Vudmlyb25tZW50TGlzdEIVChNfZW52aXJvbm1lbnRVcGdyYWRl');
+    'ChJDb21tYW5kUmVzdWx0TW9kZWwSGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIwCghtZXNzYWdlcxgCIAMoCzIULkNvbW1hbmRNZXNzYWdlTW9kZWxSCG1lc3NhZ2VzEhkKBXVzYWdlGAMgASgJSABSBXVzYWdliAEBEi0KBWVycm9yGAQgASgLMhIuQ29tbWFuZEVycm9yTW9kZWxIAVIFZXJyb3KIAQESIgoEbG9ncxgFIAMoCzIOLkxvZ0VudHJ5TW9kZWxSBGxvZ3MSRAoPZW52aXJvbm1lbnRMaXN0GAYgASgLMhUuRW52aXJvbm1lbnRMaXN0TW9kZWxIAlIPZW52aXJvbm1lbnRMaXN0iAEBEk0KEmVudmlyb25tZW50VXBncmFkZRgHIAEoCzIYLkVudmlyb25tZW50VXBncmFkZU1vZGVsSANSEmVudmlyb25tZW50VXBncmFkZYgBAUIICgZfdXNhZ2VCCAoGX2Vycm9yQhIKEF9lbnZpcm9ubWVudExpc3RCFQoTX2Vudmlyb25tZW50VXBncmFkZQ==');
+@$core.Deprecated('Use puroGlobalPrefsModelDescriptor instead')
+const PuroGlobalPrefsModel$json = const {
+  '1': 'PuroGlobalPrefsModel',
+  '2': const [
+    const {
+      '1': 'defaultEnvironment',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'defaultEnvironment',
+      '17': true
+    },
+    const {
+      '1': 'lastUpdateCheck',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'lastUpdateCheck',
+      '17': true
+    },
+    const {
+      '1': 'enableUpdateCheck',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '9': 2,
+      '10': 'enableUpdateCheck',
+      '17': true
+    },
+  ],
+  '8': const [
+    const {'1': '_defaultEnvironment'},
+    const {'1': '_lastUpdateCheck'},
+    const {'1': '_enableUpdateCheck'},
+  ],
+};
+
+/// Descriptor for `PuroGlobalPrefsModel`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List puroGlobalPrefsModelDescriptor = $convert.base64Decode(
+    'ChRQdXJvR2xvYmFsUHJlZnNNb2RlbBIzChJkZWZhdWx0RW52aXJvbm1lbnQYASABKAlIAFISZGVmYXVsdEVudmlyb25tZW50iAEBEi0KD2xhc3RVcGRhdGVDaGVjaxgCIAEoCUgBUg9sYXN0VXBkYXRlQ2hlY2uIAQESMQoRZW5hYmxlVXBkYXRlQ2hlY2sYAyABKAhIAlIRZW5hYmxlVXBkYXRlQ2hlY2uIAQFCFQoTX2RlZmF1bHRFbnZpcm9ubWVudEISChBfbGFzdFVwZGF0ZUNoZWNrQhQKEl9lbmFibGVVcGRhdGVDaGVjaw==');
 @$core.Deprecated('Use puroDotfileModelDescriptor instead')
 const PuroDotfileModel$json = const {
   '1': 'PuroDotfileModel',
