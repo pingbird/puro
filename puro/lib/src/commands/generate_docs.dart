@@ -10,9 +10,10 @@ import '../http.dart';
 
 class GenerateDocsCommand extends PuroCommand {
   GenerateDocsCommand() {
-    argParser.addOption(
+    argParser.addFlag(
       'deploy',
       help: 'Whether or not this is part of a production deploy',
+      negatable: false,
     );
   }
 
