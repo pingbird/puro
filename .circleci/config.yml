@@ -207,7 +207,7 @@ jobs:
       - install_dart
       - pub_get
       - run: |-
-          dart puro/bin/puro.dart _generate-docs
+          dart puro/bin/puro.dart _generate-docs --deploy
           pip install -q mkdocs mkdocs-material
           cd website
           export PYTHONPATH=`pwd`

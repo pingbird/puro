@@ -2,11 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 import '../command.dart';
 import '../config.dart';
+import '../http.dart';
 
 class GenerateDocsCommand extends PuroCommand {
+  GenerateDocsCommand() {
+    argParser.addOption(
+      'deploy',
+      help: 'Whether or not this is part of a production deploy',
+    );
+  }
+
   @override
   String get name => '_generate-docs';
 
@@ -37,6 +46,33 @@ class GenerateDocsCommand extends PuroCommand {
     await puroDir.childFile('CHANGELOG.md').copy(
           referenceDir.childFile('changelog.md').path,
         );
+
+    if (argResults!['deploy'] as bool) {
+      // Replace master in the installation instructions with the latest version
+      final httpClient = scope.read(clientProvider);
+      var latestVersion = Platform.environment['CIRCLE_TAG'];
+      if (latestVersion == null || latestVersion.isEmpty) {
+        final response = await httpClient.get(config.puroLatestBuildUrl);
+        HttpException.ensureSuccess(response);
+        latestVersion = response.body;
+      }
+      latestVersion = latestVersion.trim();
+      // Make sure it's a valid version string
+      Version.parse(latestVersion);
+
+      final builds = config.puroBuildsUrl;
+      final indexFile = docsDir.childFile('index.md');
+      var index = await indexFile.readAsString();
+      index = index.replaceAll(
+        builds.append(path: 'master').toString(),
+        builds.append(path: latestVersion).toString(),
+      );
+      index = index.replaceAll(
+        'PURO_VERSION="master"',
+        'PURO_VERSION="$latestVersion"',
+      );
+      await indexFile.writeAsString(index);
+    }
 
     return BasicMessageResult(success: true, message: 'Generated docs');
   }

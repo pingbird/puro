@@ -7,6 +7,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import '../models.dart';
 import 'command.dart';
+import 'http.dart';
 import 'provider.dart';
 import 'version.dart';
 
@@ -136,18 +137,15 @@ class PuroConfig {
   late final Directory sharedDir = puroRoot.childDirectory('shared');
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
-
   late final File puroExecutableFile = binDir.childFile(buildTarget.executable);
-
   late final File puroExecutableTempFile =
       binDir.childFile('${buildTarget.executable}.tmp');
   late final File puroExecutableOldFile =
       binDir.childFile('${buildTarget.executable}.old');
-
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
-
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
+  late final Uri puroLatestBuildUrl = puroBuildsUrl.append(path: 'latest');
 
   Directory ensureParentProjectDir() {
     final dir = parentProjectDir;
