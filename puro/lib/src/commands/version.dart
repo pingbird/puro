@@ -31,11 +31,10 @@ class VersionCommand extends PuroCommand {
       withCommit: !release,
     );
     if (plain) {
-      return BasicMessageResult(
-        success: true,
-        message: '$version',
-        type: CompletionType.plain,
-      );
+      Terminal.of(scope).flushStatus();
+      await stderr.flush();
+      stdout.write('$version');
+      exit(0);
     }
     return BasicMessageResult(
       success: true,

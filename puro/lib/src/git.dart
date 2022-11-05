@@ -598,7 +598,7 @@ class GitTagVersion {
       // release, thus increment [y].
       return Version(x!, y! + 1, 0, pre: '0.0.pre.$commits');
     } else {
-      return Version(x!, y! + 1, z!, pre: '0.0.pre.$commits');
+      return Version(x!, y!, z! + 1, pre: '0.0.pre.$commits');
     }
   }
 }
