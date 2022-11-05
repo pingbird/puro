@@ -24,6 +24,9 @@ class PuroUpgradeCommand extends PuroCommand {
   final description = 'Upgrades the puro tool to a new version';
 
   @override
+  bool get allowUpdateCheck => false;
+
+  @override
   Future<CommandResult> run() async {
     final http = scope.read(clientProvider);
     final config = PuroConfig.of(scope);
@@ -107,6 +110,6 @@ class PuroUpgradeCommand extends PuroCommand {
         installProcess.stdout.listen(stdout.add).asFuture<void>();
     await installProcess.stderr.listen(stderr.add).asFuture<void>();
     await stdoutFuture;
-    exit(await installProcess.exitCode);
+    await runner.exitPuro(await installProcess.exitCode);
   }
 }

@@ -53,7 +53,7 @@ class GenerateDocsCommand extends PuroCommand {
       final httpClient = scope.read(clientProvider);
       var latestVersion = Platform.environment['CIRCLE_TAG'];
       if (latestVersion == null || latestVersion.isEmpty) {
-        final response = await httpClient.get(config.puroLatestBuildUrl);
+        final response = await httpClient.get(config.puroLatestVersionUrl);
         HttpException.ensureSuccess(response);
         latestVersion = response.body;
       }

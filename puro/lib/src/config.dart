@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -6,7 +7,8 @@ import 'package:process/process.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../models.dart';
-import 'command.dart';
+import 'extensions.dart';
+import 'file_lock.dart';
 import 'http.dart';
 import 'provider.dart';
 import 'version.dart';
@@ -149,7 +151,9 @@ class PuroConfig {
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
-  late final Uri puroLatestBuildUrl = puroBuildsUrl.append(path: 'latest');
+  late final Uri puroLatestVersionUrl = puroBuildsUrl.append(path: 'latest');
+  late final File globalPrefsJsonFile = puroRoot.childFile('prefs.json');
+  late final File puroLatestVersionFile = puroRoot.childFile('latest_version');
 
   Directory ensureParentProjectDir() {
     final dir = parentProjectDir;
@@ -380,6 +384,7 @@ bool isValidCommitHash(String commit) {
 
 Version? tryParseVersion(String text) {
   try {
+    text = text.trim();
     return Version.parse(text.startsWith('v') ? text.substring(1) : text);
   } catch (_) {
     return null;
@@ -403,4 +408,46 @@ void ensureValidName(String name) {
   if (!isValidName(name)) {
     throw ArgumentError('Not a valid name: `$name`');
   }
+}
+
+const prettyJsonEncoder = JsonEncoder.withIndent('  ');
+
+Future<PuroGlobalPrefsModel> readGlobalPrefs({
+  required Scope scope,
+}) async {
+  final model = PuroGlobalPrefsModel();
+  final config = PuroConfig.of(scope);
+  final file = config.globalPrefsJsonFile;
+  if (file.existsSync()) {
+    final contents = await readAtomic(scope: scope, file: file);
+    model.mergeFromProto3Json(jsonDecode(contents));
+  }
+  return model;
+}
+
+Future<PuroGlobalPrefsModel> updateGlobalPrefs({
+  required Scope scope,
+  required FutureOr<void> Function(PuroGlobalPrefsModel model) fn,
+  bool background = false,
+}) {
+  final config = PuroConfig.of(scope);
+  return lockFile(
+    scope,
+    config.globalPrefsJsonFile,
+    (handle) async {
+      final model = PuroGlobalPrefsModel();
+      String? contents;
+      if (handle.lengthSync() > 0) {
+        contents = handle.readAllAsStringSync();
+        model.mergeFromProto3Json(jsonDecode(contents));
+      }
+      await fn(model);
+      final newContents = prettyJsonEncoder.convert(model.toProto3Json());
+      if (contents != newContents) {
+        handle.writeAllStringSync(newContents);
+      }
+      return model;
+    },
+    mode: FileMode.append,
+  );
 }

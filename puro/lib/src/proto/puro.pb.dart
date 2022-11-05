@@ -937,8 +937,14 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
             ? ''
             : 'lastUpdateCheck',
         protoName: 'lastUpdateCheck')
-    ..aOB(
+    ..aOS(
         3,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'lastUpdateNotification',
+        protoName: 'lastUpdateNotification')
+    ..aOB(
+        4,
         const $core.bool.fromEnvironment('protobuf.omit_field_names')
             ? ''
             : 'enableUpdateCheck',
@@ -949,6 +955,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   factory PuroGlobalPrefsModel({
     $core.String? defaultEnvironment,
     $core.String? lastUpdateCheck,
+    $core.String? lastUpdateNotification,
     $core.bool? enableUpdateCheck,
   }) {
     final _result = create();
@@ -957,6 +964,9 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     }
     if (lastUpdateCheck != null) {
       _result.lastUpdateCheck = lastUpdateCheck;
+    }
+    if (lastUpdateNotification != null) {
+      _result.lastUpdateNotification = lastUpdateNotification;
     }
     if (enableUpdateCheck != null) {
       _result.enableUpdateCheck = enableUpdateCheck;
@@ -1016,16 +1026,28 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   void clearLastUpdateCheck() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.bool get enableUpdateCheck => $_getBF(2);
+  $core.String get lastUpdateNotification => $_getSZ(2);
   @$pb.TagNumber(3)
-  set enableUpdateCheck($core.bool v) {
-    $_setBool(2, v);
+  set lastUpdateNotification($core.String v) {
+    $_setString(2, v);
   }
 
   @$pb.TagNumber(3)
-  $core.bool hasEnableUpdateCheck() => $_has(2);
+  $core.bool hasLastUpdateNotification() => $_has(2);
   @$pb.TagNumber(3)
-  void clearEnableUpdateCheck() => clearField(3);
+  void clearLastUpdateNotification() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get enableUpdateCheck => $_getBF(3);
+  @$pb.TagNumber(4)
+  set enableUpdateCheck($core.bool v) {
+    $_setBool(3, v);
+  }
+
+  @$pb.TagNumber(4)
+  $core.bool hasEnableUpdateCheck() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEnableUpdateCheck() => clearField(4);
 }
 
 class PuroDotfileModel extends $pb.GeneratedMessage {

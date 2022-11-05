@@ -260,11 +260,20 @@ const PuroGlobalPrefsModel$json = const {
       '17': true
     },
     const {
-      '1': 'enableUpdateCheck',
+      '1': 'lastUpdateNotification',
       '3': 3,
       '4': 1,
-      '5': 8,
+      '5': 9,
       '9': 2,
+      '10': 'lastUpdateNotification',
+      '17': true
+    },
+    const {
+      '1': 'enableUpdateCheck',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '9': 3,
       '10': 'enableUpdateCheck',
       '17': true
     },
@@ -272,13 +281,14 @@ const PuroGlobalPrefsModel$json = const {
   '8': const [
     const {'1': '_defaultEnvironment'},
     const {'1': '_lastUpdateCheck'},
+    const {'1': '_lastUpdateNotification'},
     const {'1': '_enableUpdateCheck'},
   ],
 };
 
 /// Descriptor for `PuroGlobalPrefsModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List puroGlobalPrefsModelDescriptor = $convert.base64Decode(
-    'ChRQdXJvR2xvYmFsUHJlZnNNb2RlbBIzChJkZWZhdWx0RW52aXJvbm1lbnQYASABKAlIAFISZGVmYXVsdEVudmlyb25tZW50iAEBEi0KD2xhc3RVcGRhdGVDaGVjaxgCIAEoCUgBUg9sYXN0VXBkYXRlQ2hlY2uIAQESMQoRZW5hYmxlVXBkYXRlQ2hlY2sYAyABKAhIAlIRZW5hYmxlVXBkYXRlQ2hlY2uIAQFCFQoTX2RlZmF1bHRFbnZpcm9ubWVudEISChBfbGFzdFVwZGF0ZUNoZWNrQhQKEl9lbmFibGVVcGRhdGVDaGVjaw==');
+    'ChRQdXJvR2xvYmFsUHJlZnNNb2RlbBIzChJkZWZhdWx0RW52aXJvbm1lbnQYASABKAlIAFISZGVmYXVsdEVudmlyb25tZW50iAEBEi0KD2xhc3RVcGRhdGVDaGVjaxgCIAEoCUgBUg9sYXN0VXBkYXRlQ2hlY2uIAQESOwoWbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbhgDIAEoCUgCUhZsYXN0VXBkYXRlTm90aWZpY2F0aW9uiAEBEjEKEWVuYWJsZVVwZGF0ZUNoZWNrGAQgASgISANSEWVuYWJsZVVwZGF0ZUNoZWNriAEBQhUKE19kZWZhdWx0RW52aXJvbm1lbnRCEgoQX2xhc3RVcGRhdGVDaGVja0IZChdfbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkIUChJfZW5hYmxlVXBkYXRlQ2hlY2s=');
 @$core.Deprecated('Use puroDotfileModelDescriptor instead')
 const PuroDotfileModel$json = const {
   '1': 'PuroDotfileModel',

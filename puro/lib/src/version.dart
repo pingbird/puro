@@ -1,12 +1,18 @@
 import 'dart:io';
 
+import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
+import 'command.dart';
 import 'config.dart';
+import 'file_lock.dart';
 import 'git.dart';
+import 'http.dart';
+import 'logger.dart';
 import 'provider.dart';
+import 'terminal.dart';
 
 const _puroVersionDefine = String.fromEnvironment('puro_version');
 
@@ -26,24 +32,31 @@ Future<Directory?> getPuroDevelopmentRepository({
   return repository;
 }
 
+Future<Version>? _cachedVersion;
+
 /// Attempts to find the version of puro using either the `puro_version` define
-/// or the git tag.
+/// or the git tag. This is a tiny bit slower in development because it has to
+/// call git a few times.
 Future<Version> getPuroVersion({
   required Scope scope,
-  bool withCommit = true,
 }) async {
-  if (_puroVersionDefine.isNotEmpty) {
-    return Version.parse(_puroVersionDefine);
-  }
-  final repository = await getPuroDevelopmentRepository(scope: scope);
-  if (repository == null) {
-    return GitTagVersion.unknown.toSemver();
-  }
-  final version = await GitTagVersion.query(
-    scope: scope,
-    repository: repository,
-  );
-  return version.toSemver();
+  if (_cachedVersion != null) return _cachedVersion!;
+  final future = () async {
+    if (_puroVersionDefine.isNotEmpty) {
+      return Version.parse(_puroVersionDefine);
+    }
+    final repository = await getPuroDevelopmentRepository(scope: scope);
+    if (repository == null) {
+      return GitTagVersion.unknown.toSemver();
+    }
+    final version = await GitTagVersion.query(
+      scope: scope,
+      repository: repository,
+    );
+    return version.toSemver();
+  }();
+  _cachedVersion = future;
+  return future;
 }
 
 enum PuroBuildTarget {
@@ -76,4 +89,91 @@ enum PuroBuildTarget {
       );
     }
   }
+}
+
+const _kUpdateVersionCheckThreshold = Duration(days: 1);
+const _kUpdateNotificationThreshold = Duration(days: 1);
+
+Future<void> _fetchLatestVersionInBackground({
+  required Scope scope,
+}) async {
+  final log = PuroLogger.of(scope);
+  final config = PuroConfig.of(scope);
+  final httpClient = scope.read(clientProvider);
+  log.v('Fetching latest version from ${config.puroLatestVersionUrl}');
+  final response = await httpClient.get(config.puroLatestVersionUrl);
+  HttpException.ensureSuccess(response);
+  final body = response.body.trim();
+  Version.parse(body);
+  log.v('Latest version:');
+  await writeAtomic(
+    scope: scope,
+    file: config.puroLatestVersionFile,
+    content: body,
+  );
+}
+
+Future<CommandMessage?> checkIfUpdateAvailable({
+  required Scope scope,
+  required PuroCommandRunner runner,
+  bool alwaysNotify = false,
+}) async {
+  if (runner.isJson) {
+    // Don't bother telling a bot to update.
+    return null;
+  }
+  final config = PuroConfig.of(scope);
+  final prefs = await readGlobalPrefs(scope: scope);
+  if (prefs.hasEnableUpdateCheck() && !prefs.enableUpdateCheck) {
+    return null;
+  }
+  final lastVersionCheck =
+      prefs.hasLastUpdateCheck() ? DateTime.parse(prefs.lastUpdateCheck) : null;
+  final lastNotification = prefs.hasLastUpdateNotification()
+      ? DateTime.parse(prefs.lastUpdateNotification)
+      : null;
+  final currentVersion = await getPuroVersion(scope: scope);
+  final latestVersionFile = config.puroLatestVersionFile;
+  final latestVersion = latestVersionFile.existsSync()
+      ? tryParseVersion(await readAtomic(scope: scope, file: latestVersionFile))
+      : null;
+  final isOutOfDate = latestVersion != null && latestVersion > currentVersion;
+  final now = clock.now();
+  final willNotify = isOutOfDate &&
+      (alwaysNotify ||
+          lastNotification == null ||
+          now.difference(lastNotification) > _kUpdateNotificationThreshold);
+  final shouldVersionCheck = !isOutOfDate &&
+      (lastVersionCheck == null ||
+          now.difference(lastVersionCheck) > _kUpdateVersionCheckThreshold);
+  if (willNotify) {
+    await updateGlobalPrefs(
+      scope: scope,
+      fn: (prefs) async {
+        prefs.lastUpdateNotification = now.toIso8601String();
+      },
+    );
+    return CommandMessage(
+      (format) =>
+          'A new version of Puro is available, run `puro upgrade-puro` to upgrade',
+      type: CompletionType.info,
+    );
+  } else if (shouldVersionCheck) {
+    await updateGlobalPrefs(
+      scope: scope,
+      fn: (writePrefs) async {
+        // An update might have happened between us calling readGlobalPrefs and
+        // updateGlobalPrefs.
+        if (writePrefs.lastUpdateCheck != prefs.lastUpdateCheck) {
+          return;
+        }
+        writePrefs.lastUpdateCheck = now.toIso8601String();
+        runner.startInBackground(
+          name: 'checking latest version',
+          task: () => _fetchLatestVersionInBackground(scope: scope),
+        );
+      },
+    );
+  }
+  return null;
 }

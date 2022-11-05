@@ -1,8 +1,10 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
+import 'package:async/async.dart';
+import 'package:clock/clock.dart';
 import 'package:file/local.dart';
 
 import '../models.dart';
@@ -10,6 +12,7 @@ import 'config.dart';
 import 'logger.dart';
 import 'provider.dart';
 import 'terminal.dart';
+import 'version.dart';
 
 extension CommandResultModelExtensions on CommandResultModel {
   void addMessage(CommandMessage message, OutputFormatter format) {
@@ -170,6 +173,10 @@ abstract class PuroCommand extends Command<CommandResult> {
   @override
   String get description => '';
 
+  /// Whether or not puro should check for updates while this command is
+  /// running.
+  bool get allowUpdateCheck => true;
+
   @override
   String get invocation {
     final parents = [name];
@@ -259,8 +266,6 @@ abstract class PuroCommand extends Command<CommandResult> {
   }
 }
 
-const prettyJsonEncoder = JsonEncoder.withIndent('  ');
-
 class PuroCommandRunner extends CommandRunner<CommandResult> {
   PuroCommandRunner(
     super.executableName,
@@ -292,6 +297,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   final messages = <CommandMessage>[];
   final callbackQueue = <void Function()>[];
   final fileSystem = const LocalFileSystem();
+  final backgroundTasks = <Future<void>, String>{};
 
   void Function(T) wrapCallback<T>(void Function(T) fn) {
     return (str) {
@@ -313,6 +319,45 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       puroArgs.contains('-h') ||
       puroArgs.where((e) => !e.startsWith('-')).take(1).contains('help');
 
+  Future<Never> exitPuro(int code) async {
+    final results = <ResultFuture<void>, String>{
+      for (final entry in backgroundTasks.entries)
+        ResultFuture(entry.key): entry.value,
+    };
+
+    await Future.wait(results.keys).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        final incompleteTasks = results.entries.where((e) => !e.key.isComplete);
+        log.w(
+          'Gave up waiting for the following background tasks:\n'
+          '${incompleteTasks.map((e) => '* ${e.value}').join('\n')}',
+        );
+        return [];
+      },
+    );
+
+    exit(code);
+  }
+
+  void startInBackground({
+    required String name,
+    required FutureOr<void> Function() task,
+    LogLevel level = LogLevel.verbose,
+  }) {
+    backgroundTasks[() async {
+      try {
+        await task();
+      } catch (exception, stackTrace) {
+        log.add(LogEntry(
+          clock.now(),
+          level,
+          'Exception while $name\n$exception\n$stackTrace',
+        ));
+      }
+    }()] = name;
+  }
+
   @override
   void printUsage() {
     writeResultAndExit(
@@ -330,7 +375,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     messages.add(CommandMessage((format) => message, type: type));
   }
 
-  void writeResultAndExit(CommandResult result) {
+  Future<Never> writeResultAndExit(CommandResult result) async {
     final model = result.toModel();
     if (isJson) {
       final resultJson = model.toProto3Json();
@@ -361,7 +406,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         ),
       );
     }
-    exit(model.success ? 0 : 1);
+    await exitPuro(model.success ? 0 : 1);
   }
 
   @override
@@ -371,7 +416,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   }
 
   @override
-  Future<CommandResult?> runCommand(ArgResults topLevelResults) {
+  Future<CommandResult?> runCommand(ArgResults topLevelResults) async {
     results = topLevelResults;
 
     for (final callback in callbackQueue) {
@@ -398,6 +443,15 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     );
 
     log.d('Config: $config');
+
+    final commandName = topLevelResults.command?.name;
+    if (commandName != null &&
+        !((commands[commandName] as PuroCommand?)?.allowUpdateCheck ?? true)) {
+      final message = await checkIfUpdateAvailable(scope: scope, runner: this);
+      if (message != null) {
+        messages.add(message);
+      }
+    }
 
     return super.runCommand(topLevelResults);
   }

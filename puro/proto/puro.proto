@@ -54,7 +54,8 @@ message CommandResultModel {
 message PuroGlobalPrefsModel {
   optional string defaultEnvironment = 1;
   optional string lastUpdateCheck = 2;
-  optional bool enableUpdateCheck = 3;
+  optional string lastUpdateNotification = 3;
+  optional bool enableUpdateCheck = 4;
 }
 
 message PuroDotfileModel {

@@ -2,9 +2,15 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
+import 'package:mutex/mutex.dart';
+import 'package:path/path.dart' as path;
 
 import 'progress.dart';
 import 'provider.dart';
+
+/// Linux has some quirky behavior when a process has multiple locks on the same
+/// file that we want to avoid.
+final _fileMutexes = <String, Mutex>{};
 
 /// Locks the [file] for reading or writing, releasing the lock when [fn]
 /// returns.
@@ -14,37 +20,50 @@ import 'provider.dart';
 /// this acquires a shared lock which is useful if multiple processes should be
 /// able to read from the file at the same time (while blocking exclusive
 /// locks).
-///
-/// This does NOT prevent this file from being accessed more than once in our
-/// own process and the behavior is undefined if that happens.
 Future<T> lockFile<T>(
   Scope scope,
   File file,
   Future<T> fn(RandomAccessFile handle), {
   FileMode mode = FileMode.read,
   bool? exclusive,
+  bool background = false,
 }) async {
-  exclusive ??= mode != FileMode.read;
-  final handle = await file.open(mode: mode);
-  await ProgressNode.of(scope).wrap((scope, node) async {
-    node.description = 'Waiting for lock on ${file.path}';
-    await handle.lock(
-      exclusive! ? FileLock.blockingExclusive : FileLock.blockingShared,
-    );
-  });
+  final canonicalPath = path.join(
+    file.absolute.parent.resolveSymbolicLinksSync(),
+    file.basename,
+  );
+  final mutex = _fileMutexes.putIfAbsent(canonicalPath, () => Mutex());
+  await mutex.acquire();
   try {
-    return await fn(handle);
-  } finally {
-    if (mode != FileMode.read) {
-      await handle.flush();
+    exclusive ??= mode != FileMode.read;
+    final fileLock =
+        exclusive ? FileLock.blockingExclusive : FileLock.blockingShared;
+    final handle = await file.open(mode: mode);
+    if (background) {
+      await handle.lock(fileLock);
+    } else {
+      await ProgressNode.of(scope).wrap((scope, node) async {
+        node.description = 'Waiting for lock on ${file.path}';
+        await handle.lock(fileLock);
+      });
     }
-    await handle.close();
+    try {
+      return await fn(handle);
+    } finally {
+      if (mode != FileMode.read) {
+        await handle.flush();
+      }
+      await handle.close();
+    }
+  } finally {
+    mutex.release();
   }
 }
 
 Future<Uint8List> readBytesAtomic({
   required Scope scope,
   required File file,
+  bool background = false,
 }) async {
   return await lockFile(
     scope,
@@ -52,6 +71,7 @@ Future<Uint8List> readBytesAtomic({
     (handle) async {
       return handle.read(handle.lengthSync());
     },
+    background: background,
   );
 }
 
@@ -59,8 +79,13 @@ Future<Uint8List> readBytesAtomic({
 Future<String> readAtomic({
   required Scope scope,
   required File file,
+  bool background = false,
 }) async {
-  final bytes = await readBytesAtomic(scope: scope, file: file);
+  final bytes = await readBytesAtomic(
+    scope: scope,
+    file: file,
+    background: background,
+  );
   return utf8.decode(bytes);
 }
 
@@ -68,12 +93,14 @@ Future<void> writeBytesAtomic({
   required Scope scope,
   required File file,
   required List<int> bytes,
+  bool background = false,
 }) async {
   await lockFile(
     scope,
     file,
     (handle) => handle.writeFrom(bytes),
     mode: FileMode.write,
+    background: background,
   );
 }
 
@@ -82,11 +109,13 @@ Future<void> writeAtomic({
   required Scope scope,
   required File file,
   required String content,
+  bool background = false,
 }) {
   return writeBytesAtomic(
     scope: scope,
     file: file,
     bytes: utf8.encode(content),
+    background: background,
   );
 }
 
@@ -103,24 +132,36 @@ Future<void> writeBytesPassiveAtomic({
   required Scope scope,
   required File file,
   required List<int> bytes,
+  bool background = false,
 }) async {
   if (file.existsSync()) {
-    final existing = await readBytesAtomic(scope: scope, file: file);
+    final existing = await readBytesAtomic(
+      scope: scope,
+      file: file,
+      background: background,
+    );
     if (_bytesEqual(bytes, existing)) {
       return;
     }
   }
-  await writeBytesAtomic(scope: scope, file: file, bytes: bytes);
+  await writeBytesAtomic(
+    scope: scope,
+    file: file,
+    bytes: bytes,
+    background: background,
+  );
 }
 
 Future<void> writePassiveAtomic({
   required Scope scope,
   required File file,
   required String content,
+  bool background = false,
 }) {
   return writeBytesPassiveAtomic(
     scope: scope,
     file: file,
     bytes: utf8.encode(content),
+    background: background,
   );
 }

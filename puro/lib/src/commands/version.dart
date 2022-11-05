@@ -27,29 +27,31 @@ class VersionCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final plain = argResults!['plain'] as bool;
-    final release = argResults!['release'] as bool;
-    final version = await getPuroVersion(
-      scope: scope,
-      withCommit: !release,
-    );
+    final version = await getPuroVersion(scope: scope);
     if (plain) {
       Terminal.of(scope).flushStatus();
       await stderr.flush();
       stdout.write('$version');
-      exit(0);
+      await runner.exitPuro(0);
     }
     final externalMessage =
         await detectExternalFlutterInstallations(scope: scope);
+    final updateMessage = await checkIfUpdateAvailable(
+      scope: scope,
+      runner: runner,
+      alwaysNotify: true,
+    );
     return BasicMessageResult.list(
       success: true,
       messages: [
+        if (externalMessage != null) externalMessage,
+        if (updateMessage != null) updateMessage,
         CommandMessage(
           (format) => 'Puro $version\n'
               'Dart ${Platform.version}\n'
               '${Platform.operatingSystemVersion}',
           type: CompletionType.info,
         ),
-        if (externalMessage != null) externalMessage,
       ],
     );
   }

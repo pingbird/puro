@@ -19,6 +19,7 @@ dependencies:
   http: ^0.13.5
   json_annotation: ^4.7.0
   meta: ^1.8.0
+  mutex: ^3.0.0
   neoansi: ^0.3.2+1
   path: ^1.8.2
   petitparser: ^5.0.0

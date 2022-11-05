@@ -30,6 +30,6 @@ class PubCommand extends PuroCommand {
       onStderr: stderr.add,
       mode: ProcessStartMode.inheritStdio,
     );
-    exit(exitCode);
+    await runner.exitPuro(exitCode);
   }
 }

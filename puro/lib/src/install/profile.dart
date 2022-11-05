@@ -42,7 +42,7 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
 
   if (offending.isNotEmpty) {
     return CommandMessage(
-      (format) => 'Other flutter/dart installations detected\n'
+      (format) => 'Other Flutter or Dart installations detected\n'
           'Puro recommends removing the following from your PATH:\n'
           '${offending.map((e) => '${format.color(
                 '*',

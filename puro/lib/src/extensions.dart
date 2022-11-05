@@ -31,8 +31,8 @@ extension RandomAccessFileExtensions on RandomAccessFile {
   }
 
   Future<void> writeAll(List<int> bytes) async {
+    await truncate(0);
     setPositionSync(0);
-    await truncate(bytes.length);
     await writeFrom(bytes);
   }
 
@@ -41,8 +41,8 @@ extension RandomAccessFileExtensions on RandomAccessFile {
   }
 
   void writeAllSync(List<int> bytes) {
+    truncateSync(0);
     setPositionSync(0);
-    truncateSync(bytes.length);
     writeFromSync(bytes);
   }
 

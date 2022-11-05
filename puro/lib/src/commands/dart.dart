@@ -28,6 +28,6 @@ class DartCommand extends PuroCommand {
       args: argResults!.arguments,
       mode: ProcessStartMode.inheritStdio,
     );
-    exit(exitCode);
+    await runner.exitPuro(exitCode);
   }
 }
