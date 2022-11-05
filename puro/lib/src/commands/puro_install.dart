@@ -7,6 +7,14 @@ import '../install/shims.dart';
 import '../version.dart';
 
 class PuroInstallCommand extends PuroCommand {
+  PuroInstallCommand() {
+    argParser.addFlag(
+      'force',
+      hide: true,
+      negatable: false,
+    );
+  }
+
   @override
   final name = 'install-puro';
 
@@ -24,9 +32,11 @@ class PuroInstallCommand extends PuroCommand {
     final version = await getPuroVersion(scope: scope);
     final config = PuroConfig.of(scope);
 
+    final force = argResults!['force'] as bool;
+
     final currentExecutable =
         config.fileSystem.file(Platform.resolvedExecutable);
-    if (currentExecutable.path != config.puroExecutableFile.path) {
+    if (!force && currentExecutable.path != config.puroExecutableFile.path) {
       return BasicMessageResult(
         success: false,
         message: 'Installing standalone executables is not supported',
@@ -36,9 +46,14 @@ class PuroInstallCommand extends PuroCommand {
     final homeDir = config.homeDir.path;
     final scriptPath = Platform.script.toFilePath().replaceAll(homeDir, '~');
     String? profilePath;
+    var updatedWindowsRegistry = false;
     if (Platform.isLinux || Platform.isMacOS) {
       final profile = await tryUpdateProfile(scope: scope);
       profilePath = profile?.path.replaceAll(homeDir, '~');
+    } else if (Platform.isWindows) {
+      updatedWindowsRegistry = await tryUpdateWindowsPath(
+        scope: scope,
+      );
     }
 
     await installShims(scope: scope);
@@ -55,15 +70,19 @@ class PuroInstallCommand extends PuroCommand {
     return BasicMessageResult.list(
       success: true,
       messages: [
+        if (externalMessage != null) externalMessage,
         if (updateMessage != null) updateMessage,
         if (profilePath != null)
           CommandMessage(
             (format) => 'Updated PATH in $profilePath',
           ),
+        if (updatedWindowsRegistry)
+          CommandMessage(
+            (format) => 'Updated PATH in windows registry',
+          ),
         CommandMessage(
           (format) => 'Successfully installed Puro $version to $scriptPath',
         ),
-        if (externalMessage != null) externalMessage,
       ],
     );
   }

@@ -68,7 +68,9 @@ Future<File?> tryUpdateProfile({
   }
   final home = config.homeDir.path;
   final bin = config.binDir.path.replaceAll(home, '\$HOME');
-  final export = 'export PATH="\$PATH:$bin" $_kProfileComment';
+  final pubCacheBin = config.pubCacheBinDir.path.replaceAll(home, '\$HOME');
+  final export = 'export PATH="\$PATH:$bin" $_kProfileComment\n'
+      'export PATH="\$PATH:$pubCacheBin" $_kProfileComment';
   return await lockFile(
     scope,
     file,
@@ -138,4 +140,89 @@ Future<List<File>> findProgramInPath({
     for (final line in stdout.split('\n'))
       if (line.trim().isNotEmpty) config.fileSystem.file(line),
   ];
+}
+
+Future<String?> readWindowsRegistryValue({
+  required Scope scope,
+  required String key,
+  required String valueName,
+}) async {
+  // This is horrible.
+  final result = await runProcess(
+    scope,
+    'reg',
+    ['query', key, '/v', valueName],
+  );
+  if (result.exitCode != 0) {
+    return null;
+  }
+  final lines =
+      (result.stdout as String).replaceAll('\r\n', '\n').trim().split('\n');
+  if (lines.length != 2) {
+    return null;
+  }
+  final line = lines[1];
+  const typeStr = 'REG_EXPAND_SZ    ';
+  final valueIndex = line.indexOf(typeStr);
+  if (valueIndex < 0) {
+    return null;
+  }
+  return line.substring(valueIndex + typeStr.length);
+}
+
+Future<void> writeWindowsRegistryValue({
+  required Scope scope,
+  required String key,
+  required String valueName,
+  required String value,
+}) async {
+  final log = PuroLogger.of(scope);
+  final result = await runProcess(
+    scope,
+    'reg',
+    [
+      'add',
+      key,
+      '/v',
+      valueName,
+      '/t',
+      'REG_EXPAND_SZ',
+      '/d',
+      value,
+      '/f',
+    ],
+  );
+  if (result.exitCode != 0) {
+    log.w('reg add failed with exit code ${result.exitCode}\n${result.stderr}');
+  }
+}
+
+Future<bool> tryUpdateWindowsPath({
+  required Scope scope,
+}) async {
+  final currentPath = await readWindowsRegistryValue(
+    scope: scope,
+    key: 'HKEY_CURRENT_USER\\Environment',
+    valueName: 'Path',
+  );
+  final config = PuroConfig.of(scope);
+  final expectedPaths = {
+    config.binDir.path,
+    config.pubCacheBinDir.path,
+  };
+  final paths = (currentPath ?? '').split(';');
+  if (!expectedPaths.any((e) => !paths.contains(e))) {
+    // Already has all of our paths
+    return false;
+  }
+  while (paths.isNotEmpty && paths.last.isEmpty) paths.removeLast();
+  paths.removeWhere(expectedPaths.contains);
+  paths.addAll(expectedPaths);
+  final newPath = await writeWindowsRegistryValue(
+    scope: scope,
+    key: 'HKEY_CURRENT_USER\\Environment',
+    valueName: 'Path',
+    value: paths.join(';'),
+  );
+  return true;
 }
