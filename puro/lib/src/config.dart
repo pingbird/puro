@@ -427,7 +427,7 @@ Future<PuroGlobalPrefsModel> readGlobalPrefs({
 
 Future<PuroGlobalPrefsModel> updateGlobalPrefs({
   required Scope scope,
-  required FutureOr<void> Function(PuroGlobalPrefsModel model) fn,
+  required FutureOr<void> Function(PuroGlobalPrefsModel prefs) fn,
   bool background = false,
 }) {
   final config = PuroConfig.of(scope);

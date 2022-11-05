@@ -93,21 +93,24 @@ class FlutterVersion {
 
     // Check the official releases if a version or channel was given.
     if (parsedVersion != null || parsedChannel != null) {
-      if (parsedVersion != null && parsedChannel == FlutterChannel.master) {
-        throw ArgumentError(
-          'Unexpected version $version, the master channel is not versioned',
+      if (parsedChannel == FlutterChannel.master) {
+        if (parsedVersion != null) {
+          throw ArgumentError(
+            'Unexpected version $version, the master channel is not versioned',
+          );
+        }
+      } else {
+        final release = await findFrameworkRelease(
+          scope: scope,
+          version: parsedVersion,
+          channel: parsedChannel,
+        );
+        return FlutterVersion(
+          commit: release.hash,
+          version: Version.parse(release.version),
+          branch: release.channel,
         );
       }
-      final release = await findFrameworkRelease(
-        scope: scope,
-        version: parsedVersion,
-        channel: parsedChannel,
-      );
-      return FlutterVersion(
-        commit: release.hash,
-        version: Version.parse(release.version),
-        branch: release.channel,
-      );
     }
 
     Future<FlutterVersion?> checkCache() async {

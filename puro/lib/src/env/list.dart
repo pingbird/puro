@@ -8,6 +8,7 @@ import '../config.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';
 import '../terminal.dart';
+import 'default.dart';
 import 'version.dart';
 
 class EnvironmentInfoResult {
@@ -51,18 +52,18 @@ class ListEnvironmentResult extends CommandResult {
           if (name == selectedEnvironment) {
             lines.add(
               format.color(
-                    '* ',
-                    foregroundColor: Ansi8BitColor.green,
-                    bold: true,
-                  ) +
-                  format.color(name, bold: true),
+                '* $name',
+                foregroundColor: Ansi8BitColor.green,
+                bold: true,
+              ),
             );
           } else {
             lines.add('  $name');
           }
         }
 
-        final linePadding = lines.fold<int>(0, (v, e) => max(v, e.length));
+        final linePadding =
+            lines.fold<int>(0, (v, e) => max(v, stripAnsiEscapes(e).length));
 
         return [
           'Environments:',
@@ -113,6 +114,7 @@ Future<ListEnvironmentResult> listEnvironments({
   }
   return ListEnvironmentResult(
     results: results,
-    selectedEnvironment: config.tryGetProjectEnv()?.name,
+    selectedEnvironment: config.tryGetProjectEnv()?.name ??
+        await getDefaultEnvName(scope: scope),
   );
 }

@@ -170,9 +170,12 @@ class Terminal extends StringSink {
 
   void preserveStatus() {
     final pendingStatus = statusDebouncer.value;
-    if (pendingStatus.isNotEmpty) {
+    if (pendingStatus.isNotEmpty || _status.isNotEmpty) {
       final flush = _flushStatusStr(pendingStatus);
-      stdout.writeln(flush);
+      stdout.write(flush);
+      if (_status.isNotEmpty) {
+        stdout.write('\n');
+      }
       statusDebouncer.reset('');
       _status = '';
     }

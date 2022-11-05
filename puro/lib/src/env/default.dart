@@ -1,5 +1,4 @@
 import '../config.dart';
-import '../file_lock.dart';
 import '../provider.dart';
 import 'version.dart';
 
@@ -38,26 +37,19 @@ Future<EnvConfig> getProjectEnvOrDefault({
 Future<String> getDefaultEnvName({
   required Scope scope,
 }) async {
-  final config = PuroConfig.of(scope);
-  final file = config.defaultEnvNameFile;
-  if (file.existsSync()) {
-    final name = (await readAtomic(scope: scope, file: file)).trim();
-    if (isValidName(name)) {
-      return name;
-    }
-  }
-  return 'default';
+  final prefs = await readGlobalPrefs(scope: scope);
+  return prefs.hasDefaultEnvironment() ? prefs.defaultEnvironment : 'default';
 }
 
 Future<void> setDefaultEnvName({
   required Scope scope,
   required String envName,
 }) async {
-  final config = PuroConfig.of(scope);
   ensureValidName(envName);
-  await writeAtomic(
+  await updateGlobalPrefs(
     scope: scope,
-    file: config.defaultEnvNameFile,
-    content: envName,
+    fn: (prefs) {
+      prefs.defaultEnvironment = envName;
+    },
   );
 }
