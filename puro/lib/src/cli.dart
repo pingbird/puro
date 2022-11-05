@@ -13,6 +13,7 @@ import 'commands/env_use.dart';
 import 'commands/flutter.dart';
 import 'commands/generate_docs.dart';
 import 'commands/pub.dart';
+import 'commands/puro_install.dart';
 import 'commands/puro_upgrade.dart';
 import 'commands/version.dart';
 import 'logger.dart';
@@ -193,7 +194,8 @@ void main(List<String> args) async {
     ..addCommand(DartCommand())
     ..addCommand(PubCommand())
     ..addCommand(GenerateDocsCommand())
-    ..addCommand(PuroUpgradeCommand());
+    ..addCommand(PuroUpgradeCommand())
+    ..addCommand(PuroInstallCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {

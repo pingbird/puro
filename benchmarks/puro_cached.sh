@@ -1,21 +1,22 @@
 #!/bin/bash
 set -e
 
-curl https://puro.dev/builds/master/linux-x64/puro -O
-chmod +x puro
-./puro --no-progress -v create example 3.3.5
-./puro --no-progress -v rm example
+curl -o- https://puro.dev/install.sh | PURO_VERSION="master" bash
+export PATH="$PATH:$HOME/.puro/bin"
+
+puro --no-progress -v create example 3.3.5
+puro --no-progress -v rm example
 
 echo "=============================================================="
 
 start_time=$(date +%s.%3N)
 start_network=$(cat /proc/net/dev | perl -nle 'm/eth0: *([^ ]*)/; print $1' | tr -d '[:space:]')
 
-./puro --no-progress -v create example2 3.3.5
+puro --no-progress -v create example2 3.3.5
 
 create_time=$(date +%s.%3N)
 
-./puro --no-progress -v -e example2 flutter --version
+puro --no-progress -v -e example2 flutter --version
 
 end_time=$(date +%s.%3N)
 
