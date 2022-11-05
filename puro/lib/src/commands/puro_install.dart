@@ -64,13 +64,14 @@ Future<File?> tryUpdateProfile({
     scope,
     file,
     (handle) async {
-      final contents = (await handle.readAllAsString()).trimRight();
+      final contents = await handle.readAllAsString();
       if (contents.contains(export)) {
         // Already exported
         return null;
       }
       final lines = contents.split('\n');
       lines.removeWhere((e) => e.endsWith(_kProfileComment));
+      while (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
       lines.add('');
       lines.add(export);
       await handle.writeAllString('${lines.join('\n')}\n');
