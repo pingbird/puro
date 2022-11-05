@@ -27,7 +27,7 @@ With Puro you can:
     It can also be installed from powershell:
 
     ```ps1
-    Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro_installer.exe" -OutFile "$env:temp\puro_installer.exe"; &"$env:temp\puro_installer.exe" /VERYSILENT
+    Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro_installer.exe" -OutFile "$env:temp\puro_installer.exe"; &"$env:temp\puro_installer" /VERYSILENT; &"$HOME\.puro\bin\puro" install-puro
     ```
 
     Or as a standalone executable:

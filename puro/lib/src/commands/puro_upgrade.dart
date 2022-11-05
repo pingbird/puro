@@ -56,8 +56,13 @@ class PuroUpgradeCommand extends PuroCommand {
       if (currentVersion == targetVersion) {
         return BasicMessageResult(
           success: true,
-          message: 'Puro is already the desired version $targetVersion',
-          type: CompletionType.info,
+          message: 'Puro is up to date with $targetVersion',
+        );
+      } else if (currentVersion > targetVersion) {
+        return BasicMessageResult(
+          success: true,
+          message:
+              'Puro is a newer version $currentVersion than the available $targetVersion',
         );
       }
     } else {
@@ -65,7 +70,8 @@ class PuroUpgradeCommand extends PuroCommand {
       if (currentVersion == targetVersion) {
         return BasicMessageResult(
           success: true,
-          message: 'Puro is up to date',
+          message: 'Puro is already the desired version $targetVersion',
+          type: CompletionType.info,
         );
       }
     }
@@ -91,7 +97,7 @@ class PuroUpgradeCommand extends PuroCommand {
       currentExecutable.path,
       [
         if (terminal.enableColor) '--color',
-        if (terminal.enableStatus) '--status',
+        if (terminal.enableStatus) '--progress',
         'install-puro',
       ],
     );

@@ -31,13 +31,11 @@ class PuroInstallCommand extends PuroCommand {
     }
 
     final homeDir = config.homeDir.path;
-    final homeVar = Platform.isWindows ? '%HOME%' : '~';
-    final scriptPath =
-        Platform.script.toFilePath().replaceAll(homeDir, homeVar);
+    final scriptPath = Platform.script.toFilePath().replaceAll(homeDir, '~');
     String? profilePath;
     if (Platform.isLinux || Platform.isMacOS) {
       final profile = await tryUpdateProfile(scope: scope);
-      profilePath = profile?.path.replaceAll(homeDir, homeVar);
+      profilePath = profile?.path.replaceAll(homeDir, '~');
     }
     final externalMessage =
         await detectExternalFlutterInstallations(scope: scope);
