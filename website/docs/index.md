@@ -87,7 +87,8 @@ See the [Command Reference](/reference/commands/) for more information.
 
 ## Performance
 
-Puro implements a few optimizations that make installing Flutter as fast as possible, making first-time installs 20% faster while improving subsequent installations by a whopping 50-95%:
+Puro implements a few optimizations that make installing Flutter as fast as possible.
+First-time installations are 20% faster while improving subsequent installations by a whopping 50-95%:
 
 ![](assets/install_time_comparison.svg)
 
@@ -107,6 +108,6 @@ With other approaches, each Flutter repository is in its own folder, requiring y
 
 ![](assets/storage_without_puro.png)
 
-Puro implements a technology similar to GitLab's [object deduplication](https://docs.gitlab.com/ee/development/git_object_deduplication.html) to avoid downloading the same git objects over and over again. It also uses symlinks to share the same engine version between multiple installs:
+Puro implements a technology similar to GitLab's [object deduplication](https://docs.gitlab.com/ee/development/git_object_deduplication.html) to avoid downloading the same git objects over and over again. It also uses symlinks to share the same engine version between multiple installations:
 
 ![](assets/storage_with_puro.png)

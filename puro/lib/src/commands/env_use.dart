@@ -14,7 +14,7 @@ class EnvUseCommand extends PuroCommand {
     argParser.addFlag(
       'intellij',
       help:
-          'Enable or disable generation of IntelliJ (and Android Studio) configs',
+          'Enable or disable generation of IntelliJ (or Android Studio) configs',
     );
     argParser.addFlag(
       'global',
@@ -28,7 +28,7 @@ class EnvUseCommand extends PuroCommand {
   final name = 'use';
 
   @override
-  final description = 'Select an environment to use in the current project.';
+  final description = 'Selects an environment to use in the current project';
 
   @override
   String? get argumentUsage => '<name>';

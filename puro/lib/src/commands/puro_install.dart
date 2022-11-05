@@ -14,7 +14,7 @@ class PuroInstallCommand extends PuroCommand {
   bool get hidden => true;
 
   @override
-  final description = 'Finishes installation of the puro tool.';
+  final description = 'Finishes installation of the puro tool';
 
   @override
   Future<CommandResult> run() async {

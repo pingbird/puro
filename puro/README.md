@@ -21,7 +21,8 @@ And that's it! Your IDE will be automatically configured to use the new environm
 
 ## Performance
 
-Puro implements a few optimizations that make installing Flutter as fast as possible, making first-time installs 20% faster while improving subsequent installations by a whopping 50-95%:
+Puro implements a few optimizations that make installing Flutter as fast as possible.
+First-time installations are 20% faster while improving subsequent installations by a whopping 50-95%:
 
 ![](https://puro.dev/assets/install_time_comparison.svg)
 

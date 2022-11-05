@@ -11,7 +11,7 @@ class DartCommand extends PuroCommand {
   final name = 'dart';
 
   @override
-  final description = 'Forwards arguments to dart in the current environment.';
+  final description = 'Forwards arguments to dart in the current environment';
 
   @override
   final argParser = ArgParser.allowAnything();

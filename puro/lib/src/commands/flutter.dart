@@ -13,7 +13,7 @@ class FlutterCommand extends PuroCommand {
 
   @override
   final description =
-      'Forwards arguments to flutter in the current environment.';
+      'Forwards arguments to flutter in the current environment';
 
   @override
   final argParser = ArgParser.allowAnything();

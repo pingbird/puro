@@ -6,7 +6,7 @@ class EnvLsCommand extends PuroCommand {
   final name = 'ls';
 
   @override
-  final description = 'List available environments.';
+  final description = 'Lists available environments';
 
   @override
   Future<ListEnvironmentResult> run() async {

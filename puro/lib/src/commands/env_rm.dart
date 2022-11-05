@@ -6,7 +6,7 @@ class EnvRmCommand extends PuroCommand {
   final name = 'rm';
 
   @override
-  final description = 'Delete an environment.';
+  final description = 'Deletes an environment';
 
   @override
   String? get argumentUsage => '<name>';

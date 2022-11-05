@@ -11,7 +11,7 @@ class PubCommand extends PuroCommand {
   final name = 'pub';
 
   @override
-  final description = 'Forwards arguments to pub in the current environment.';
+  final description = 'Forwards arguments to pub in the current environment';
 
   @override
   final argParser = ArgParser.allowAnything();

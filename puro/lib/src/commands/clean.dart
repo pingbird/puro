@@ -7,7 +7,7 @@ class CleanCommand extends PuroCommand {
 
   @override
   final description =
-      'Delete puro configuration files from the current project and restores IDE settings.';
+      'Deletes puro configuration files from the current project and restores IDE settings';
 
   @override
   bool get takesArguments => false;

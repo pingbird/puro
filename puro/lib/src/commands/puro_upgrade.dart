@@ -21,7 +21,7 @@ class PuroUpgradeCommand extends PuroCommand {
   String? get argumentUsage => '[version]';
 
   @override
-  final description = 'Upgrades the puro tool to a new version.';
+  final description = 'Upgrades the puro tool to a new version';
 
   @override
   Future<CommandResult> run() async {
@@ -57,12 +57,14 @@ class PuroUpgradeCommand extends PuroCommand {
         return BasicMessageResult(
           success: true,
           message: 'Puro is up to date with $targetVersion',
+          type: CompletionType.indeterminate,
         );
       } else if (currentVersion > targetVersion) {
         return BasicMessageResult(
           success: true,
           message:
               'Puro is a newer version $currentVersion than the available $targetVersion',
+          type: CompletionType.indeterminate,
         );
       }
     } else {
@@ -71,7 +73,7 @@ class PuroUpgradeCommand extends PuroCommand {
         return BasicMessageResult(
           success: true,
           message: 'Puro is already the desired version $targetVersion',
-          type: CompletionType.info,
+          type: CompletionType.indeterminate,
         );
       }
     }

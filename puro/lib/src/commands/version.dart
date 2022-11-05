@@ -10,6 +10,7 @@ class VersionCommand extends PuroCommand {
     argParser.addFlag(
       'plain',
       negatable: false,
+      help: 'Print just the version to stdout and exit',
     );
     argParser.addFlag(
       'release',
@@ -21,7 +22,7 @@ class VersionCommand extends PuroCommand {
   String get name => 'version';
 
   @override
-  String get description => 'Prints version information.';
+  String get description => 'Prints version information';
 
   @override
   Future<CommandResult> run() async {

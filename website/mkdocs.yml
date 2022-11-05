@@ -7,7 +7,6 @@ nav:
       - reference/commands.md
       - reference/changelog.md
     - 'pub.dev': https://pub.dev/packages/puro
-    - 'Discord': https://discord.com/invite/N7Yshp4
 theme:
   name: material
   custom_dir: overrides
