@@ -33,7 +33,7 @@ Future<Version> getPuroVersion({
   bool withCommit = true,
 }) async {
   if (_puroVersionDefine.isNotEmpty) {
-    return GitTagVersion.parse(_puroVersionDefine).toSemver();
+    return Version.parse(_puroVersionDefine);
   }
   final repository = await getPuroDevelopmentRepository(scope: scope);
   if (repository == null) {
