@@ -69,10 +69,15 @@ class PuroUpgradeCommand extends PuroCommand {
         );
       }
     }
+    final buildTarget = config.buildTarget;
     final tempFile = config.puroExecutableTempFile;
     await downloadFile(
       scope: scope,
-      url: config.puroBuildsUrl,
+      url: config.puroBuildsUrl.append(
+        path: '$targetVersion/'
+            '${buildTarget.name}/'
+            '${buildTarget.executableName}',
+      ),
       file: tempFile,
       description: 'Downloading puro $targetVersion',
     );

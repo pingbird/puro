@@ -173,6 +173,7 @@ class Terminal extends StringSink {
     if (pendingStatus.isNotEmpty) {
       final flush = _flushStatusStr(pendingStatus);
       stdout.writeln(flush);
+      statusDebouncer.reset('');
       _status = '';
     }
   }

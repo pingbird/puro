@@ -20,6 +20,16 @@ class PuroInstallCommand extends PuroCommand {
   Future<CommandResult> run() async {
     final version = await getPuroVersion(scope: scope);
     final config = PuroConfig.of(scope);
+
+    final currentExecutable =
+        config.fileSystem.file(Platform.resolvedExecutable);
+    if (currentExecutable.path != config.puroExecutableFile.path) {
+      return BasicMessageResult(
+        success: false,
+        message: 'Installing standalone executables is not supported',
+      );
+    }
+
     final homeDir = config.homeDir.path;
     final homeVar = Platform.isWindows ? '%HOME%' : '~';
     final scriptPath =

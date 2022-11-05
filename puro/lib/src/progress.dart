@@ -48,16 +48,19 @@ abstract class ProgressNode {
     node.scope.add(ProgressNode.provider, node);
     addNode(node);
     try {
-      return await fn(scope, node);
-    } catch (exception, stackTrace) {
-      if (node.description != null) {
-        log.e('Exception while ${node.description}');
-      }
       if (optional) {
-        log.e('$exception\n$stackTrace');
-        return null as T;
+        try {
+          return await fn(scope, node);
+        } catch (exception, stackTrace) {
+          if (node.description != null) {
+            log.e('Exception while ${node.description}');
+          }
+          log.e('$exception\n$stackTrace');
+          return null as T;
+        }
+      } else {
+        return await fn(scope, node);
       }
-      rethrow;
     } finally {
       node.complete = true;
       if (removeWhenComplete) removeNode(node);
