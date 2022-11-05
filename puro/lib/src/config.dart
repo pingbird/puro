@@ -139,6 +139,7 @@ class PuroConfig {
   late final Directory sharedDir = puroRoot.childDirectory('shared');
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
+  late final Directory pubCacheDir = sharedDir.childDirectory('pub_cache');
   late final File puroExecutableFile =
       binDir.childFile(buildTarget.executableName);
   late final File puroDartShimFile = binDir.childFile(buildTarget.dartName);

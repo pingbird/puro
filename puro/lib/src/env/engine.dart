@@ -178,6 +178,9 @@ Future<bool> downloadSharedEngine({
           sharedCache.dartSdk.dartExecutable.path,
           ['--version'],
           throwOnFailure: true,
+          environment: {
+            'PUB_CACHE': config.pubCacheDir.path,
+          },
         );
       });
     } catch (e) {
@@ -307,6 +310,7 @@ Future<void> setUpFlutterTool({
           ],
           environment: {
             'PUB_ENVIRONMENT': pubEnvironment,
+            'PUB_CACHE': config.pubCacheDir.path,
           },
           workingDirectory: flutterConfig.flutterToolsDir.path,
         );
@@ -347,6 +351,9 @@ Future<void> setUpFlutterTool({
           '--no-enable-mirrors',
           flutterConfig.flutterToolsScriptFile.path,
         ],
+        environment: {
+          'PUB_CACHE': config.pubCacheDir.path,
+        },
         throwOnFailure: true,
       );
     });

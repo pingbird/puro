@@ -16,6 +16,7 @@ Future<int> runFlutterCommand({
   String? workingDirectory,
   ProcessStartMode mode = ProcessStartMode.normal,
 }) async {
+  final config = PuroConfig.of(scope);
   final flutterConfig = environment.flutter;
   await setUpFlutterTool(
     scope: scope,
@@ -37,6 +38,7 @@ Future<int> runFlutterCommand({
     ],
     environment: {
       'FLUTTER_ROOT': flutterConfig.sdkDir.path,
+      'PUB_CACHE': config.pubCacheDir.path,
     },
     workingDirectory: workingDirectory,
     mode: mode,
@@ -66,6 +68,7 @@ Future<int> runDartCommand({
   String? workingDirectory,
   ProcessStartMode mode = ProcessStartMode.normal,
 }) async {
+  final config = PuroConfig.of(scope);
   final flutterConfig = environment.flutter;
   await setUpFlutterTool(
     scope: scope,
@@ -76,6 +79,9 @@ Future<int> runDartCommand({
     scope,
     flutterConfig.cache.dartSdk.dartExecutable.path,
     args,
+    environment: {
+      'PUB_CACHE': config.pubCacheDir.path,
+    },
     mode: mode,
   );
   if (stdin != null) {
