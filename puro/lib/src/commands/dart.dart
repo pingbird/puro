@@ -26,9 +26,7 @@ class DartCommand extends PuroCommand {
       scope: scope,
       environment: environment,
       args: argResults!.arguments,
-      onStdout: stdout.add,
-      onStderr: stderr.add,
-      stdin: stdin,
+      mode: ProcessStartMode.inheritStdio,
     );
     exit(exitCode);
   }

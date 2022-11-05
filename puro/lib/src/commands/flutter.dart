@@ -30,9 +30,9 @@ class FlutterCommand extends PuroCommand {
       scope: scope,
       environment: environment,
       args: argResults!.arguments,
-      onStdout: stdout.add,
-      onStderr: stderr.add,
-      stdin: stdin,
+      // inheritStdio is useful because it allows Flutter to detect the
+      // terminal, otherwise it won't show any colors.
+      mode: ProcessStartMode.inheritStdio,
     );
     exit(exitCode);
   }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../config.dart';
 import '../process.dart';
 import '../provider.dart';
@@ -8,10 +10,11 @@ Future<int> runFlutterCommand({
   required Scope scope,
   required EnvConfig environment,
   required List<String> args,
-  required void Function(List<int>) onStdout,
-  required void Function(List<int>) onStderr,
-  String? workingDirectory,
   Stream<List<int>>? stdin,
+  void Function(List<int>)? onStdout,
+  void Function(List<int>)? onStderr,
+  String? workingDirectory,
+  ProcessStartMode mode = ProcessStartMode.normal,
 }) async {
   final flutterConfig = environment.flutter;
   await setUpFlutterTool(
@@ -36,12 +39,17 @@ Future<int> runFlutterCommand({
       'FLUTTER_ROOT': flutterConfig.sdkDir.path,
     },
     workingDirectory: workingDirectory,
+    mode: mode,
   );
   if (stdin != null) {
     flutterProcess.stdin.addStream(stdin);
   }
-  final stdoutFuture = flutterProcess.stdout.listen(onStdout).asFuture<void>();
-  final stderrFuture = flutterProcess.stderr.listen(onStderr).asFuture<void>();
+  final stdoutFuture = onStdout == null
+      ? null
+      : flutterProcess.stdout.listen(onStdout).asFuture<void>();
+  final stderrFuture = onStderr == null
+      ? null
+      : flutterProcess.stderr.listen(onStderr).asFuture<void>();
   final exitCode = await flutterProcess.exitCode;
   await stdoutFuture;
   await stderrFuture;
@@ -52,10 +60,11 @@ Future<int> runDartCommand({
   required Scope scope,
   required EnvConfig environment,
   required List<String> args,
-  required void Function(List<int>) onStdout,
-  required void Function(List<int>) onStderr,
-  String? workingDirectory,
   Stream<List<int>>? stdin,
+  void Function(List<int>)? onStdout,
+  void Function(List<int>)? onStderr,
+  String? workingDirectory,
+  ProcessStartMode mode = ProcessStartMode.normal,
 }) async {
   final flutterConfig = environment.flutter;
   await setUpFlutterTool(
@@ -67,12 +76,17 @@ Future<int> runDartCommand({
     scope,
     flutterConfig.cache.dartSdk.dartExecutable.path,
     args,
+    mode: mode,
   );
   if (stdin != null) {
     dartProcess.stdin.addStream(stdin);
   }
-  final stdoutFuture = dartProcess.stdout.listen(onStdout).asFuture<void>();
-  final stderrFuture = dartProcess.stderr.listen(onStderr).asFuture<void>();
+  final stdoutFuture = onStdout == null
+      ? null
+      : dartProcess.stdout.listen(onStdout).asFuture<void>();
+  final stderrFuture = onStderr == null
+      ? null
+      : dartProcess.stderr.listen(onStderr).asFuture<void>();
   final exitCode = await dartProcess.exitCode;
   await stdoutFuture;
   await stderrFuture;
