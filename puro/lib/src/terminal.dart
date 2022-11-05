@@ -28,7 +28,8 @@ enum CompletionType {
   success('[\u2713] ', Ansi8BitColor.green),
   failure('[x] ', Ansi8BitColor.red),
   indeterminate('[~] ', Ansi8BitColor.purple),
-  info('[i] ', Ansi8BitColor.blue);
+  info('[i] ', Ansi8BitColor.blue),
+  alert('[!] ', Ansi8BitColor.orange1);
 
   const CompletionType(this.prefix, this.color);
   final String prefix;

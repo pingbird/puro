@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../command.dart';
+import '../install/profile.dart';
 import '../terminal.dart';
 import '../version.dart';
 
@@ -36,12 +37,19 @@ class VersionCommand extends PuroCommand {
       stdout.write('$version');
       exit(0);
     }
-    return BasicMessageResult(
+    final externalMessage =
+        await detectExternalFlutterInstallations(scope: scope);
+    return BasicMessageResult.list(
       success: true,
-      message: 'Puro $version\n'
-          'Dart ${Platform.version}\n'
-          '${Platform.operatingSystemVersion}',
-      type: CompletionType.info,
+      messages: [
+        CommandMessage(
+          (format) => 'Puro $version\n'
+              'Dart ${Platform.version}\n'
+              '${Platform.operatingSystemVersion}',
+          type: CompletionType.info,
+        ),
+        if (externalMessage != null) externalMessage,
+      ],
     );
   }
 }

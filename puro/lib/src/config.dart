@@ -137,11 +137,15 @@ class PuroConfig {
   late final Directory sharedDir = puroRoot.childDirectory('shared');
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
-  late final File puroExecutableFile = binDir.childFile(buildTarget.executable);
+  late final File puroExecutableFile =
+      binDir.childFile(buildTarget.executableName);
+  late final File puroDartShimFile = binDir.childFile(buildTarget.dartName);
+  late final File puroFlutterShimFile =
+      binDir.childFile(buildTarget.flutterName);
   late final File puroExecutableTempFile =
-      binDir.childFile('${buildTarget.executable}.tmp');
+      binDir.childFile('${buildTarget.executableName}.tmp');
   late final File puroExecutableOldFile =
-      binDir.childFile('${buildTarget.executable}.old');
+      binDir.childFile('${buildTarget.executableName}.old');
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');

@@ -47,14 +47,21 @@ Future<Version> getPuroVersion({
 }
 
 enum PuroBuildTarget {
-  windowsX64('windows-x64', 'puro.exe'),
-  linuxX64('linux-x64', 'puro'),
-  macosX64('darwin-x64', 'puro');
+  windowsX64('windows-x64', 'puro.exe', 'dart.bat', 'flutter.bat'),
+  linuxX64('linux-x64', 'puro', 'dart', 'flutter'),
+  macosX64('darwin-x64', 'puro', 'dart', 'flutter');
 
-  const PuroBuildTarget(this.name, this.executable);
+  const PuroBuildTarget(
+    this.name,
+    this.executableName,
+    this.dartName,
+    this.flutterName,
+  );
 
   final String name;
-  final String executable;
+  final String executableName;
+  final String dartName;
+  final String flutterName;
 
   static PuroBuildTarget query() {
     if (Platform.isWindows) {
