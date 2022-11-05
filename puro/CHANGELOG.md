@@ -1,3 +1,13 @@
+## 0.5.0
+
+* Bug fixes
+* Added the `pub` command
+* Added the `upgrade-puro` command
+* Added dart/flutter shims to .puro/bin
+* Improved bash/zsh profile updating mechanism
+* Added the hidden `install-puro` command
+* Added PATH conflict detection to the `version` command
+
 ## 0.4.1
 
 * Bug fixes
