@@ -17,6 +17,9 @@ class PuroInstallCommand extends PuroCommand {
   final description = 'Finishes installation of the puro tool';
 
   @override
+  bool get allowUpdateCheck => false;
+
+  @override
   Future<CommandResult> run() async {
     final version = await getPuroVersion(scope: scope);
     final config = PuroConfig.of(scope);
@@ -37,12 +40,22 @@ class PuroInstallCommand extends PuroCommand {
       final profile = await tryUpdateProfile(scope: scope);
       profilePath = profile?.path.replaceAll(homeDir, '~');
     }
+
+    await installShims(scope: scope);
+
     final externalMessage =
         await detectExternalFlutterInstallations(scope: scope);
-    await installShims(scope: scope);
+
+    final updateMessage = await checkIfUpdateAvailable(
+      scope: scope,
+      runner: runner,
+      alwaysNotify: true,
+    );
+
     return BasicMessageResult.list(
       success: true,
       messages: [
+        if (updateMessage != null) updateMessage,
         if (profilePath != null)
           CommandMessage(
             (format) => 'Updated PATH in $profilePath',
