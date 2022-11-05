@@ -134,7 +134,7 @@ Future<List<File>> findProgramInPath({
     result = await runProcess(scope, 'which', ['-a', name]);
   }
   return [
-    for (final line in (result.stdout as String).trim().split('\n'))
-      config.fileSystem.file(line),
+    for (final line in (result.stdout as String).split('\n'))
+      if (line.trim().isNotEmpty) config.fileSystem.file(line),
   ];
 }
