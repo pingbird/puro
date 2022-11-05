@@ -52,7 +52,6 @@ Future<Uint8List> readBytesAtomic({
     (handle) async {
       return handle.read(handle.lengthSync());
     },
-    exclusive: false,
   );
 }
 
@@ -85,6 +84,41 @@ Future<void> writeAtomic({
   required String content,
 }) {
   return writeBytesAtomic(
+    scope: scope,
+    file: file,
+    bytes: utf8.encode(content),
+  );
+}
+
+bool _bytesEqual(List<int> a, List<int> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+/// Writes to file atomically only if it differs from the input.
+Future<void> writeBytesPassiveAtomic({
+  required Scope scope,
+  required File file,
+  required List<int> bytes,
+}) async {
+  if (file.existsSync()) {
+    final existing = await readBytesAtomic(scope: scope, file: file);
+    if (_bytesEqual(bytes, existing)) {
+      return;
+    }
+  }
+  await writeBytesAtomic(scope: scope, file: file, bytes: bytes);
+}
+
+Future<void> writePassiveAtomic({
+  required Scope scope,
+  required File file,
+  required String content,
+}) {
+  return writeBytesPassiveAtomic(
     scope: scope,
     file: file,
     bytes: utf8.encode(content),

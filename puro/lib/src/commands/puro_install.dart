@@ -3,6 +3,7 @@ import 'dart:io';
 import '../command.dart';
 import '../config.dart';
 import '../install/profile.dart';
+import '../install/shims.dart';
 import '../version.dart';
 
 class PuroInstallCommand extends PuroCommand {
@@ -30,6 +31,7 @@ class PuroInstallCommand extends PuroCommand {
     }
     final externalMessage =
         await detectExternalFlutterInstallations(scope: scope);
+    await installShims(scope: scope);
     return BasicMessageResult.list(
       success: true,
       messages: [

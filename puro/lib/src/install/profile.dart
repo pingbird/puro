@@ -7,6 +7,7 @@ import '../command.dart';
 import '../config.dart';
 import '../extensions.dart';
 import '../file_lock.dart';
+import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 import '../terminal.dart';
@@ -15,6 +16,7 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
   required Scope scope,
 }) async {
   final config = PuroConfig.of(scope);
+  final log = PuroLogger.of(scope);
 
   final dartFiles = await findProgramInPath(
     scope: scope,
@@ -31,13 +33,17 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
     ...flutterFiles.map((e) => e.path),
   };
 
-  offending.remove(config.puroDartShimFile);
-  offending.remove(config.puroFlutterShimFile);
+  offending.remove(config.puroDartShimFile.path);
+  offending.remove(config.puroFlutterShimFile.path);
+
+  log.d('PATH: ${Platform.environment['PATH']}');
+  log.d('puroDartShimFile: ${config.puroDartShimFile.path}');
+  log.d('puroFlutterShimFile: ${config.puroFlutterShimFile.path}');
 
   if (offending.isNotEmpty) {
     return CommandMessage(
       (format) => 'Other flutter/dart installations detected\n'
-          'Puro recommends you remove the following from your PATH:\n'
+          'Puro recommends removing the following from your PATH:\n'
           '${offending.map((e) => '${format.color(
                 '*',
                 bold: true,
