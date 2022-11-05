@@ -3,8 +3,8 @@ set -e
 
 start_time=$(date +%s.%3N)
 
-curl https://puro.dev/builds/master/linux-x64/puro -O
-chmod +x puro
+curl -o- https://puro.dev/install.sh | PURO_VERSION="master" bash
+export PATH="$PATH:\$HOME/.puro/bin"
 
 install_time=$(date +%s.%3N)
 

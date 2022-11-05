@@ -20,11 +20,33 @@ extension ListIntStreamExtensions on Stream<List<int>> {
 }
 
 extension RandomAccessFileExtensions on RandomAccessFile {
-  Future<String> readAsString() async {
-    return utf8.decode(await read(lengthSync() - positionSync()));
+  Future<String> readAllAsString() async {
+    setPositionSync(0);
+    return utf8.decode(await read(lengthSync()));
   }
 
-  String readAsStringSync() {
-    return utf8.decode(readSync(lengthSync() - positionSync()));
+  String readAllAsStringSync() {
+    setPositionSync(0);
+    return utf8.decode(readSync(lengthSync()));
+  }
+
+  Future<void> writeAll(List<int> bytes) async {
+    setPositionSync(0);
+    await truncate(bytes.length);
+    await writeFrom(bytes);
+  }
+
+  Future<void> writeAllString(String string) {
+    return writeAll(utf8.encode(string));
+  }
+
+  void writeAllSync(List<int> bytes) {
+    setPositionSync(0);
+    truncateSync(bytes.length);
+    writeFromSync(bytes);
+  }
+
+  void writeAllStringSync(String string) {
+    writeAllSync(utf8.encode(string));
   }
 }

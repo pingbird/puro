@@ -95,7 +95,7 @@ Future<FlutterReleaseModel> findFrameworkRelease({
       scope,
       config.cachedReleasesJsonFile,
       (handle) async {
-        final contents = await handle.readAsString();
+        final contents = await handle.readAllAsString();
         try {
           cachedReleases = FlutterReleasesModel.create()
             ..mergeFromProto3Json(jsonDecode(contents));

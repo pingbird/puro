@@ -142,6 +142,12 @@ class BasicMessageResult extends CommandResult {
     this.model,
   }) : messages = [CommandMessage((format) => message, type: type)];
 
+  BasicMessageResult.list({
+    required this.success,
+    required this.messages,
+    this.model,
+  });
+
   @override
   final bool success;
   @override
