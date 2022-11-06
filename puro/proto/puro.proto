@@ -58,6 +58,10 @@ message PuroGlobalPrefsModel {
   optional bool enableUpdateCheck = 4;
 }
 
+message PuroEnvPrefsModel {
+  optional FlutterVersionModel desiredVersion = 1;
+}
+
 message PuroDotfileModel {
   optional string env = 1;
   optional string previousDartSdk = 2;

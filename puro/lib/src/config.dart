@@ -286,6 +286,7 @@ class EnvConfig {
   late final Directory engineDir = envDir.childDirectory('engine');
   late final Directory flutterDir = envDir.childDirectory('flutter');
   late final FlutterConfig flutter = FlutterConfig(flutterDir);
+  late final File prefsJsonFile = envDir.childFile('prefs.json');
 
   bool get exists => envDir.existsSync();
 
@@ -295,8 +296,46 @@ class EnvConfig {
     }
   }
 
-  // TODO(ping): Maybe support changing this in the future
+  // TODO(ping): Maybe support changing this in the future, the flutter tool
+  // lets you change it with an environment variable
   String get flutterToolArgs => '';
+
+  Future<PuroEnvPrefsModel> readPrefs({
+    required Scope scope,
+  }) async {
+    final model = PuroEnvPrefsModel();
+    if (prefsJsonFile.existsSync()) {
+      final contents = await readAtomic(scope: scope, file: prefsJsonFile);
+      model.mergeFromProto3Json(jsonDecode(contents));
+    }
+    return model;
+  }
+
+  Future<PuroEnvPrefsModel> updatePrefs({
+    required Scope scope,
+    required FutureOr<void> Function(PuroEnvPrefsModel prefs) fn,
+    bool background = false,
+  }) {
+    return lockFile(
+      scope,
+      prefsJsonFile,
+      (handle) async {
+        final model = PuroEnvPrefsModel();
+        String? contents;
+        if (handle.lengthSync() > 0) {
+          contents = handle.readAllAsStringSync();
+          model.mergeFromProto3Json(jsonDecode(contents));
+        }
+        await fn(model);
+        final newContents = prettyJsonEncoder.convert(model.toProto3Json());
+        if (contents != newContents) {
+          handle.writeAllStringSync(newContents);
+        }
+        return model;
+      },
+      mode: FileMode.append,
+    );
+  }
 }
 
 class FlutterConfig {

@@ -88,6 +88,13 @@ Future<EnvCreateResult> createEnvironment({
   }
 
   environment.envDir.createSync(recursive: true);
+  await environment.updatePrefs(
+    scope: scope,
+    fn: (prefs) {
+      prefs.clear();
+      prefs.desiredVersion = flutterVersion.toModel();
+    },
+  );
 
   final startTime = clock.now();
   DateTime? cacheEngineTime;

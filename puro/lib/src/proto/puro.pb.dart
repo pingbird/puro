@@ -1050,6 +1050,73 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   void clearEnableUpdateCheck() => clearField(4);
 }
 
+class PuroEnvPrefsModel extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      const $core.bool.fromEnvironment('protobuf.omit_message_names')
+          ? ''
+          : 'PuroEnvPrefsModel',
+      createEmptyInstance: create)
+    ..aOM<FlutterVersionModel>(
+        1,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'desiredVersion',
+        protoName: 'desiredVersion',
+        subBuilder: FlutterVersionModel.create)
+    ..hasRequiredFields = false;
+
+  PuroEnvPrefsModel._() : super();
+  factory PuroEnvPrefsModel({
+    FlutterVersionModel? desiredVersion,
+  }) {
+    final _result = create();
+    if (desiredVersion != null) {
+      _result.desiredVersion = desiredVersion;
+    }
+    return _result;
+  }
+  factory PuroEnvPrefsModel.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory PuroEnvPrefsModel.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  PuroEnvPrefsModel clone() => PuroEnvPrefsModel()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  PuroEnvPrefsModel copyWith(void Function(PuroEnvPrefsModel) updates) =>
+      super.copyWith((message) => updates(message as PuroEnvPrefsModel))
+          as PuroEnvPrefsModel; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PuroEnvPrefsModel create() => PuroEnvPrefsModel._();
+  PuroEnvPrefsModel createEmptyInstance() => create();
+  static $pb.PbList<PuroEnvPrefsModel> createRepeated() =>
+      $pb.PbList<PuroEnvPrefsModel>();
+  @$core.pragma('dart2js:noInline')
+  static PuroEnvPrefsModel getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PuroEnvPrefsModel>(create);
+  static PuroEnvPrefsModel? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FlutterVersionModel get desiredVersion => $_getN(0);
+  @$pb.TagNumber(1)
+  set desiredVersion(FlutterVersionModel v) {
+    setField(1, v);
+  }
+
+  @$pb.TagNumber(1)
+  $core.bool hasDesiredVersion() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDesiredVersion() => clearField(1);
+  @$pb.TagNumber(1)
+  FlutterVersionModel ensureDesiredVersion() => $_ensure(0);
+}
+
 class PuroDotfileModel extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       const $core.bool.fromEnvironment('protobuf.omit_message_names')

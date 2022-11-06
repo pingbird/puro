@@ -289,6 +289,29 @@ const PuroGlobalPrefsModel$json = const {
 /// Descriptor for `PuroGlobalPrefsModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List puroGlobalPrefsModelDescriptor = $convert.base64Decode(
     'ChRQdXJvR2xvYmFsUHJlZnNNb2RlbBIzChJkZWZhdWx0RW52aXJvbm1lbnQYASABKAlIAFISZGVmYXVsdEVudmlyb25tZW50iAEBEi0KD2xhc3RVcGRhdGVDaGVjaxgCIAEoCUgBUg9sYXN0VXBkYXRlQ2hlY2uIAQESOwoWbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbhgDIAEoCUgCUhZsYXN0VXBkYXRlTm90aWZpY2F0aW9uiAEBEjEKEWVuYWJsZVVwZGF0ZUNoZWNrGAQgASgISANSEWVuYWJsZVVwZGF0ZUNoZWNriAEBQhUKE19kZWZhdWx0RW52aXJvbm1lbnRCEgoQX2xhc3RVcGRhdGVDaGVja0IZChdfbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkIUChJfZW5hYmxlVXBkYXRlQ2hlY2s=');
+@$core.Deprecated('Use puroEnvPrefsModelDescriptor instead')
+const PuroEnvPrefsModel$json = const {
+  '1': 'PuroEnvPrefsModel',
+  '2': const [
+    const {
+      '1': 'desiredVersion',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.FlutterVersionModel',
+      '9': 0,
+      '10': 'desiredVersion',
+      '17': true
+    },
+  ],
+  '8': const [
+    const {'1': '_desiredVersion'},
+  ],
+};
+
+/// Descriptor for `PuroEnvPrefsModel`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List puroEnvPrefsModelDescriptor = $convert.base64Decode(
+    'ChFQdXJvRW52UHJlZnNNb2RlbBJBCg5kZXNpcmVkVmVyc2lvbhgBIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIOZGVzaXJlZFZlcnNpb26IAQFCEQoPX2Rlc2lyZWRWZXJzaW9u');
 @$core.Deprecated('Use puroDotfileModelDescriptor instead')
 const PuroDotfileModel$json = const {
   '1': 'PuroDotfileModel',

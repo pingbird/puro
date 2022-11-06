@@ -23,7 +23,9 @@ class EnvUpgradeResult extends CommandResult {
 
   @override
   CommandMessage get message => CommandMessage(
-        (format) => 'Upgraded `${environment.name}` from $from to $to',
+        (format) => from.commit == to.commit
+            ? 'Environment `${environment.name}` already up to date'
+            : 'Upgraded `${environment.name}` from $from to $to',
       );
 
   @override
@@ -53,16 +55,25 @@ Future<EnvUpgradeResult> upgradeEnvironment({
     environment: environment,
   );
 
-  await cloneFlutterWithSharedRefs(
-    scope: scope,
-    repository: environment.envDir,
-    flutterVersion: flutterVersion,
-  );
+  if (fromVersion.commit != flutterVersion.commit) {
+    await environment.updatePrefs(
+      scope: scope,
+      fn: (prefs) {
+        prefs.desiredVersion = flutterVersion.toModel();
+      },
+    );
 
-  await setUpFlutterTool(
-    scope: scope,
-    environment: environment,
-  );
+    await cloneFlutterWithSharedRefs(
+      scope: scope,
+      repository: environment.envDir,
+      flutterVersion: flutterVersion,
+    );
+
+    await setUpFlutterTool(
+      scope: scope,
+      environment: environment,
+    );
+  }
 
   return EnvUpgradeResult(
     environment: environment,
