@@ -1,3 +1,11 @@
+## 0.6.0
+
+* Bug fixes
+* Added automatic update checks
+* Changed the default pub root to ~/.puro/shared/pub_cache
+* Upgrades now infer the branch
+* Added the `--fork` option to `puro create`
+
 ## 0.5.0
 
 * Bug fixes
