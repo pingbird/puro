@@ -50,9 +50,15 @@ html {
 }
 
 /* Make sidebar invisible instead of collapsed when hidden */
-.md-sidebar--primary[hidden] {
+.md-main .md-sidebar--primary[hidden] {
 	display: initial;
 	visibility: hidden;
+}
+
+@media screen and (max-width: 76.1875em) {
+	.md-main .md-sidebar--primary[hidden] {
+		visibility: visible;
+	}
 }
 
 [data-md-color-primary="white"] {

@@ -64,7 +64,7 @@ With Puro you can:
 
 Once puro is installed, set up a new environment with the [create](/reference/commands/#create) command:
 
-```sh
+```
 # Create new environment from a release channel
 puro create my_env stable
 
@@ -80,7 +80,7 @@ puro create my_env --fork git@github.com:PixelToast/flutter.git
 
 Inside a Flutter project, run the [use](/reference/commands/#use) command to switch to the environment you created:
 
-```sh
+```
 puro use my_env
 ```
 
