@@ -162,8 +162,7 @@ class GenerateDocsCommand extends PuroCommand {
     final buffer = StringBuffer();
     buffer.writeln('# Commands');
     buffer.writeln();
-    final commands = runner.commands.values;
-    for (final command in commands) {
+    for (final command in runner.commands.values.toSet()) {
       if (command.hidden) continue;
       buffer.writeln('## ${command.name.substring(0, 1).toUpperCase()}'
           '${command.name.substring(1)}');
