@@ -173,8 +173,8 @@ class GenerateDocsCommand extends PuroCommand {
       buffer.writeln();
       buffer.writeln(command.description);
       buffer.writeln();
-      final options =
-          command.argParser.options.values.where((e) => e.name != 'help');
+      final options = command.argParser.options.values
+          .where((e) => e.name != 'help' && !e.hide);
       if (options.isNotEmpty) {
         buffer.writeln('#### Options');
         buffer.writeln();

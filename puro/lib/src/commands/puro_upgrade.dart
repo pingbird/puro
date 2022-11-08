@@ -17,6 +17,7 @@ class PuroUpgradeCommand extends PuroCommand {
       hide: true,
       help:
           'Installs a new puro executable even if it wont replace an existing one',
+      negatable: false,
     );
   }
 
