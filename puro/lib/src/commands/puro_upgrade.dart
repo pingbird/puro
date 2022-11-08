@@ -11,6 +11,15 @@ import '../terminal.dart';
 import '../version.dart';
 
 class PuroUpgradeCommand extends PuroCommand {
+  PuroUpgradeCommand() {
+    argParser.addFlag(
+      'force',
+      hide: true,
+      help:
+          'Installs a new puro executable even if it wont replace an existing one',
+    );
+  }
+
   @override
   final name = 'upgrade-puro';
 
@@ -28,24 +37,29 @@ class PuroUpgradeCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
+    final force = argResults!['force'] as bool;
     final http = scope.read(clientProvider);
     final config = PuroConfig.of(scope);
     final currentVersion = await getPuroVersion(scope: scope);
     final repository = await getPuroDevelopmentRepository(scope: scope);
-    if (currentVersion.build.isNotEmpty || repository != null) {
+    if ((currentVersion.build.isNotEmpty || repository != null) && !force) {
       return BasicMessageResult(
         success: false,
         message: 'Upgrading development versions is not supported',
       );
     }
 
-    final currentExecutable =
+    File? currentExecutable =
         config.fileSystem.file(Platform.resolvedExecutable);
     if (currentExecutable.path != config.puroExecutableFile.path) {
-      return BasicMessageResult(
-        success: false,
-        message: 'Upgrading standalone executables is not supported',
-      );
+      if (force) {
+        currentExecutable = null;
+      } else {
+        return BasicMessageResult(
+          success: false,
+          message: 'Upgrading standalone executables is not supported',
+        );
+      }
     }
 
     var targetVersionString = unwrapSingleOptionalArgument();
@@ -95,14 +109,14 @@ class PuroUpgradeCommand extends PuroCommand {
     if (!Platform.isWindows) {
       await runProcess(scope, 'chmod', ['+x', '--', tempFile.path]);
     }
-    currentExecutable.renameSync(config.puroExecutableOldFile.path);
-    tempFile.renameSync(currentExecutable.path);
+    currentExecutable?.renameSync(config.puroExecutableOldFile.path);
+    tempFile.renameSync(config.puroExecutableFile.path);
 
     final terminal = Terminal.of(scope);
     terminal.flushStatus();
     final installProcess = await startProcess(
       scope,
-      currentExecutable.path,
+      config.puroExecutableFile.path,
       [
         if (terminal.enableColor) '--color',
         if (terminal.enableStatus) '--progress',
