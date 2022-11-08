@@ -42,16 +42,17 @@ class FlutterVersion {
 
   @override
   String toString() {
+    final commitStr = commit.substring(0, 7);
     if (tag != null && tag != '$version' && tag != 'v$version') {
-      return 'tags/$tag';
+      return 'tags/$tag ($commitStr)';
     } else if (version != null) {
       if (branch != null) {
-        return '$branch/$version';
+        return '$branch/$version ($commitStr)';
       } else {
-        return '$version';
+        return '$version ($commitStr)';
       }
     } else {
-      return commit;
+      return commitStr;
     }
   }
 
@@ -62,13 +63,14 @@ class FlutterVersion {
     required Scope scope,
     String? version,
     String? channel,
+    String defaultChannel = 'stable',
   }) async {
     if (version == null) {
       if (channel != null) {
         version = channel;
         channel = null;
       } else {
-        version = 'stable';
+        version = defaultChannel;
       }
     }
 
@@ -113,23 +115,11 @@ class FlutterVersion {
       }
     }
 
-    Future<FlutterVersion?> checkCache() async {
-      // Check if it's a branch
-      final repository = config.sharedFlutterDir;
-      var result = await git.tryRevParseSingle(
-        repository: repository,
-        arg: 'origin/$version', // look at origin since it may be untracked
-      );
-      if (result != null) {
-        final isBranch = await git.checkBranchExists(branch: 'origin/$version');
-        return FlutterVersion(
-          commit: result,
-          branch: isBranch ? version : null,
-        );
-      }
+    final repository = config.sharedFlutterDir;
 
+    Future<FlutterVersion?> checkCache() async {
       // Check if it's a tag
-      result = await git.tryRevParseSingle(
+      var result = await git.tryRevParseSingle(
         repository: repository,
         arg: 'tags/$version',
       );
@@ -161,8 +151,21 @@ class FlutterVersion {
     await fetchOrCloneShared(
       scope: scope,
       repository: sharedRepository,
-      remote: config.flutterGitUrl,
+      remoteUrl: config.flutterGitUrl,
     );
+
+    // Check if it's in origin
+    final result = await git.tryRevParseSingle(
+      repository: sharedRepository,
+      arg: 'origin/$version', // look at origin since it may be untracked
+    );
+    if (result != null) {
+      final isBranch = await git.checkBranchExists(branch: 'origin/$version');
+      return FlutterVersion(
+        commit: result,
+        branch: isBranch ? version : null,
+      );
+    }
 
     // Check again after fetching
     cacheResult = await checkCache();

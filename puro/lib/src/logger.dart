@@ -107,8 +107,8 @@ class PuroLogger {
     LogLevel.wtf: Ansi8BitColor.pink1,
     LogLevel.error: Ansi8BitColor.red,
     LogLevel.warning: Ansi8BitColor.orange1,
-    LogLevel.verbose: Ansi8BitColor.grey,
-    LogLevel.debug: Ansi8BitColor.grey35,
+    LogLevel.verbose: Ansi8BitColor.grey62,
+    LogLevel.debug: Ansi8BitColor.grey,
   };
 
   static final provider = Provider<PuroLogger>.late();

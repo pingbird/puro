@@ -218,7 +218,7 @@ Future<bool> tryUpdateWindowsPath({
   while (paths.isNotEmpty && paths.last.isEmpty) paths.removeLast();
   paths.removeWhere(expectedPaths.contains);
   paths.addAll(expectedPaths);
-  final newPath = await writeWindowsRegistryValue(
+  await writeWindowsRegistryValue(
     scope: scope,
     key: 'HKEY_CURRENT_USER\\Environment',
     valueName: 'Path',

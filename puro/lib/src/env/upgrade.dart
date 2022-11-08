@@ -1,5 +1,6 @@
 import '../command.dart';
 import '../config.dart';
+import '../git.dart';
 import '../logger.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';
@@ -12,11 +13,15 @@ class EnvUpgradeResult extends CommandResult {
     required this.environment,
     required this.from,
     required this.to,
+    required this.forkRemoteUrl,
+    this.switchedBranch = false,
   });
 
   final EnvConfig environment;
   final FlutterVersion from;
   final FlutterVersion to;
+  final String? forkRemoteUrl;
+  final bool switchedBranch;
 
   @override
   bool get success => true;
@@ -43,30 +48,77 @@ class EnvUpgradeResult extends CommandResult {
 Future<EnvUpgradeResult> upgradeEnvironment({
   required Scope scope,
   required EnvConfig environment,
-  required FlutterVersion flutterVersion,
+  required FlutterVersion toVersion,
 }) async {
   final log = PuroLogger.of(scope);
+  final git = GitClient.of(scope);
   environment.ensureExists();
 
   log.v('Upgrading environment in ${environment.envDir.path}');
 
+  final repository = environment.flutterDir;
+  final currentCommit = await git.getCurrentCommitHash(repository: repository);
+
+  final branch = await git.getBranch(repository: repository);
   final fromVersion = await getEnvironmentFlutterVersion(
     scope: scope,
     environment: environment,
   );
 
-  if (fromVersion.commit != flutterVersion.commit) {
-    await environment.updatePrefs(
+  if (currentCommit != toVersion.commit ||
+      (toVersion.branch != null && branch != toVersion.branch)) {
+    final prefs = await environment.updatePrefs(
       scope: scope,
       fn: (prefs) {
-        prefs.desiredVersion = flutterVersion.toModel();
+        prefs.desiredVersion = toVersion.toModel();
       },
     );
 
+    if (prefs.hasForkRemoteUrl()) {
+      if (branch == null) {
+        throw ArgumentError(
+          'HEAD is not attached to a branch, could not upgrade fork',
+        );
+      }
+      if (await git.hasUncomittedChanges(repository: repository)) {
+        throw ArgumentError(
+          "Can't upgrade fork with uncomitted changes",
+        );
+      }
+      await git.pull(
+        repository: repository,
+        all: true,
+      );
+      final switchBranch =
+          toVersion.branch != null && branch != toVersion.branch;
+      if (switchBranch) {
+        await git.checkout(repository: repository, ref: toVersion.branch!);
+      }
+      await git.merge(
+        repository: repository,
+        fromCommit: toVersion.commit,
+        fastForwardOnly: true,
+      );
+
+      await setUpFlutterTool(
+        scope: scope,
+        environment: environment,
+      );
+
+      return EnvUpgradeResult(
+        environment: environment,
+        from: fromVersion,
+        to: toVersion,
+        forkRemoteUrl: prefs.forkRemoteUrl,
+        switchedBranch: switchBranch,
+      );
+    }
+
     await cloneFlutterWithSharedRefs(
       scope: scope,
-      repository: environment.envDir,
-      flutterVersion: flutterVersion,
+      repository: environment.flutterDir,
+      flutterVersion: toVersion,
+      forkRemoteUrl: prefs.hasForkRemoteUrl() ? prefs.forkRemoteUrl : null,
     );
 
     await setUpFlutterTool(
@@ -78,6 +130,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
   return EnvUpgradeResult(
     environment: environment,
     from: fromVersion,
-    to: flutterVersion,
+    to: toVersion,
+    forkRemoteUrl: null,
   );
 }

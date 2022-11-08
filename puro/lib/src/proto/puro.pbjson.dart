@@ -303,15 +303,25 @@ const PuroEnvPrefsModel$json = const {
       '10': 'desiredVersion',
       '17': true
     },
+    const {
+      '1': 'forkRemoteUrl',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'forkRemoteUrl',
+      '17': true
+    },
   ],
   '8': const [
     const {'1': '_desiredVersion'},
+    const {'1': '_forkRemoteUrl'},
   ],
 };
 
 /// Descriptor for `PuroEnvPrefsModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List puroEnvPrefsModelDescriptor = $convert.base64Decode(
-    'ChFQdXJvRW52UHJlZnNNb2RlbBJBCg5kZXNpcmVkVmVyc2lvbhgBIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIOZGVzaXJlZFZlcnNpb26IAQFCEQoPX2Rlc2lyZWRWZXJzaW9u');
+    'ChFQdXJvRW52UHJlZnNNb2RlbBJBCg5kZXNpcmVkVmVyc2lvbhgBIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIOZGVzaXJlZFZlcnNpb26IAQESKQoNZm9ya1JlbW90ZVVybBgCIAEoCUgBUg1mb3JrUmVtb3RlVXJsiAEBQhEKD19kZXNpcmVkVmVyc2lvbkIQCg5fZm9ya1JlbW90ZVVybA==');
 @$core.Deprecated('Use puroDotfileModelDescriptor instead')
 const PuroDotfileModel$json = const {
   '1': 'PuroDotfileModel',

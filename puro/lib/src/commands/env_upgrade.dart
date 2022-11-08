@@ -50,7 +50,7 @@ class EnvUpgradeCommand extends PuroCommand {
     return upgradeEnvironment(
       scope: scope,
       environment: environment,
-      flutterVersion: await FlutterVersion.query(
+      toVersion: await FlutterVersion.query(
         scope: scope,
         version: version,
         channel: channel,

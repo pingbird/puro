@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import 'config.dart';
@@ -63,7 +64,9 @@ class GitClient {
     if (binary) {
       stdout = process.stdout.toBytes();
     } else {
-      stdout = const LineSplitter().bind(utf8.decoder.bind(process.stdout)).map(
+      stdout = const LineSplitter()
+          .bind(systemEncoding.decoder.bind(process.stdout))
+          .map(
         (e) {
           log.d('git: $e');
           if (onStdout != null) onStdout(e);
@@ -72,8 +75,9 @@ class GitClient {
       ).join('\n');
     }
 
-    final stderr =
-        const LineSplitter().bind(utf8.decoder.bind(process.stderr)).map(
+    final stderr = const LineSplitter()
+        .bind(systemEncoding.decoder.bind(process.stderr))
+        .map(
       (e) {
         log.d('git: $e');
         if (onStderr != null) onStderr(e);
@@ -110,26 +114,6 @@ class GitClient {
   Future<void> init({required Directory repository}) async {
     final result = await _git(
       ['init'],
-      directory: repository,
-    );
-    _ensureSuccess(result);
-  }
-
-  /// https://git-scm.com/docs/git-remote
-  Future<void> addRemote({
-    required Directory repository,
-    String name = 'origin',
-    required String remote,
-    bool fetch = false,
-  }) async {
-    final result = await _git(
-      [
-        'remote',
-        'add',
-        if (fetch) '-f',
-        name,
-        remote,
-      ],
       directory: repository,
     );
     _ensureSuccess(result);
@@ -186,31 +170,76 @@ class GitClient {
     required Directory repository,
     required String ref,
     bool detach = false,
+    bool track = false,
   }) async {
-    final checkoutResult = await _git(
+    final result = await _git(
       [
         'checkout',
         if (detach) '--detach',
+        if (track) '--track',
         ref,
       ],
       directory: repository,
     );
-    _ensureSuccess(checkoutResult);
+    _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git-pull
+  Future<void> pull({
+    required Directory repository,
+    String? remote,
+    bool all = false,
+  }) async {
+    final result = await _git(
+      [
+        'pull',
+        if (remote != null) remote,
+        if (all) '--all',
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
   }
 
   /// https://git-scm.com/docs/git-fetch
   Future<void> fetch({
     required Directory repository,
+    String remote = 'origin',
     String? ref,
+    bool all = false,
+    bool updateHeadOk = false,
   }) async {
-    final cloneResult = await _git(
+    final result = await _git(
       [
         'fetch',
+        if (all) '--all',
+        if (updateHeadOk) '--update-head-ok',
+        if (!all) remote,
         if (ref != null) ref,
       ],
       directory: repository,
     );
-    _ensureSuccess(cloneResult);
+    _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git-merge
+  Future<void> merge({
+    required Directory repository,
+    required String fromCommit,
+    bool? fastForward,
+    bool fastForwardOnly = false,
+  }) async {
+    final result = await _git(
+      [
+        'merge',
+        if (fastForward != null)
+          if (fastForward) '--ff' else '--no-ff',
+        if (fastForwardOnly) '--ff-only',
+        fromCommit,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
   }
 
   /// https://git-scm.com/docs/git-rev-parse
@@ -220,7 +249,7 @@ class GitClient {
     bool short = false,
     bool abbreviation = false,
   }) async {
-    final revParseResult = await _git(
+    final result = await _git(
       [
         'rev-parse',
         if (short) '--short',
@@ -229,8 +258,8 @@ class GitClient {
       ],
       directory: repository,
     );
-    _ensureSuccess(revParseResult);
-    return (revParseResult.stdout as String).trim().split('\n').toList();
+    _ensureSuccess(result);
+    return (result.stdout as String).trim().split('\n').toList();
   }
 
   /// Same as [revParse] but parses a single argument.
@@ -256,7 +285,7 @@ class GitClient {
     bool short = false,
     bool abbreviation = false,
   }) async {
-    final revParseResult = await _git(
+    final result = await _git(
       [
         'rev-parse',
         if (short) '--short',
@@ -265,10 +294,10 @@ class GitClient {
       ],
       directory: repository,
     );
-    if (revParseResult.exitCode != 0) {
+    if (result.exitCode != 0) {
       return null;
     }
-    return (revParseResult.stdout as String).trim().split('\n').toList();
+    return (result.stdout as String).trim().split('\n').toList();
   }
 
   /// Same as [revParseSingle] but returns null on failure.
@@ -305,13 +334,22 @@ class GitClient {
     return result.exitCode == 0;
   }
 
+  /// Returns true if the repository has uncomitted changes.
+  Future<bool> hasUncomittedChanges({
+    required Directory repository,
+  }) async {
+    await _git(['git update-index', '--refresh']);
+    final result = await _git(['diff-index', '--quiet', 'HEAD', '--']);
+    return result.exitCode != 0;
+  }
+
   /// Get the commit hash of the current branch.
   Future<String> getCurrentCommitHash({
     required Directory repository,
     bool short = false,
     String branch = 'HEAD',
-  }) {
-    return revParseSingle(
+  }) async {
+    return await revParseSingle(
       repository: repository,
       short: short,
       arg: branch,
@@ -331,6 +369,38 @@ class GitClient {
     );
   }
 
+  /// https://git-scm.com/docs/git-branch
+  Future<bool> branch({
+    required String branch,
+  }) async {
+    if (!_branchRegex.hasMatch(branch)) return false;
+    final result = await _git([
+      'branch',
+      '-a',
+      '--list',
+      branch,
+    ]);
+    return result.exitCode == 0;
+  }
+
+  /// https://git-scm.com/docs/git-branch
+  Future<void> setBranchUpstream({
+    required Directory repository,
+    required String branch,
+    required String upstream,
+  }) async {
+    final result = await _git(
+      [
+        'branch',
+        '-u',
+        upstream,
+        branch,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+  }
+
   /// Attempts to get the branch of the current commit, returns null if we are
   /// detached from a branch.
   Future<String?> getBranch({
@@ -348,6 +418,23 @@ class GitClient {
       return null;
     }
     return result;
+  }
+
+  /// https://git-scm.com/docs/git-symbolic-ref
+  Future<void> setSymbolicRef({
+    required Directory repository,
+    required String name,
+    required String? ref,
+  }) async {
+    final result = await _git(
+      [
+        'symbolic-ref',
+        name,
+        if (ref == null) '--delete' else ref,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
   }
 
   /// https://git-scm.com/docs/git-show
@@ -443,10 +530,187 @@ class GitClient {
     return (result.stdout as String).trim();
   }
 
+  static final _remoteRegex = RegExp(r'^(\S+)\s+(\S+)\s+\((.+?)\)$');
+
+  /// Gets all git remotes.
+  ///
+  /// https://git-scm.com/docs/git-remote
+  Future<Map<String, GitRemoteUrls>> getRemotes({
+    required Directory repository,
+  }) async {
+    final result = await _git(
+      ['remote', '-v'],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+    final stdout = result.stdout as String;
+    final fetches = <String, String>{};
+    final pushes = <String, Set<String>>{};
+    for (final line in stdout.split('\n')) {
+      if (line.isEmpty) continue;
+      final match = _remoteRegex.matchAsPrefix(line);
+      if (match == null) {
+        log.w('Failed to parse remote: ${jsonEncode(line)}');
+        continue;
+      }
+      final name = match.group(1)!;
+      final url = match.group(2)!;
+      final type = match.group(3)!;
+      if (type == 'fetch') {
+        fetches[name] = url;
+      } else if (type == 'push') {
+        pushes.putIfAbsent(name, () => {}).add(url);
+      }
+    }
+    return {
+      for (final origin in {...fetches.keys, ...pushes.keys})
+        origin: GitRemoteUrls(
+          fetch: fetches[origin]!,
+          push: pushes[origin] ?? {},
+        ),
+    };
+  }
+
+  /// https://git-scm.com/docs/git-remote
+  Future<void> addRemote({
+    required Directory repository,
+    String name = 'origin',
+    required String url,
+    bool fetch = false,
+  }) async {
+    final result = await _git(
+      [
+        'remote',
+        'add',
+        if (fetch) '-f',
+        name,
+        url,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git-remote
+  Future<void> setRemote({
+    required Directory repository,
+    String name = 'origin',
+    required String url,
+    bool push = false,
+    bool add = false,
+    bool delete = false,
+  }) async {
+    final result = await _git(
+      [
+        'remote',
+        'set-url',
+        if (push) '--push',
+        if (delete) '--delete',
+        if (add) '--add',
+        name,
+        url,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git-remote
+  Future<void> removeRemote({
+    required Directory repository,
+    required String name,
+  }) async {
+    final result = await _git(
+      [
+        'remote',
+        'remove',
+        name,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+  }
+
+  /// Sets (or deletes) remotes.
+  ///
+  /// https://git-scm.com/docs/git-remote
+  Future<void> syncRemotes({
+    required Directory repository,
+    required Map<String, GitRemoteUrls?> remotes,
+  }) async {
+    final currentRemotes = await getRemotes(repository: repository);
+    for (final entry in remotes.entries) {
+      final remoteName = entry.key;
+      final currentRemote = currentRemotes[remoteName];
+      if (currentRemote == entry.value) {
+        continue;
+      }
+      if (currentRemotes.containsKey(remoteName)) {
+        // Delete existing remote
+        await removeRemote(
+          repository: repository,
+          name: remoteName,
+        );
+      }
+      final newRemote = entry.value;
+      if (newRemote != null) {
+        await addRemote(
+          repository: repository,
+          name: remoteName,
+          url: newRemote.fetch,
+        );
+        final push = newRemote.push.toList();
+        if (push.isNotEmpty && push.first != newRemote.fetch) {
+          setRemote(
+            repository: repository,
+            name: remoteName,
+            url: push.first,
+            push: true,
+          );
+        }
+        for (var i = 1; i < push.length; i++) {
+          setRemote(
+            repository: repository,
+            name: remoteName,
+            url: push.first,
+            push: true,
+            add: true,
+          );
+        }
+      }
+    }
+  }
+
   static final provider = Provider<GitClient>((scope) {
     return GitClient(scope: scope);
   });
   static GitClient of(Scope scope) => scope.read(provider);
+}
+
+@immutable
+class GitRemoteUrls {
+  const GitRemoteUrls({
+    required this.fetch,
+    required this.push,
+  });
+
+  GitRemoteUrls.single(String url)
+      : fetch = url,
+        push = {url};
+
+  final String fetch;
+  final Set<String> push;
+
+  @override
+  int get hashCode => Object.hash(fetch, Object.hashAllUnordered(push));
+
+  @override
+  bool operator ==(Object other) {
+    return other is GitRemoteUrls &&
+        fetch == other.fetch &&
+        push.length == other.push.length &&
+        push.containsAll(other.push);
+  }
 }
 
 /// Version parsed from Git tags.

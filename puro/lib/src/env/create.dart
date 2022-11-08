@@ -17,20 +17,17 @@ import 'version.dart';
 class EnvCreateResult extends CommandResult {
   EnvCreateResult({
     required this.success,
-    required this.existing,
-    required this.directory,
+    required this.environment,
   });
 
   @override
   final bool success;
-  final bool existing;
-  final Directory directory;
+  final EnvConfig environment;
 
   @override
   CommandMessage get message => CommandMessage(
-        (format) => existing
-            ? 'Re-created existing environment `${directory.basename}`'
-            : 'Created environment `${directory.basename}` in `${directory.path}`',
+        (format) =>
+            'Created new environment at `${environment.flutterDir.path}`',
       );
 }
 
@@ -66,6 +63,7 @@ Future<EnvCreateResult> createEnvironment({
   required Scope scope,
   required String envName,
   required FlutterVersion flutterVersion,
+  String? forkRemoteUrl,
 }) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
@@ -80,9 +78,9 @@ Future<EnvCreateResult> createEnvironment({
     final commit = await git.tryGetCurrentCommitHash(
       repository: environment.flutterDir,
     );
-    if (commit != null && commit != flutterVersion.commit) {
+    if (commit != null) {
       throw ArgumentError(
-        'Environment `$envName` already exists, use `puro upgrade` to switch version',
+        'Environment `$envName` already exists, use `puro upgrade` to switch version or `puro rm` before trying again',
       );
     }
   }
@@ -121,6 +119,7 @@ Future<EnvCreateResult> createEnvironment({
     scope: scope,
     repository: environment.flutterDir,
     flutterVersion: flutterVersion,
+    forkRemoteUrl: forkRemoteUrl,
   );
 
   final cloneTime = clock.now();
@@ -144,8 +143,7 @@ Future<EnvCreateResult> createEnvironment({
 
   return EnvCreateResult(
     success: true,
-    existing: existing,
-    directory: environment.envDir,
+    environment: environment,
   );
 }
 
@@ -153,18 +151,18 @@ Future<EnvCreateResult> createEnvironment({
 Future<void> fetchOrCloneShared({
   required Scope scope,
   required Directory repository,
-  required String remote,
+  required String remoteUrl,
 }) async {
   await ProgressNode.of(scope).wrap((scope, node) async {
     final git = GitClient.of(scope);
     final terminal = Terminal.of(scope);
     if (repository.existsSync()) {
-      node.description = 'Fetching $remote';
+      node.description = 'Fetching $remoteUrl';
       await git.fetch(repository: repository);
     } else {
-      node.description = 'Cloning $remote';
+      node.description = 'Cloning $remoteUrl';
       await git.clone(
-        remote: remote,
+        remote: remoteUrl,
         repository: repository,
         shared: true,
         checkout: false,
@@ -195,9 +193,15 @@ Future<void> cloneFlutterWithSharedRefs({
   required Scope scope,
   required Directory repository,
   required FlutterVersion flutterVersion,
+  String? forkRemoteUrl,
 }) async {
   final git = GitClient.of(scope);
   final config = PuroConfig.of(scope);
+  final log = PuroLogger.of(scope);
+
+  log.v('Cloning flutter with shared refs');
+  log.d('repository: ${repository.path}');
+  log.d('flutterVersion: $flutterVersion');
 
   final sharedRepository = config.sharedFlutterDir;
   if (!await isSharedFlutterCommitCached(
@@ -207,12 +211,21 @@ Future<void> cloneFlutterWithSharedRefs({
     await fetchOrCloneShared(
       scope: scope,
       repository: sharedRepository,
-      remote: config.flutterGitUrl,
+      remoteUrl: config.flutterGitUrl,
     );
   }
 
   await ProgressNode.of(scope).wrap((scope, node) async {
-    node.description = 'Checking out $flutterVersion from cache';
+    node.description = 'Initializing repository';
+
+    final origin = forkRemoteUrl ?? config.flutterGitUrl;
+    final upstream = forkRemoteUrl == null ? null : config.flutterGitUrl;
+
+    final remotes = {
+      if (upstream != null) 'upstream': GitRemoteUrls.single(upstream),
+      'origin': GitRemoteUrls.single(origin),
+    };
+
     if (!repository.childDirectory('.git').existsSync()) {
       repository.createSync(recursive: true);
       await git.init(repository: repository);
@@ -224,14 +237,8 @@ Future<void> cloneFlutterWithSharedRefs({
       final sharedObjects =
           sharedRepository.childDirectory('.git').childDirectory('objects');
       alternatesFile.writeAsStringSync('${sharedObjects.path}\n');
-      await git.addRemote(
-        repository: repository,
-        remote: config.flutterGitUrl,
-        fetch: true,
-      );
-    } else {
-      await git.fetch(repository: repository);
     }
+    await git.syncRemotes(repository: repository, remotes: remotes);
 
     final cacheDir = repository.childDirectory('bin').childDirectory('cache');
     // Delete the cache when we switch versions so that the new version doesn't
@@ -241,6 +248,57 @@ Future<void> cloneFlutterWithSharedRefs({
       cacheDir.deleteSync();
     }
 
+    node.description = 'Checking out $flutterVersion';
+
+    // If the target is the master branch, attempt to track the origin. We don't
+    // do this for other branches because the flutter tool might upgrade itself
+    // from stable/beta and corrupt shared caches.
+    final branch = flutterVersion.branch;
+    if (forkRemoteUrl != null && branch == 'master') {
+      await git.fetch(
+        repository: repository,
+        all: true,
+      );
+      final originCommit = await git.getCurrentCommitHash(
+        repository: repository,
+        branch: 'origin/$branch',
+      );
+      log.d('originCommit: $originCommit');
+      log.d('flutterVersion.commit: ${flutterVersion.commit}');
+
+      if (originCommit == flutterVersion.commit) {
+        await git.checkout(
+          repository: repository,
+          ref: 'origin/$branch',
+          track: true,
+        );
+        return;
+      }
+
+      final upstreamCommit = await git.getCurrentCommitHash(
+        repository: sharedRepository,
+        branch: 'origin/$branch',
+      );
+      log.d('upstreamCommit: $upstreamCommit');
+
+      if (flutterVersion.commit == upstreamCommit) {
+        await git.checkout(
+          repository: repository,
+          ref: 'origin/$branch',
+          track: true,
+        );
+        if (originCommit != upstreamCommit) {
+          await git.merge(
+            repository: repository,
+            fromCommit: 'upstream/$branch',
+            fastForwardOnly: true,
+          );
+        }
+        return;
+      }
+    }
+
+    // Check out in a detached state.
     await git.checkout(
       repository: repository,
       ref: flutterVersion.commit,

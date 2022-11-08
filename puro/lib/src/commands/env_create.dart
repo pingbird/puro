@@ -10,6 +10,12 @@ class EnvCreateCommand extends PuroCommand {
           'The Flutter channel, in case multiple channels have builds with the same version number.',
       valueHelp: 'name',
     );
+    argParser.addOption(
+      'fork',
+      help:
+          'The origin to use when cloning the framework, puro will set the upstream automatically.',
+      valueHelp: 'url',
+    );
   }
 
   @override
@@ -24,6 +30,7 @@ class EnvCreateCommand extends PuroCommand {
   @override
   Future<EnvCreateResult> run() async {
     final channel = argResults!['channel'] as String?;
+    final fork = argResults!['fork'] as String?;
     final args = unwrapArguments(atLeast: 1, atMost: 2);
     final version = args.length > 1 ? args[1] : null;
     final envName = args.first;
@@ -35,7 +42,9 @@ class EnvCreateCommand extends PuroCommand {
         scope: scope,
         version: version,
         channel: channel,
+        defaultChannel: fork == null ? 'stable' : 'master',
       ),
+      forkRemoteUrl: fork,
     );
   }
 }
