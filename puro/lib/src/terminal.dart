@@ -136,7 +136,7 @@ class Terminal extends StringSink {
     if (_status.isEmpty) return '';
     final lines = '\n'.allMatches(_status).length;
     _status = '';
-    return '\r${lines == 0 ? '' : '\x1b[${lines}A'}\x1b[0J';
+    return '\r${lines == 0 ? '' : '\x1b[${lines}F'}\x1b[0J';
   }
 
   void resetStatus() {
