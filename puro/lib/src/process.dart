@@ -19,6 +19,8 @@ Future<Process> startProcess(
   bool runInShell = false,
   ProcessStartMode mode = ProcessStartMode.normal,
 }) async {
+  final log = PuroLogger.of(scope);
+  log.d('${workingDirectory ?? ''}> ${[executable, ...arguments].join(' ')}');
   final start = clock.now();
   final process = await Process.start(
     executable,
@@ -33,7 +35,7 @@ Future<Process> startProcess(
     final log = PuroLogger.of(scope);
     final executableName = path.basename(executable);
     log.d(
-      '$executableName finished in ${DateTime.now().difference(start).inMilliseconds}ms',
+      '$executableName finished with $exitCode in ${DateTime.now().difference(start).inMilliseconds}ms',
     );
   });
   return process;
@@ -52,7 +54,7 @@ Future<ProcessResult> runProcess(
   final start = clock.now();
   final executableName = path.basename(executable);
   final log = PuroLogger.of(scope);
-  log.v('${workingDirectory ?? ''}> ${[executable, ...arguments].join(' ')}');
+  log.d('${workingDirectory ?? ''}> ${[executable, ...arguments].join(' ')}');
   final result = await Process.run(
     executable,
     arguments,

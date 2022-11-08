@@ -49,8 +49,6 @@ class GitClient {
       );
     }
 
-    log.v('${directory?.path ?? ''}> ${gitExecutable.path} ${args.join(' ')}');
-
     final process = await startProcess(
       scope,
       gitExecutable.path,

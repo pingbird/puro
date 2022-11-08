@@ -49,17 +49,13 @@ class PuroUpgradeCommand extends PuroCommand {
       );
     }
 
-    File? currentExecutable =
+    final currentExecutable =
         config.fileSystem.file(Platform.resolvedExecutable);
-    if (currentExecutable.path != config.puroExecutableFile.path) {
-      if (force) {
-        currentExecutable = null;
-      } else {
-        return BasicMessageResult(
-          success: false,
-          message: 'Upgrading standalone executables is not supported',
-        );
-      }
+    if (currentExecutable.path != config.puroExecutableFile.path && !force) {
+      return BasicMessageResult(
+        success: false,
+        message: 'Upgrading standalone executables is not supported',
+      );
     }
 
     var targetVersionString = unwrapSingleOptionalArgument();
@@ -109,7 +105,12 @@ class PuroUpgradeCommand extends PuroCommand {
     if (!Platform.isWindows) {
       await runProcess(scope, 'chmod', ['+x', '--', tempFile.path]);
     }
-    currentExecutable?.renameSync(config.puroExecutableOldFile.path);
+    if (config.puroExecutableOldFile.existsSync()) {
+      config.puroExecutableOldFile.deleteSync();
+    }
+    if (config.puroExecutableFile.existsSync()) {
+      config.puroExecutableFile.renameSync(config.puroExecutableOldFile.path);
+    }
     tempFile.renameSync(config.puroExecutableFile.path);
 
     final terminal = Terminal.of(scope);

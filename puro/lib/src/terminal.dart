@@ -187,9 +187,8 @@ class Terminal extends StringSink {
 
   @override
   void write(Object? object) {
-    stdout.write(
-      '${_clearStatusStr()}$object${_flushStatusStr(statusDebouncer.value)}',
-    );
+    stdout.write('${_clearStatusStr()}$object');
+    flushStatus();
   }
 
   @override

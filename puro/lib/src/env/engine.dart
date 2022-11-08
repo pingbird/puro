@@ -204,7 +204,7 @@ Future<bool> downloadSharedEngine({
       description: 'Downloading engine',
     );
 
-    log.v('unzipping into ${config.sharedCachesDir}');
+    log.v('Unzipping into ${config.sharedCachesDir}');
     await ProgressNode.of(scope).wrap((scope, node) async {
       node.description = 'Unzipping engine';
       await unzip(
@@ -233,8 +233,8 @@ Future<void> setUpFlutterTool({
   final flutterCache = flutterConfig.cache;
   final engineVersion = flutterConfig.engineVersion!;
 
-  log.v('flutterCache.engineVersion: ${flutterCache.engineVersion}');
-  log.v('flutterConfig.engineVersion: $engineVersion');
+  log.d('flutterCache.engineVersion: ${flutterCache.engineVersion}');
+  log.d('flutterConfig.engineVersion: $engineVersion');
 
   final shouldUpdateEngine = flutterCache.engineVersion != engineVersion;
   var didChangeEngine = false;
@@ -255,11 +255,11 @@ Future<void> setUpFlutterTool({
         : cachePath;
     final isLink = cachePath != resolvedPath;
     final linkNeedsUpdate = isLink && resolvedPath != sharedCache.cacheDir.path;
-    log.v('cacheExists: $cacheExists');
-    log.v('cachePath: $cachePath');
-    log.v('resolvedPath: $resolvedPath');
-    log.v('isLink: $isLink');
-    log.v('linkNeedsUpdate: $linkNeedsUpdate');
+    log.d('cacheExists: $cacheExists');
+    log.d('cachePath: $cachePath');
+    log.d('resolvedPath: $resolvedPath');
+    log.d('isLink: $isLink');
+    log.d('linkNeedsUpdate: $linkNeedsUpdate');
     if (!cacheExists || linkNeedsUpdate) {
       if (link.existsSync()) link.deleteSync();
       link.createSync(sharedCache.cacheDir.path);
@@ -272,7 +272,7 @@ Future<void> setUpFlutterTool({
 
   final flutterCommit =
       await git.getCurrentCommitHash(repository: flutterConfig.sdkDir);
-  log.v('flutterCommit: $flutterCommit');
+  log.d('flutterCommit: $flutterCommit');
 
   var flutterToolsStamp = '$flutterCommit:${environment.flutterToolArgs}';
 
@@ -285,8 +285,8 @@ Future<void> setUpFlutterTool({
   final shouldRecompileTool =
       didChangeEngine || cachedFlutterToolsStamp != flutterToolsStamp;
 
-  log.v('cachedFlutterToolsStamp: $cachedFlutterToolsStamp');
-  log.v('flutterToolsStamp: $flutterToolsStamp');
+  log.d('cachedFlutterToolsStamp: $cachedFlutterToolsStamp');
+  log.d('flutterToolsStamp: $flutterToolsStamp');
 
   if (shouldRecompileTool) {
     log.v('Flutter tool out of date');
