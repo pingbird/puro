@@ -1,3 +1,8 @@
+## 1.0.0
+
+* Bug fixes
+* First stable release
+
 ## 0.6.1
 
 * Fix small issue with upgrades
