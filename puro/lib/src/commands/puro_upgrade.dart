@@ -70,13 +70,13 @@ class PuroUpgradeCommand extends PuroCommand {
       HttpException.ensureSuccess(latestVersionResponse);
       targetVersionString = latestVersionResponse.body.trim();
       targetVersion = Version.parse(targetVersionString);
-      if (currentVersion == targetVersion) {
+      if (currentVersion == targetVersion && !force) {
         return BasicMessageResult(
           success: true,
           message: 'Puro is up to date with $targetVersion',
           type: CompletionType.indeterminate,
         );
-      } else if (currentVersion > targetVersion) {
+      } else if (currentVersion > targetVersion && !force) {
         return BasicMessageResult(
           success: true,
           message:
@@ -86,7 +86,7 @@ class PuroUpgradeCommand extends PuroCommand {
       }
     } else {
       targetVersion = Version.parse(targetVersionString);
-      if (currentVersion == targetVersion) {
+      if (currentVersion == targetVersion && !force) {
         return BasicMessageResult(
           success: true,
           message: 'Puro is already the desired version $targetVersion',

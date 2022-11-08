@@ -1,3 +1,7 @@
+## 0.6.1
+
+* Fix small issue with upgrades
+
 ## 0.6.0
 
 * Bug fixes
