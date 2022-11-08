@@ -5,10 +5,10 @@ let tabs = tabbedSet.querySelectorAll("input")
 // https://stackoverflow.com/a/38241481/2615007
 function getOS() {
     let userAgent = window.navigator.userAgent,
-        platform = window.navigator?.userAgentData?.platform || window.navigator.platform,
-        macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K', 'MacOS'],
-        windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
-        iosPlatforms = ['iPhone', 'iPad', 'iPod'],
+        platform = (window.navigator?.userAgentData?.platform || window.navigator.platform).toLowerCase(),
+        macosPlatforms = ['macintosh', 'macintel', 'macppc', 'mac68k', 'macos'],
+        windowsPlatforms = ['win32', 'win64', 'windows', 'wince'],
+        iosPlatforms = ['iphone', 'ipad', 'ipod'],
         os = null;
 
     if (macosPlatforms.indexOf(platform) !== -1) {

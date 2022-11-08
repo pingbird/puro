@@ -92,6 +92,9 @@ class PuroUpgradeCommand extends PuroCommand {
       file: tempFile,
       description: 'Downloading puro $targetVersion',
     );
+    if (!Platform.isWindows) {
+      await runProcess(scope, 'chmod', ['+x', '--', tempFile.path]);
+    }
     currentExecutable.renameSync(config.puroExecutableOldFile.path);
     tempFile.renameSync(currentExecutable.path);
 
