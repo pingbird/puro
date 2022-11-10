@@ -54,7 +54,7 @@ class Debouncer<T> {
     _isUpdating = false;
     if (_shouldUpdate) {
       _shouldUpdate = false;
-      _update();
+      unawaited(_update());
     }
   }
 

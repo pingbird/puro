@@ -4,6 +4,7 @@ import 'package:pub_semver/pub_semver.dart';
 import '../../models.dart';
 import '../config.dart';
 import '../git.dart';
+import '../logger.dart';
 import '../provider.dart';
 import 'command.dart';
 import 'create.dart';
@@ -208,29 +209,38 @@ class FlutterVersion {
   int get hashCode => Object.hash(commit, version, branch, tag);
 }
 
-Future<FlutterVersion> getEnvironmentFlutterVersion({
+Future<FlutterVersion?> getEnvironmentFlutterVersion({
   required Scope scope,
   required EnvConfig environment,
 }) async {
   final git = GitClient.of(scope);
   final flutterConfig = environment.flutter;
   final versionFile = flutterConfig.versionFile;
+  final commit = await git.tryGetCurrentCommitHash(
+    repository: flutterConfig.sdkDir,
+  );
+  if (commit == null) {
+    return null;
+  }
   if (!versionFile.existsSync()) {
-    await runFlutterCommand(
-      scope: scope,
-      environment: environment,
-      args: ['--version', '--machine'],
-      onStdout: (_) {},
-      onStderr: (_) {},
+    await runOptional(
+      scope,
+      'querying Flutter version',
+      () {
+        return runFlutterCommand(
+          scope: scope,
+          environment: environment,
+          args: ['--version', '--machine'],
+          onStdout: (_) {},
+          onStderr: (_) {},
+        );
+      },
     );
   }
   Version? version;
   if (versionFile.existsSync()) {
     version = tryParseVersion(versionFile.readAsStringSync().trim());
   }
-  final commit = await git.getCurrentCommitHash(
-    repository: flutterConfig.sdkDir,
-  );
   return FlutterVersion(
     commit: commit,
     version: version,

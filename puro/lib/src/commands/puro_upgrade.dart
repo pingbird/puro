@@ -55,7 +55,7 @@ class PuroUpgradeCommand extends PuroCommand {
     if (currentExecutable.path != config.puroExecutableFile.path && !force) {
       return BasicMessageResult(
         success: false,
-        message: 'Upgrading standalone executables is not supported',
+        message: 'Upgrading standalone or pub executables is not supported',
       );
     }
 
@@ -93,6 +93,7 @@ class PuroUpgradeCommand extends PuroCommand {
     }
     final buildTarget = config.buildTarget;
     final tempFile = config.puroExecutableTempFile;
+    tempFile.parent.createSync(recursive: true);
     await downloadFile(
       scope: scope,
       url: config.puroBuildsUrl.append(

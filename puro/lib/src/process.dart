@@ -31,13 +31,13 @@ Future<Process> startProcess(
     runInShell: runInShell,
     mode: mode,
   );
-  process.exitCode.then((exitCode) {
+  unawaited(process.exitCode.then((exitCode) {
     final log = PuroLogger.of(scope);
     final executableName = path.basename(executable);
     log.d(
       '$executableName finished with $exitCode in ${DateTime.now().difference(start).inMilliseconds}ms',
     );
-  });
+  }));
   return process;
 }
 
@@ -161,10 +161,10 @@ Future<ProcessResult?> runProcessWithTimeout(
     },
   );
 
-  process.exitCode.then((value) {
+  unawaited(process.exitCode.then((value) {
     exitCode = value;
     onDone();
-  });
+  }));
 
   return completer.future;
 }

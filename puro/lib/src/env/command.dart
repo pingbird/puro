@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import '../config.dart';
@@ -44,7 +45,7 @@ Future<int> runFlutterCommand({
     mode: mode,
   );
   if (stdin != null) {
-    flutterProcess.stdin.addStream(stdin);
+    unawaited(flutterProcess.stdin.addStream(stdin));
   }
   final stdoutFuture = onStdout == null
       ? null
@@ -85,7 +86,7 @@ Future<int> runDartCommand({
     mode: mode,
   );
   if (stdin != null) {
-    dartProcess.stdin.addStream(stdin);
+    unawaited(dartProcess.stdin.addStream(stdin));
   }
   final stdoutFuture = onStdout == null
       ? null

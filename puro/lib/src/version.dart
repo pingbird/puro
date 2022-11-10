@@ -127,12 +127,15 @@ Future<CommandMessage?> checkIfUpdateAvailable({
   if (prefs.hasEnableUpdateCheck() && !prefs.enableUpdateCheck) {
     return null;
   }
+  final currentVersion = await getPuroVersion(scope: scope);
+  if (currentVersion == unknownSemver) {
+    return null;
+  }
   final lastVersionCheck =
       prefs.hasLastUpdateCheck() ? DateTime.parse(prefs.lastUpdateCheck) : null;
   final lastNotification = prefs.hasLastUpdateNotification()
       ? DateTime.parse(prefs.lastUpdateNotification)
       : null;
-  final currentVersion = await getPuroVersion(scope: scope);
   final latestVersionFile = config.puroLatestVersionFile;
   final latestVersion = latestVersionFile.existsSync()
       ? tryParseVersion(await readAtomic(scope: scope, file: latestVersionFile))

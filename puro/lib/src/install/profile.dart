@@ -28,13 +28,20 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
     name: config.buildTarget.flutterName,
   );
 
+  final puroFiles = await findProgramInPath(
+    scope: scope,
+    name: config.puroExecutableFile.basename,
+  );
+
   final offending = {
     ...dartFiles.map((e) => e.path),
     ...flutterFiles.map((e) => e.path),
+    ...puroFiles.map((e) => e.path),
   };
 
   offending.remove(config.puroDartShimFile.path);
   offending.remove(config.puroFlutterShimFile.path);
+  offending.remove(config.puroExecutableFile.path);
 
   log.d('PATH: ${Platform.environment['PATH']}');
   log.d('puroDartShimFile: ${config.puroDartShimFile.path}');

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -56,7 +57,7 @@ class GitClient {
       workingDirectory: directory?.path,
     );
 
-    process.stdin.close();
+    unawaited(process.stdin.close());
 
     final Future<dynamic> stdout;
     if (binary) {
@@ -659,7 +660,7 @@ class GitClient {
         );
         final push = newRemote.push.toList();
         if (push.isNotEmpty && push.first != newRemote.fetch) {
-          setRemote(
+          await setRemote(
             repository: repository,
             name: remoteName,
             url: push.first,
@@ -667,7 +668,7 @@ class GitClient {
           );
         }
         for (var i = 1; i < push.length; i++) {
-          setRemote(
+          await setRemote(
             repository: repository,
             name: remoteName,
             url: push.first,
@@ -710,6 +711,8 @@ class GitRemoteUrls {
         push.containsAll(other.push);
   }
 }
+
+final unknownSemver = Version(0, 0, 0, pre: 'unknown');
 
 /// Version parsed from Git tags.
 ///
@@ -849,7 +852,7 @@ class GitTagVersion {
 
   Version toSemver() {
     if (isUnknown) {
-      return Version(0, 0, 0, pre: 'unknown');
+      return unknownSemver;
     } else if (commits == 0 && gitTag != null) {
       return Version.parse(gitTag!);
     } else if (hotfix != null) {

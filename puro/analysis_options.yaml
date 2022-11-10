@@ -105,3 +105,4 @@ linter:
     - use_rethrow_when_possible
     - valid_regexps
     - void_checks
+    - unawaited_futures

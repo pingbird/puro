@@ -105,7 +105,10 @@ Future<EnvCreateResult> createEnvironment({
         scope: scope,
         commit: flutterVersion.commit,
       );
-      if (engineVersion == null) return;
+      log.d('Pre-caching engine $engineVersion');
+      if (engineVersion == null) {
+        return;
+      }
       await downloadSharedEngine(
         scope: scope,
         engineVersion: engineVersion,
@@ -229,15 +232,15 @@ Future<void> cloneFlutterWithSharedRefs({
     if (!repository.childDirectory('.git').existsSync()) {
       repository.createSync(recursive: true);
       await git.init(repository: repository);
-      final alternatesFile = repository
-          .childDirectory('.git')
-          .childDirectory('objects')
-          .childDirectory('info')
-          .childFile('alternates');
-      final sharedObjects =
-          sharedRepository.childDirectory('.git').childDirectory('objects');
-      alternatesFile.writeAsStringSync('${sharedObjects.path}\n');
     }
+    final alternatesFile = repository
+        .childDirectory('.git')
+        .childDirectory('objects')
+        .childDirectory('info')
+        .childFile('alternates');
+    final sharedObjects =
+        sharedRepository.childDirectory('.git').childDirectory('objects');
+    alternatesFile.writeAsStringSync('${sharedObjects.path}\n');
     await git.syncRemotes(repository: repository, remotes: remotes);
 
     final cacheDir = repository.childDirectory('bin').childDirectory('cache');

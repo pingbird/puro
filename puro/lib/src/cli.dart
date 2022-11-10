@@ -52,7 +52,7 @@ void main(List<String> args) async {
 
   runner.argParser
     ..addOption(
-      'git',
+      'git-executable',
       help: 'Overrides the path to the git executable.',
       valueHelp: 'exe',
       callback: runner.wrapCallback((exe) {
@@ -201,10 +201,10 @@ void main(List<String> args) async {
     if (result == null) {
       runner.printUsage();
     } else {
-      runner.writeResultAndExit(result);
+      await runner.writeResultAndExit(result);
     }
   } on UsageException catch (exception) {
-    runner.writeResultAndExit(
+    await runner.writeResultAndExit(
       CommandHelpResult(
         didRequestHelp: runner.didRequestHelp,
         help: exception.message,
@@ -212,6 +212,6 @@ void main(List<String> args) async {
       ),
     );
   } catch (exception, stackTrace) {
-    runner.writeResultAndExit(CommandErrorResult(exception, stackTrace));
+    await runner.writeResultAndExit(CommandErrorResult(exception, stackTrace));
   }
 }

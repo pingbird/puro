@@ -65,6 +65,10 @@ Future<EnvUpgradeResult> upgradeEnvironment({
     environment: environment,
   );
 
+  if (fromVersion == null) {
+    throw ArgumentError("Couldn't find Flutter version, corrupt environment?");
+  }
+
   if (currentCommit != toVersion.commit ||
       (toVersion.branch != null && branch != toVersion.branch)) {
     final prefs = await environment.updatePrefs(
