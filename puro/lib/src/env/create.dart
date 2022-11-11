@@ -254,64 +254,42 @@ Future<void> cloneFlutterWithSharedRefs({
     // Delete the cache when we switch versions so that the new version doesn't
     // accidentally corrupt the shared engine.
     if (cacheDir.existsSync()) {
-      // Not recursive because we are deleting a symlink.
+      // Not recursive because cacheDir is a symlink.
       cacheDir.deleteSync();
     }
 
     node.description = 'Checking out $flutterVersion';
 
-    // If the target is the master branch, attempt to track the origin. We don't
-    // do this for other branches because the flutter tool might upgrade itself
-    // from stable/beta and corrupt shared caches.
     final branch = flutterVersion.branch;
-    if (forkRemoteUrl != null && branch == 'master') {
-      await git.fetch(
+    if (branch != null) {
+      // Reset branch to current commit, this allows flutter to correctly detect
+      // its version and feature flags.
+      if (await git.checkBranchExists(
         repository: repository,
-        all: true,
-      );
-      final originCommit = await git.getCurrentCommitHash(
+        branch: branch,
+      )) {
+        await git.deleteBranch(
+          repository: repository,
+          branch: branch,
+        );
+      }
+      await git.checkout(
         repository: repository,
-        branch: 'origin/$branch',
+        newBranch: branch,
+        ref: flutterVersion.commit,
       );
-      log.d('originCommit: $originCommit');
-      log.d('flutterVersion.commit: ${flutterVersion.commit}');
-
-      if (originCommit == flutterVersion.commit) {
-        await git.checkout(
-          repository: repository,
-          ref: 'origin/$branch',
-          track: true,
-        );
-        return;
-      }
-
-      final upstreamCommit = await git.getCurrentCommitHash(
-        repository: sharedRepository,
-        branch: 'origin/$branch',
+      await git.branch(
+        repository: repository,
+        setUpstream: 'origin/$branch',
+        branch: branch,
       );
-      log.d('upstreamCommit: $upstreamCommit');
-
-      if (flutterVersion.commit == upstreamCommit) {
-        await git.checkout(
-          repository: repository,
-          ref: 'origin/$branch',
-          track: true,
-        );
-        if (originCommit != upstreamCommit) {
-          await git.merge(
-            repository: repository,
-            fromCommit: 'upstream/$branch',
-            fastForwardOnly: true,
-          );
-        }
-        return;
-      }
+    } else {
+      // Check out in a detached state, flutter will be unable to detect its
+      // version.
+      await git.checkout(
+        repository: repository,
+        ref: flutterVersion.commit,
+      );
     }
-
-    // Check out in a detached state.
-    await git.checkout(
-      repository: repository,
-      ref: flutterVersion.commit,
-    );
   });
 }

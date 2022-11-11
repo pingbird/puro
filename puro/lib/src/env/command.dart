@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:clock/clock.dart';
+
 import '../config.dart';
+import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 import '../terminal.dart';
@@ -19,9 +22,14 @@ Future<int> runFlutterCommand({
 }) async {
   final config = PuroConfig.of(scope);
   final flutterConfig = environment.flutter;
+  final log = PuroLogger.of(scope);
+  final start = clock.now();
   await setUpFlutterTool(
     scope: scope,
     environment: environment,
+  );
+  log.v(
+    'Setting up flutter took ${clock.now().difference(start).inMilliseconds}ms',
   );
   Terminal.of(scope).flushStatus();
   final dartPath = flutterConfig.cache.dartSdk.dartExecutable.path;
@@ -71,9 +79,14 @@ Future<int> runDartCommand({
 }) async {
   final config = PuroConfig.of(scope);
   final flutterConfig = environment.flutter;
+  final log = PuroLogger.of(scope);
+  final start = clock.now();
   await setUpFlutterTool(
     scope: scope,
     environment: environment,
+  );
+  log.v(
+    'Setting up dart took ${clock.now().difference(start).inMilliseconds}ms',
   );
   Terminal.of(scope).flushStatus();
   final dartProcess = await startProcess(

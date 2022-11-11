@@ -1,6 +1,7 @@
 import '../command.dart';
 import '../env/create.dart';
 import '../env/version.dart';
+import '../install/bin.dart';
 
 class EnvCreateCommand extends PuroCommand {
   EnvCreateCommand() {
@@ -34,6 +35,8 @@ class EnvCreateCommand extends PuroCommand {
     final args = unwrapArguments(atLeast: 1, atMost: 2);
     final version = args.length > 1 ? args[1] : null;
     final envName = args.first;
+
+    await ensurePuroInstalled(scope: scope);
 
     return createEnvironment(
       scope: scope,

@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:path/path.dart' as path;
+
 extension ListIntStreamExtensions on Stream<List<int>> {
   Future<Uint8List> toBytes() {
     final completer = Completer<Uint8List>();
@@ -48,5 +50,11 @@ extension RandomAccessFileExtensions on RandomAccessFile {
 
   void writeAllStringSync(String string) {
     writeAllSync(utf8.encode(string));
+  }
+}
+
+extension FileSystemEntityExtensions on FileSystemEntity {
+  bool pathEquals(FileSystemEntity other) {
+    return path.equals(this.path, other.path);
   }
 }

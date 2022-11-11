@@ -161,7 +161,10 @@ class FlutterVersion {
       arg: 'origin/$version', // look at origin since it may be untracked
     );
     if (result != null) {
-      final isBranch = await git.checkBranchExists(branch: 'origin/$version');
+      final isBranch = await git.checkBranchExists(
+        repository: sharedRepository,
+        branch: 'origin/$version',
+      );
       return FlutterVersion(
         commit: result,
         branch: isBranch ? version : null,

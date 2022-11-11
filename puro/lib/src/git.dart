@@ -14,8 +14,8 @@ import 'process.dart';
 import 'provider.dart';
 
 enum GitCloneStep {
-  countingObjects('remote: Counting objects'),
-  compressingObjects('remote: Compressing objects'),
+  // We used to have 'remote: Counting objects' / 'remote: Compressing objects'
+  // but git seems to print their progress all at once.
   receivingObjects('Receiving objects'),
   resolvingDeltas('Resolving deltas');
 
@@ -167,16 +167,18 @@ class GitClient {
   /// https://git-scm.com/docs/git-checkout
   Future<void> checkout({
     required Directory repository,
-    required String ref,
+    String? ref,
     bool detach = false,
     bool track = false,
+    String? newBranch,
   }) async {
     final result = await _git(
       [
         'checkout',
         if (detach) '--detach',
         if (track) '--track',
-        ref,
+        if (newBranch != null) ...['-b', newBranch],
+        if (ref != null) ref,
       ],
       directory: repository,
     );
@@ -319,20 +321,6 @@ class GitClient {
     r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\000-\037\177 ~^:?*[]+/[^\000-\037\177 ~^:?*[]+(?<!\.lock)(?<!/)(?<!\.)$',
   );
 
-  /// Returns true if the provided branch name exists.
-  Future<bool> checkBranchExists({
-    required String branch,
-  }) async {
-    if (!_branchRegex.hasMatch(branch)) return false;
-    final result = await _git([
-      'branch',
-      '-a',
-      '--list',
-      branch,
-    ]);
-    return result.exitCode == 0;
-  }
-
   /// Returns true if the repository has uncomitted changes.
   Future<bool> hasUncomittedChanges({
     required Directory repository,
@@ -370,29 +358,50 @@ class GitClient {
 
   /// https://git-scm.com/docs/git-branch
   Future<bool> branch({
+    required Directory repository,
     required String branch,
+    String? setUpstream,
+    bool force = false,
+    bool delete = false,
   }) async {
     if (!_branchRegex.hasMatch(branch)) return false;
     final result = await _git([
       'branch',
-      '-a',
-      '--list',
+      if (force) '-f',
+      if (delete) '-d',
+      if (setUpstream != null) ...['-u', setUpstream],
       branch,
     ]);
     return result.exitCode == 0;
   }
 
-  /// https://git-scm.com/docs/git-branch
-  Future<void> setBranchUpstream({
+  /// Returns true if the provided branch name exists.
+  Future<bool> checkBranchExists({
     required Directory repository,
     required String branch,
-    required String upstream,
+  }) async {
+    if (!_branchRegex.hasMatch(branch)) return false;
+    final result = await _git(
+      [
+        'branch',
+        '-a',
+        '--list',
+        branch,
+      ],
+      directory: repository,
+    );
+    return result.exitCode == 0;
+  }
+
+  /// Returns true if the provided branch name exists.
+  Future<void> deleteBranch({
+    required Directory repository,
+    required String branch,
   }) async {
     final result = await _git(
       [
         'branch',
-        '-u',
-        upstream,
+        '-d',
         branch,
       ],
       directory: repository,

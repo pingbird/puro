@@ -91,12 +91,28 @@ class PuroConfig {
             ) ??
             resultProjectDir;
 
+    final puroRootDir = puroRoot != null
+        ? fileSystem.directory(puroRoot)
+        : fileSystem.directory(homeDir).childDirectory('.puro');
+
+    if (environmentOverride == null) {
+      final flutterBin = Platform.environment['FLUTTER_BIN'];
+      if (flutterBin != null) {
+        final flutterBinDir = fileSystem.directory(flutterBin).absolute;
+        final flutterSdkDir = flutterBinDir.parent;
+        final envDir = flutterSdkDir.parent;
+        final envsDir = envDir.parent;
+        final otherPuroRootDir = envsDir.parent;
+        if (otherPuroRootDir.pathEquals(puroRootDir)) {
+          environmentOverride = envDir.basename.toLowerCase();
+        }
+      }
+    }
+
     return PuroConfig(
       fileSystem: fileSystem,
       gitExecutable: fileSystem.file(gitExecutable),
-      puroRoot: puroRoot != null
-          ? fileSystem.directory(puroRoot)
-          : fileSystem.directory(homeDir).childDirectory('.puro'),
+      puroRoot: puroRootDir,
       homeDir: fileSystem.directory(homeDir),
       projectDir: resultProjectDir,
       parentProjectDir: parentProjectDir,

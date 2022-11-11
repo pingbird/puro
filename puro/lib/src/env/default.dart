@@ -23,6 +23,11 @@ Future<EnvConfig> getProjectEnvOrDefault({
   }
   var env = config.tryGetProjectEnv();
   if (env == null) {
+    if (config.environmentOverride != null) {
+      throw ArgumentError(
+        'Selected environment `${config.environmentOverride}` does not exist',
+      );
+    }
     final envName = await getDefaultEnvName(scope: scope);
     env = config.getEnv(envName);
     if (!env.exists) {
