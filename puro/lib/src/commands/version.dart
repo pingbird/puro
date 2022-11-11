@@ -31,7 +31,7 @@ class VersionCommand extends PuroCommand {
     if (plain) {
       Terminal.of(scope).flushStatus();
       await stderr.flush();
-      stdout.write('$puroVersion');
+      stdout.write('${puroVersion.semver}');
       await runner.exitPuro(0);
     }
     final externalMessage =

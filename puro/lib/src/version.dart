@@ -75,6 +75,7 @@ class PuroVersion {
 
     final executablePath = Platform.executable;
     final scriptPath = Platform.script.toFilePath();
+    final scriptFile = _fs.file(scriptPath);
     final scriptExtension = path.extension(scriptPath);
     final scriptIsExecutable = path.equals(scriptPath, executablePath);
     var packageRoot = _getRootFromPackageConfig();
@@ -95,8 +96,11 @@ class PuroVersion {
     log.d('scriptExtension: $scriptExtension');
 
     var installationType = PuroInstallationType.unknown;
-    if (scriptExtension == '.dart') {
+    if (scriptFile.basename == 'puro.dart' &&
+        scriptFile.parent.basename == 'bin' &&
+        scriptFile.parent.parent.parent.childDirectory('.git').existsSync()) {
       installationType = PuroInstallationType.development;
+      packageRoot = scriptFile.parent.parent;
     } else if (scriptExtension == '.snapshot' && packageRoot != null) {
       final projectRootDir = packageRoot.parent;
       log.d('projectRootDir: $projectRootDir');
