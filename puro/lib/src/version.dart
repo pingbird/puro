@@ -152,21 +152,24 @@ class PuroVersion {
 }
 
 enum PuroBuildTarget {
-  windowsX64('windows-x64', 'puro.exe', 'dart.bat', 'flutter.bat'),
-  linuxX64('linux-x64', 'puro', 'dart', 'flutter'),
-  macosX64('darwin-x64', 'puro', 'dart', 'flutter');
+  windowsX64('windows-x64', '.exe', '.bat'),
+  linuxX64('linux-x64', '', ''),
+  macosX64('darwin-x64', '', '');
 
   const PuroBuildTarget(
     this.name,
-    this.executableName,
-    this.dartName,
-    this.flutterName,
+    this.exeSuffix,
+    this.scriptSuffix,
   );
 
   final String name;
-  final String executableName;
-  final String dartName;
-  final String flutterName;
+  final String exeSuffix;
+  final String scriptSuffix;
+
+  String get executableName => 'puro$exeSuffix';
+  String get trampolineName => 'puro$scriptSuffix';
+  String get flutterName => 'flutter$scriptSuffix';
+  String get dartName => 'dart$scriptSuffix';
 
   static PuroBuildTarget query() {
     if (Platform.isWindows) {

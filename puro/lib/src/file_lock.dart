@@ -165,3 +165,26 @@ Future<void> writePassiveAtomic({
     background: background,
   );
 }
+
+Future<bool> compareFileBytesAtomic({
+  required Scope scope,
+  required File file,
+  required List<int> bytes,
+}) {
+  return lockFile(scope, file, (handle) async {
+    if (handle.lengthSync() != bytes.length) return false;
+    return _bytesEqual(await handle.read(handle.lengthSync()), bytes);
+  });
+}
+
+Future<bool> compareFileAtomic({
+  required Scope scope,
+  required File file,
+  required String content,
+}) {
+  return compareFileBytesAtomic(
+    scope: scope,
+    file: file,
+    bytes: utf8.encode(content),
+  );
+}

@@ -12,6 +12,7 @@ import '../progress.dart';
 import '../provider.dart';
 import '../terminal.dart';
 import 'engine.dart';
+import 'env_shims.dart';
 import 'version.dart';
 
 class EnvCreateResult extends CommandResult {
@@ -123,6 +124,12 @@ Future<EnvCreateResult> createEnvironment({
     repository: environment.flutterDir,
     flutterVersion: flutterVersion,
     forkRemoteUrl: forkRemoteUrl,
+  );
+
+  // Replace flutter/dart with shims
+  await installEnvShims(
+    scope: scope,
+    environment: environment,
   );
 
   final cloneTime = clock.now();

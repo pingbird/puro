@@ -6,6 +6,7 @@ import '../proto/puro.pb.dart';
 import '../provider.dart';
 import 'create.dart';
 import 'engine.dart';
+import 'env_shims.dart';
 import 'version.dart';
 
 class EnvUpgradeResult extends CommandResult {
@@ -123,6 +124,12 @@ Future<EnvUpgradeResult> upgradeEnvironment({
       repository: environment.flutterDir,
       flutterVersion: toVersion,
       forkRemoteUrl: prefs.hasForkRemoteUrl() ? prefs.forkRemoteUrl : null,
+    );
+
+    // Replace flutter/dart with shims
+    await installEnvShims(
+      scope: scope,
+      environment: environment,
     );
 
     await setUpFlutterTool(

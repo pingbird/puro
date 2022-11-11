@@ -231,7 +231,13 @@ Future<void> setUpFlutterTool({
   final log = PuroLogger.of(scope);
   final flutterConfig = environment.flutter;
   final flutterCache = flutterConfig.cache;
-  final engineVersion = flutterConfig.engineVersion!;
+  final engineVersion = flutterConfig.engineVersion;
+
+  if (engineVersion == null) {
+    throw ArgumentError(
+      'Flutter installation corrupt, could not find engine version',
+    );
+  }
 
   log.d('flutterCache.engineVersion: ${flutterCache.engineVersion}');
   log.d('flutterConfig.engineVersion: $engineVersion');

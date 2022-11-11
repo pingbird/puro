@@ -2,16 +2,20 @@ import 'dart:io';
 
 import '../command.dart';
 import '../config.dart';
+import '../install/bin.dart';
 import '../install/profile.dart';
-import '../install/shims.dart';
 import '../version.dart';
 
 class PuroInstallCommand extends PuroCommand {
   PuroInstallCommand() {
     argParser.addFlag(
       'force',
-      hide: true,
+      help: 'Overwrite an existing puro installation, if any',
       negatable: false,
+    );
+    argParser.addFlag(
+      'path',
+      help: 'Whether or not to update the PATH automatically',
     );
   }
 
@@ -33,30 +37,25 @@ class PuroInstallCommand extends PuroCommand {
     final config = PuroConfig.of(scope);
 
     final force = argResults!['force'] as bool;
+    final updatePath =
+        argResults!.wasParsed('path') ? argResults!['path'] as bool : null;
 
-    final currentExecutable =
-        config.fileSystem.file(Platform.resolvedExecutable);
-    if (!force && currentExecutable.path != config.puroExecutableFile.path) {
-      return BasicMessageResult(
-        success: false,
-        message: 'Installing standalone executables is not supported',
-      );
-    }
+    await ensurePuroInstalled(scope: scope, force: force);
 
-    final homeDir = config.homeDir.path;
-    final scriptPath = Platform.script.toFilePath().replaceAll(homeDir, '~');
+    // Update the path by default if this is a distribution install.
     String? profilePath;
     var updatedWindowsRegistry = false;
-    if (Platform.isLinux || Platform.isMacOS) {
-      final profile = await tryUpdateProfile(scope: scope);
-      profilePath = profile?.path.replaceAll(homeDir, '~');
-    } else if (Platform.isWindows) {
-      updatedWindowsRegistry = await tryUpdateWindowsPath(
-        scope: scope,
-      );
+    final homeDir = config.homeDir.path;
+    if (updatePath ?? puroVersion.type == PuroInstallationType.distribution) {
+      if (Platform.isLinux || Platform.isMacOS) {
+        final profile = await tryUpdateProfile(scope: scope);
+        profilePath = profile?.path.replaceAll(homeDir, '~');
+      } else if (Platform.isWindows) {
+        updatedWindowsRegistry = await tryUpdateWindowsPath(
+          scope: scope,
+        );
+      }
     }
-
-    await installShims(scope: scope);
 
     final externalMessage =
         await detectExternalFlutterInstallations(scope: scope);
@@ -82,7 +81,7 @@ class PuroInstallCommand extends PuroCommand {
           ),
         CommandMessage(
           (format) =>
-              'Successfully installed Puro ${puroVersion.semver} to $scriptPath',
+              'Successfully installed Puro ${puroVersion.semver} to `${config.puroRoot.path}`',
         ),
       ],
     );

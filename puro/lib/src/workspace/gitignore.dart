@@ -6,7 +6,7 @@ import '../config.dart';
 import '../logger.dart';
 import '../provider.dart';
 
-const gitIgnoredFiles = {PuroConfig.dotfileName};
+const gitIgnoredFilesForWorkspace = {PuroConfig.dotfileName};
 const gitIgnoreComment = '# Managed by puro';
 
 /// Adds the dotfile to .git/info/exclude which is a handy way to ignore it
@@ -14,7 +14,7 @@ const gitIgnoreComment = '# Managed by puro';
 Future<void> updateGitignore({
   required Scope scope,
   required Directory projectDir,
-  Set<String> ignores = gitIgnoredFiles,
+  required Set<String> ignores,
 }) async {
   final log = PuroLogger.of(scope);
   final gitTree = findProjectDir(projectDir, '.git');

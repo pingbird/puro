@@ -25,7 +25,7 @@ class EnvCreateCommand extends PuroCommand {
   String? get argumentUsage => '<name> [version]';
 
   @override
-  final description = 'Sets up a new Flutter environment.\n';
+  final description = 'Sets up a new Flutter environment';
 
   @override
   Future<EnvCreateResult> run() async {

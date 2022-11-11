@@ -143,6 +143,8 @@ class PuroConfig {
   late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
   late final File puroExecutableFile =
       binDir.childFile(buildTarget.executableName);
+  late final File puroTrampolineFile =
+      binDir.childFile(buildTarget.trampolineName);
   late final File puroDartShimFile = binDir.childFile(buildTarget.dartName);
   late final File puroFlutterShimFile =
       binDir.childFile(buildTarget.flutterName);

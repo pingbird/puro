@@ -99,6 +99,7 @@ Future<void> installWorkspaceEnvironment({
     () => updateGitignore(
       scope: scope,
       projectDir: projectDir,
+      ignores: gitIgnoredFilesForWorkspace,
     ),
   );
   await runOptional(

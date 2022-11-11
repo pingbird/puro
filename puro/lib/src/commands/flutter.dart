@@ -6,6 +6,7 @@ import '../command.dart';
 import '../env/command.dart';
 import '../env/default.dart';
 import '../logger.dart';
+import '../terminal.dart';
 
 class FlutterCommand extends PuroCommand {
   @override
@@ -26,6 +27,23 @@ class FlutterCommand extends PuroCommand {
     final log = PuroLogger.of(scope);
     final environment = await getProjectEnvOrDefault(scope: scope);
     log.v('Flutter SDK: ${environment.flutter.sdkDir.path}');
+    final nonOptionArgs =
+        argResults!.arguments.where((e) => !e.startsWith('-')).toList();
+    if (nonOptionArgs.isNotEmpty) {
+      if (nonOptionArgs.first == 'upgrade') {
+        runner.addMessage(
+          'Using puro to upgrade flutter',
+          type: CompletionType.info,
+        );
+        return (await runner.run(['upgrade']))!;
+      } else if (nonOptionArgs.first == 'channel' && nonOptionArgs.length > 1) {
+        runner.addMessage(
+          'Using puro to switch flutter channel',
+          type: CompletionType.info,
+        );
+        return (await runner.run(['upgrade', unwrapArguments(exactly: 2)[1]]))!;
+      }
+    }
     final exitCode = await runFlutterCommand(
       scope: scope,
       environment: environment,

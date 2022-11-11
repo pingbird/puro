@@ -298,6 +298,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   final callbackQueue = <void Function()>[];
   final fileSystem = const LocalFileSystem();
   final backgroundTasks = <Future<void>, String>{};
+  bool initialized = false;
 
   void Function(T) wrapCallback<T>(void Function(T) fn) {
     return (str) {
@@ -419,38 +420,44 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   Future<CommandResult?> runCommand(ArgResults topLevelResults) async {
     results = topLevelResults;
 
-    for (final callback in callbackQueue) {
-      callback();
-    }
-    callbackQueue.clear();
-
-    // Initialize config
-    final config = PuroConfig.fromCommandLine(
-      fileSystem: fileSystem,
-      gitExecutable: gitExecutableOverride,
-      puroRoot: rootDirOverride,
-      workingDir: workingDirOverride,
-      projectDir: projectDirOverride,
-      flutterGitUrl: flutterGitUrlOverride,
-      engineGitUrl: engineGitUrlOverride,
-      releasesJsonUrl: versionsJsonUrlOverride,
-      flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
-      environmentOverride: environmentOverride,
-    );
-    scope.add(
-      PuroConfig.provider,
-      config,
-    );
-
-    log.d('Config: $config');
-
-    final commandName = topLevelResults.command?.name;
-    if (commandName != null &&
-        !((commands[commandName] as PuroCommand?)?.allowUpdateCheck ?? true)) {
-      final message = await checkIfUpdateAvailable(scope: scope, runner: this);
-      if (message != null) {
-        messages.add(message);
+    if (!initialized) {
+      for (final callback in callbackQueue) {
+        callback();
       }
+      callbackQueue.clear();
+
+      // Initialize config
+      final config = PuroConfig.fromCommandLine(
+        fileSystem: fileSystem,
+        gitExecutable: gitExecutableOverride,
+        puroRoot: rootDirOverride,
+        workingDir: workingDirOverride,
+        projectDir: projectDirOverride,
+        flutterGitUrl: flutterGitUrlOverride,
+        engineGitUrl: engineGitUrlOverride,
+        releasesJsonUrl: versionsJsonUrlOverride,
+        flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
+        environmentOverride: environmentOverride,
+      );
+      scope.add(
+        PuroConfig.provider,
+        config,
+      );
+
+      log.d('Config: $config');
+
+      final commandName = topLevelResults.command?.name;
+      if (commandName != null &&
+          !((commands[commandName] as PuroCommand?)?.allowUpdateCheck ??
+              true)) {
+        final message =
+            await checkIfUpdateAvailable(scope: scope, runner: this);
+        if (message != null) {
+          messages.add(message);
+        }
+      }
+
+      initialized = true;
     }
 
     return super.runCommand(topLevelResults);

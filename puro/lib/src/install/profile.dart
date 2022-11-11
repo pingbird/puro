@@ -21,6 +21,7 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
 
   final puroVersion = await PuroVersion.of(scope);
 
+  // Ignore conflicts if this is a standalone / development / pub install.
   if (puroVersion.type != PuroInstallationType.distribution) {
     return null;
   }
