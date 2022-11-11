@@ -58,14 +58,14 @@ Future<void> installEnvShims({
     scope: scope,
     file: flutterConfig.binDir.childFile('dart.bat'),
     content: 'FOR %%i IN ("%~dp0.") DO SET FLUTTER_BIN=%%~fi\n'
-        'SET PURO_BIN=%FLUTTER_BIN%\..\\..\\..\\..\\bin\n'
+        'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
         '"%PURO_BIN%\\puro" dart %* & exit /B !ERRORLEVEL!',
   );
   await writePassiveAtomic(
     scope: scope,
     file: flutterConfig.binDir.childFile('flutter.bat'),
     content: 'FOR %%i IN ("%~dp0.") DO SET FLUTTER_BIN=%%~fi\n'
-        'SET PURO_BIN=%FLUTTER_BIN%\..\\..\\..\\..\\bin\n'
+        'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
         '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!',
   );
 }

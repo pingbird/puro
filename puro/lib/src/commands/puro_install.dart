@@ -42,7 +42,7 @@ class PuroInstallCommand extends PuroCommand {
 
     await ensurePuroInstalled(scope: scope, force: force);
 
-    // Update the path by default if this is a distribution install.
+    // Update the PATH by default if this is a distribution install.
     String? profilePath;
     var updatedWindowsRegistry = false;
     final homeDir = config.homeDir.path;
