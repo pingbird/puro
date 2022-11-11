@@ -41,21 +41,13 @@ class PuroUpgradeCommand extends PuroCommand {
     final force = argResults!['force'] as bool;
     final http = scope.read(clientProvider);
     final config = PuroConfig.of(scope);
-    final currentVersion = await getPuroVersion(scope: scope);
-    final repository = await getPuroDevelopmentRepository(scope: scope);
-    if ((currentVersion.build.isNotEmpty || repository != null) && !force) {
-      return BasicMessageResult(
-        success: false,
-        message: 'Upgrading development versions is not supported',
-      );
-    }
+    final puroVersion = await PuroVersion.of(scope);
+    final currentVersion = puroVersion.semver;
 
-    final currentExecutable =
-        config.fileSystem.file(Platform.resolvedExecutable);
-    if (currentExecutable.path != config.puroExecutableFile.path && !force) {
+    if (puroVersion.type != PuroInstallationType.distribution && !force) {
       return BasicMessageResult(
         success: false,
-        message: 'Upgrading standalone or pub executables is not supported',
+        message: "Can't upgrade: ${puroVersion.type.description}",
       );
     }
 

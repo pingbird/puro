@@ -29,7 +29,7 @@ class PuroInstallCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
-    final version = await getPuroVersion(scope: scope);
+    final puroVersion = await PuroVersion.of(scope);
     final config = PuroConfig.of(scope);
 
     final force = argResults!['force'] as bool;
@@ -81,7 +81,8 @@ class PuroInstallCommand extends PuroCommand {
             (format) => 'Updated PATH in windows registry',
           ),
         CommandMessage(
-          (format) => 'Successfully installed Puro $version to $scriptPath',
+          (format) =>
+              'Successfully installed Puro ${puroVersion.semver} to $scriptPath',
         ),
       ],
     );

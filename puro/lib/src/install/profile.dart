@@ -11,12 +11,19 @@ import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 import '../terminal.dart';
+import '../version.dart';
 
 Future<CommandMessage?> detectExternalFlutterInstallations({
   required Scope scope,
 }) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
+
+  final puroVersion = await PuroVersion.of(scope);
+
+  if (puroVersion.type != PuroInstallationType.distribution) {
+    return null;
+  }
 
   final dartFiles = await findProgramInPath(
     scope: scope,

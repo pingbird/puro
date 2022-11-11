@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
+import 'package:file/local.dart';
+import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart';
-import 'package:yaml/yaml.dart';
 
 import 'command.dart';
 import 'config.dart';
@@ -16,47 +18,133 @@ import 'terminal.dart';
 
 const _puroVersionDefine = String.fromEnvironment('puro_version');
 
-Future<Directory?> getPuroDevelopmentRepository({
-  required Scope scope,
-}) async {
-  final config = PuroConfig.of(scope);
-  final scriptUri = Platform.script;
-  final scriptFile = config.fileSystem.file(scriptUri.toFilePath()).absolute;
-  final puroPackage = findProjectDir(scriptFile.parent, 'pubspec.yaml');
-  if (puroPackage == null) return null;
-  final repository = findProjectDir(scriptFile.parent, '.git');
-  if (repository?.path != puroPackage.parent.path) return null;
-  final pubspecFile = puroPackage.childFile('pubspec.yaml');
-  final dynamic pubspecData = loadYaml(await pubspecFile.readAsString());
-  if (pubspecData['name'] != 'puro') return null;
-  return repository;
+enum PuroInstallationType {
+  distribution('Puro is installed normally'),
+  standalone('Puro is a standalone executable'),
+  development('Puro is a development version'),
+  pub('Puro was installed with pub'),
+  unknown('Could not determine installation method');
+
+  const PuroInstallationType(this.description);
+
+  final String description;
 }
 
-Future<Version>? _cachedVersion;
+class PuroVersion {
+  PuroVersion({
+    required this.semver,
+    required this.type,
+    required this.target,
+    required this.packageRoot,
+  });
 
-/// Attempts to find the version of puro using either the `puro_version` define
-/// or the git tag. This is a tiny bit slower in development because it has to
-/// call git a few times.
-Future<Version> getPuroVersion({
-  required Scope scope,
-}) async {
-  if (_cachedVersion != null) return _cachedVersion!;
-  final future = () async {
+  final Version semver;
+  final PuroInstallationType type;
+  final PuroBuildTarget target;
+  final Directory? packageRoot;
+
+  bool get isUnknown => semver == unknownSemver;
+
+  static const _fs = LocalFileSystem();
+
+  static Directory? _getRootFromPackageConfig() {
+    final packageConfig = Platform.packageConfig;
+    if (packageConfig == null) return null;
+    final packageFile = _fs.file(packageConfig);
+    if (!packageFile.existsSync()) return null;
+    final packageData =
+        jsonDecode(packageFile.readAsStringSync()) as Map<String, dynamic>;
+    final packages = packageData['packages'] as List<dynamic>;
+    final puroPackage = packages
+        .cast<Map<String, dynamic>>()
+        .firstWhere((e) => e['name'] == 'puro');
+    final rootUri = Uri.parse(puroPackage['rootUri'] as String);
+    var rootPath = rootUri.toFilePath();
+    if (path.isRelative(rootPath)) {
+      path.isRelative(rootPath);
+      rootPath = path.normalize(
+        path.join(path.dirname(packageConfig), rootPath),
+      );
+    }
+    return _fs.directory(rootPath);
+  }
+
+  static final provider = Provider((scope) async {
+    final log = PuroLogger.of(scope);
+    final config = PuroConfig.of(scope);
+
+    final executablePath = Platform.executable;
+    final scriptPath = Platform.script.toFilePath();
+    final scriptExtension = path.extension(scriptPath);
+    final scriptIsExecutable = path.equals(scriptPath, executablePath);
+    var packageRoot = _getRootFromPackageConfig();
+
+    log.d('packageRoot: $packageRoot');
+
+    if (!scriptIsExecutable && packageRoot == null) {
+      final segments = path.split(scriptPath);
+      final dartToolIndex = segments.indexOf('.dart_tool');
+      if (dartToolIndex != -1) {
+        packageRoot = _fs.directory(path.joinAll(segments.take(dartToolIndex)));
+        log.d('packageRoot: $packageRoot');
+      }
+    }
+
+    log.d('executablePath: $executablePath');
+    log.d('scriptPath: $scriptPath');
+    log.d('scriptExtension: $scriptExtension');
+
+    var installationType = PuroInstallationType.unknown;
+    if (scriptExtension == '.dart') {
+      installationType = PuroInstallationType.development;
+    } else if (scriptExtension == '.snapshot' && packageRoot != null) {
+      final projectRootDir = packageRoot.parent;
+      log.d('projectRootDir: $projectRootDir');
+      if (projectRootDir.basename == 'global_packages') {
+        installationType = PuroInstallationType.pub;
+      } else if (projectRootDir.childDirectory('.git').existsSync()) {
+        installationType = PuroInstallationType.development;
+      }
+    } else if (scriptIsExecutable) {
+      if (path.equals(
+        executablePath,
+        config.puroExecutableFile.path,
+      )) {
+        installationType = PuroInstallationType.distribution;
+      } else {
+        installationType = PuroInstallationType.standalone;
+      }
+    }
+
+    log.d('installationType: $installationType');
+
+    /// Attempts to find the version of puro using either the `puro_version`
+    /// define or the git tag. This is a tiny bit slower in development because
+    /// it has to call git a few times.
+    var version = unknownSemver;
     if (_puroVersionDefine.isNotEmpty) {
-      return Version.parse(_puroVersionDefine);
+      version = Version.parse(_puroVersionDefine);
+    } else if (packageRoot != null &&
+        installationType == PuroInstallationType.development) {
+      final gitTagVersion = await GitTagVersion.query(
+        scope: scope,
+        repository: packageRoot.parent,
+      );
+      log.d('gitTagVersion: $gitTagVersion');
+      version = gitTagVersion.toSemver();
     }
-    final repository = await getPuroDevelopmentRepository(scope: scope);
-    if (repository == null) {
-      return GitTagVersion.unknown.toSemver();
-    }
-    final version = await GitTagVersion.query(
-      scope: scope,
-      repository: repository,
+
+    log.d('version: $version');
+
+    return PuroVersion(
+      semver: version,
+      type: installationType,
+      target: PuroBuildTarget.query(),
+      packageRoot: packageRoot,
     );
-    return version.toSemver();
-  }();
-  _cachedVersion = future;
-  return future;
+  });
+
+  static Future<PuroVersion> of(Scope scope) => scope.read(provider);
 }
 
 enum PuroBuildTarget {
@@ -127,8 +215,8 @@ Future<CommandMessage?> checkIfUpdateAvailable({
   if (prefs.hasEnableUpdateCheck() && !prefs.enableUpdateCheck) {
     return null;
   }
-  final currentVersion = await getPuroVersion(scope: scope);
-  if (currentVersion == unknownSemver) {
+  final puroVersion = await PuroVersion.of(scope);
+  if (puroVersion.type != PuroInstallationType.distribution) {
     return null;
   }
   final lastVersionCheck =
@@ -140,7 +228,8 @@ Future<CommandMessage?> checkIfUpdateAvailable({
   final latestVersion = latestVersionFile.existsSync()
       ? tryParseVersion(await readAtomic(scope: scope, file: latestVersionFile))
       : null;
-  final isOutOfDate = latestVersion != null && latestVersion > currentVersion;
+  final isOutOfDate =
+      latestVersion != null && latestVersion > puroVersion.semver;
   final now = clock.now();
   final willNotify = isOutOfDate &&
       (alwaysNotify ||

@@ -27,11 +27,11 @@ class VersionCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final plain = argResults!['plain'] as bool;
-    final version = await getPuroVersion(scope: scope);
+    final puroVersion = await PuroVersion.of(scope);
     if (plain) {
       Terminal.of(scope).flushStatus();
       await stderr.flush();
-      stdout.write('$version');
+      stdout.write('$puroVersion');
       await runner.exitPuro(0);
     }
     final externalMessage =
@@ -47,9 +47,9 @@ class VersionCommand extends PuroCommand {
         if (externalMessage != null) externalMessage,
         if (updateMessage != null) updateMessage,
         CommandMessage(
-          (format) => 'Puro $version\n'
-              'Dart ${Platform.version}\n'
-              '${Platform.operatingSystemVersion}',
+          (format) => 'Puro ${puroVersion.semver} '
+              '(${puroVersion.type.name}/${puroVersion.target.name})\n'
+              'Dart ${Platform.version}',
           type: CompletionType.info,
         ),
       ],
