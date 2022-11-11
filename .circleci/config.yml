@@ -178,6 +178,7 @@ jobs:
     steps:
       - attach_workspace:
           at: workspace
+      - run: workspace/builds/linux-x64/puro version --plain > workspace/builds/version
       - aws-s3/sync:
           from: workspace/builds/
           to: s3://puro/builds/master/
