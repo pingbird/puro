@@ -86,13 +86,15 @@ Future<void> _installShims({
     await writePassiveAtomic(
       scope: scope,
       file: config.puroDartShimFile,
-      content: 'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
+      content: '@echo off\n'
+          'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
           '"%PURO_BIN%\\puro.exe" dart %* & exit /B !ERRORLEVEL!',
     );
     await writePassiveAtomic(
       scope: scope,
       file: config.puroFlutterShimFile,
-      content: 'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
+      content: '@echo off\n'
+          'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
           '"%PURO_BIN%\\puro.exe" flutter %* & exit /B !ERRORLEVEL!',
     );
   } else {
