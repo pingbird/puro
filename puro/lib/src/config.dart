@@ -101,18 +101,18 @@ class PuroConfig {
 
     if (environmentOverride == null) {
       final flutterBin = Platform.environment['FLUTTER_BIN'];
-      log.v('FLUTTER_BIN: $flutterBin');
+      log.d('FLUTTER_BIN: $flutterBin');
       if (flutterBin != null) {
         final flutterBinDir = fileSystem.directory(flutterBin).absolute;
         final flutterSdkDir = flutterBinDir.parent;
         final envDir = flutterSdkDir.parent;
         final envsDir = envDir.parent;
         final otherPuroRootDir = envsDir.parent;
-        log.v('otherPuroRootDir: $otherPuroRootDir');
-        log.v('puroRootDir: $puroRootDir');
+        log.d('otherPuroRootDir: $otherPuroRootDir');
+        log.d('puroRootDir: $puroRootDir');
         if (otherPuroRootDir.pathEquals(puroRootDir)) {
           environmentOverride = envDir.basename.toLowerCase();
-          log.v('environmentOverride: $environmentOverride');
+          log.d('environmentOverride: $environmentOverride');
         }
       }
     }
