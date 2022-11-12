@@ -72,21 +72,32 @@ class PuroVersion {
   static final provider = Provider((scope) async {
     final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
+    final target = PuroBuildTarget.query();
 
+    log.d('target: $target');
     log.d('Platform.executable: ${Platform.executable}');
     log.d('Platform.resolvedExecutable: ${Platform.resolvedExecutable}');
     log.d('Platform.script: ${Platform.script}');
 
     final executablePath = path.canonicalize(Platform.resolvedExecutable);
-    final scriptFile = _fs.file(Platform.script.toFilePath());
-    late String scriptPath;
-    try {
-      scriptPath = scriptFile.resolveSymbolicLinksSync();
-    } catch (e, bt) {
-      log.w('Error while resolving Platform.script\n$e\n$bt');
-      scriptPath = scriptFile.path;
+    var scriptPath = Platform.script.toFilePath();
+    if (path.equals(
+      scriptPath,
+      path.join(path.current, target.executableName),
+    )) {
+      // A bug in dart gives an incorrect Platform.script :/
+      // https://github.com/dart-lang/sdk/issues/45005
+      scriptPath = executablePath;
+    } else {
+      try {
+        scriptPath =
+            config.fileSystem.file(scriptPath).resolveSymbolicLinksSync();
+      } catch (e, bt) {
+        log.w('Error while resolving Platform.script\n$e\n$bt');
+      }
     }
     scriptPath = path.canonicalize(scriptPath);
+    final scriptFile = config.fileSystem.file(scriptPath);
     final scriptExtension = path.extension(scriptPath);
     final scriptIsExecutable = path.equals(scriptPath, executablePath);
     var packageRoot = _getRootFromPackageConfig();
@@ -154,7 +165,7 @@ class PuroVersion {
     return PuroVersion(
       semver: version,
       type: installationType,
-      target: PuroBuildTarget.query(),
+      target: target,
       packageRoot: packageRoot,
     );
   });
