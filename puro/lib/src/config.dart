@@ -10,6 +10,7 @@ import '../models.dart';
 import 'extensions.dart';
 import 'file_lock.dart';
 import 'http.dart';
+import 'logger.dart';
 import 'provider.dart';
 import 'version.dart';
 
@@ -46,6 +47,7 @@ class PuroConfig {
   }) : puroRoot = puroRoot.absolute;
 
   factory PuroConfig.fromCommandLine({
+    required Scope scope,
     required FileSystem fileSystem,
     required String? gitExecutable,
     required String? puroRoot,
@@ -57,6 +59,8 @@ class PuroConfig {
     required String? flutterStorageBaseUrl,
     required String? environmentOverride,
   }) {
+    final log = PuroLogger.of(scope);
+
     gitExecutable ??= 'git';
     if (!const LocalProcessManager().canRun(gitExecutable)) {
       throw ArgumentError('Git executable not found');
@@ -97,14 +101,18 @@ class PuroConfig {
 
     if (environmentOverride == null) {
       final flutterBin = Platform.environment['FLUTTER_BIN'];
+      log.v('FLUTTER_BIN: $flutterBin');
       if (flutterBin != null) {
         final flutterBinDir = fileSystem.directory(flutterBin).absolute;
         final flutterSdkDir = flutterBinDir.parent;
         final envDir = flutterSdkDir.parent;
         final envsDir = envDir.parent;
         final otherPuroRootDir = envsDir.parent;
+        log.v('otherPuroRootDir: $otherPuroRootDir');
+        log.v('puroRootDir: $puroRootDir');
         if (otherPuroRootDir.pathEquals(puroRootDir)) {
           environmentOverride = envDir.basename.toLowerCase();
+          log.v('environmentOverride: $environmentOverride');
         }
       }
     }

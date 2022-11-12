@@ -436,6 +436,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
 
       // Initialize config
       final config = PuroConfig.fromCommandLine(
+        scope: scope,
         fileSystem: fileSystem,
         gitExecutable: gitExecutableOverride,
         puroRoot: rootDirOverride,
