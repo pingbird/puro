@@ -6,6 +6,7 @@ import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:yaml/yaml.dart';
 
 import 'command.dart';
 import 'config.dart';
@@ -47,26 +48,40 @@ class PuroVersion {
 
   static const _fs = LocalFileSystem();
 
-  static Directory? _getRootFromPackageConfig() {
+  static Directory? _getRootFromPackageConfig({
+    required Scope scope,
+  }) {
+    final log = PuroLogger.of(scope);
     final packageConfig = Platform.packageConfig;
-    if (packageConfig == null) return null;
-    final packageFile = _fs.file(packageConfig);
-    if (!packageFile.existsSync()) return null;
-    final packageData =
-        jsonDecode(packageFile.readAsStringSync()) as Map<String, dynamic>;
-    final packages = packageData['packages'] as List<dynamic>;
-    final puroPackage = packages
-        .cast<Map<String, dynamic>>()
-        .firstWhere((e) => e['name'] == 'puro');
-    final rootUri = Uri.parse(puroPackage['rootUri'] as String);
-    var rootPath = rootUri.toFilePath();
-    if (path.isRelative(rootPath)) {
-      path.isRelative(rootPath);
-      rootPath = path.normalize(
-        path.join(path.dirname(packageConfig), rootPath),
-      );
+    if (packageConfig == null) {
+      log.d('No package root: Platform.packageConfig is null');
+      return null;
     }
-    return _fs.directory(rootPath);
+    final packageFile = _fs.file(Uri.parse(packageConfig).toFilePath());
+    if (!packageFile.existsSync()) {
+      log.d('No package root: Platform.packageConfig is invalid');
+      return null;
+    }
+    try {
+      final packageData =
+          jsonDecode(packageFile.readAsStringSync()) as Map<String, dynamic>;
+      final packages = packageData['packages'] as List<dynamic>;
+      final puroPackage = packages
+          .cast<Map<String, dynamic>>()
+          .firstWhere((e) => e['name'] == 'puro');
+      final rootUri = Uri.parse(puroPackage['rootUri'] as String);
+      var rootPath = rootUri.toFilePath();
+      if (path.isRelative(rootPath)) {
+        path.isRelative(rootPath);
+        rootPath = path.normalize(
+          path.join(path.dirname(packageFile.path), rootPath),
+        );
+      }
+      return _fs.directory(rootPath);
+    } catch (e, bt) {
+      log.w('Error while parsing package config$e\n$bt');
+      return null;
+    }
   }
 
   static final provider = Provider((scope) async {
@@ -78,6 +93,7 @@ class PuroVersion {
     log.d('Platform.executable: ${Platform.executable}');
     log.d('Platform.resolvedExecutable: ${Platform.resolvedExecutable}');
     log.d('Platform.script: ${Platform.script}');
+    log.d('Platform.packageConfig: ${Platform.packageConfig}');
 
     final executablePath = path.canonicalize(Platform.resolvedExecutable);
     var scriptPath = Platform.script.toFilePath();
@@ -100,19 +116,34 @@ class PuroVersion {
     final scriptFile = config.fileSystem.file(scriptPath);
     final scriptExtension = path.extension(scriptPath);
     final scriptIsExecutable = path.equals(scriptPath, executablePath);
-    var packageRoot = _getRootFromPackageConfig();
-
-    log.d('packageRoot: $packageRoot');
+    var packageRoot = _getRootFromPackageConfig(scope: scope);
 
     if (!scriptIsExecutable && packageRoot == null) {
-      final segments = path.split(scriptPath);
-      final dartToolIndex = segments.indexOf('.dart_tool');
-      if (dartToolIndex != -1) {
-        packageRoot = _fs.directory(path.joinAll(segments.take(dartToolIndex)));
-        log.d('packageRoot: $packageRoot');
+      final pubInstallBinDir = scriptFile.parent;
+      final pubInstallPackageDir = pubInstallBinDir.parent;
+      final pubInstallPubspecLockFile =
+          pubInstallPackageDir.childFile('pubspec.lock');
+      final pubInstallPubspecYamlFile =
+          pubInstallPackageDir.childFile('pubspec.yaml');
+      log.d('pubInstallBinDir: ${pubInstallBinDir.path}');
+      log.d('pubInstallPackageDir: ${pubInstallPackageDir.path}');
+      if (pubInstallBinDir.basename == 'bin' &&
+          pubInstallPackageDir.basename == 'puro' &&
+          pubInstallPackageDir.parent.basename == 'global_packages' &&
+          pubInstallPubspecLockFile.existsSync() &&
+          !pubInstallPubspecYamlFile.existsSync()) {
+        packageRoot = pubInstallPackageDir;
+      } else {
+        final segments = path.split(scriptPath);
+        final dartToolIndex = segments.indexOf('.dart_tool');
+        if (dartToolIndex != -1) {
+          packageRoot =
+              _fs.directory(path.joinAll(segments.take(dartToolIndex)));
+        }
       }
     }
 
+    log.d('packageRoot: ${packageRoot?.path}');
     log.d('executablePath: $executablePath');
     log.d('scriptPath: $scriptPath');
     log.d('scriptExtension: $scriptExtension');
@@ -125,7 +156,7 @@ class PuroVersion {
       packageRoot = scriptFile.parent.parent;
     } else if (scriptExtension == '.snapshot' && packageRoot != null) {
       final projectRootDir = packageRoot.parent;
-      log.d('projectRootDir: $projectRootDir');
+      log.d('projectRootDir: ${projectRootDir.path}');
       if (projectRootDir.basename == 'global_packages') {
         installationType = PuroInstallationType.pub;
       } else if (projectRootDir.childDirectory('.git').existsSync()) {
@@ -150,14 +181,26 @@ class PuroVersion {
     var version = unknownSemver;
     if (_puroVersionDefine.isNotEmpty) {
       version = Version.parse(_puroVersionDefine);
-    } else if (packageRoot != null &&
-        installationType == PuroInstallationType.development) {
-      final gitTagVersion = await GitTagVersion.query(
-        scope: scope,
-        repository: packageRoot.parent,
-      );
-      log.d('gitTagVersion: $gitTagVersion');
-      version = gitTagVersion.toSemver();
+    } else if (packageRoot != null) {
+      if (installationType == PuroInstallationType.development) {
+        final gitTagVersion = await GitTagVersion.query(
+          scope: scope,
+          repository: packageRoot.parent,
+        );
+        log.d('gitTagVersion: $gitTagVersion');
+        version = gitTagVersion.toSemver();
+      } else if (installationType == PuroInstallationType.pub) {
+        final pubspecLockFile = packageRoot.childFile('pubspec.lock');
+        try {
+          final pubspecLock =
+              loadYaml(pubspecLockFile.readAsStringSync()) as YamlMap;
+          version = Version.parse(
+            pubspecLock['packages']['puro']['version'] as String,
+          );
+        } catch (e, bt) {
+          log.w('Error while parsing ${pubspecLockFile.path}\n$e\n$bt');
+        }
+      }
     }
 
     log.d('version: $version');

@@ -366,4 +366,8 @@ Future<void> setUpFlutterTool({
 
     flutterCache.flutterToolsStampFile.writeAsStringSync(flutterToolsStamp);
   }
+
+  // Explicitly set the last accessed time so `puro gc` can figure out which
+  // engines are less frequently used.
+  flutterCache.engineVersionFile.setLastAccessedSync(DateTime.now());
 }

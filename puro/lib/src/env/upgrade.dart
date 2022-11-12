@@ -50,6 +50,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
   required Scope scope,
   required EnvConfig environment,
   required FlutterVersion toVersion,
+  bool force = false,
 }) async {
   final log = PuroLogger.of(scope);
   final git = GitClient.of(scope);
@@ -124,6 +125,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
       repository: environment.flutterDir,
       flutterVersion: toVersion,
       forkRemoteUrl: prefs.hasForkRemoteUrl() ? prefs.forkRemoteUrl : null,
+      force: force,
     );
 
     // Replace flutter/dart with shims

@@ -5,6 +5,7 @@ import 'package:pub_semver/pub_semver.dart';
 import '../command.dart';
 import '../config.dart';
 import '../downloader.dart';
+import '../extensions.dart';
 import '../http.dart';
 import '../process.dart';
 import '../terminal.dart';
@@ -44,7 +45,36 @@ class PuroUpgradeCommand extends PuroCommand {
     final puroVersion = await PuroVersion.of(scope);
     final currentVersion = puroVersion.semver;
 
-    if (puroVersion.type != PuroInstallationType.distribution && !force) {
+    if (puroVersion.type == PuroInstallationType.pub) {
+      final result = await runProcess(
+        scope,
+        Platform.resolvedExecutable,
+        ['pub', 'global', 'activate', 'puro'],
+      );
+      if (result.exitCode == 0) {
+        final stdout = result.stdout as String;
+        if (stdout.contains('already activated at newest available version')) {
+          return BasicMessageResult(
+            success: true,
+            message: 'Puro is up to date with $currentVersion',
+            type: CompletionType.indeterminate,
+          );
+        } else {
+          return BasicMessageResult(
+            success: true,
+            message: 'Upgraded puro to latest pub version',
+          );
+        }
+      } else {
+        return BasicMessageResult(
+          success: true,
+          message:
+              '`dart pub global activate puro` failed with exit code ${result.exitCode}\n${result.stderr}'
+                  .trim(),
+        );
+      }
+    } else if (puroVersion.type != PuroInstallationType.distribution &&
+        !force) {
       return BasicMessageResult(
         success: false,
         message: "Can't upgrade: ${puroVersion.type.description}",
@@ -99,12 +129,7 @@ class PuroUpgradeCommand extends PuroCommand {
     if (!Platform.isWindows) {
       await runProcess(scope, 'chmod', ['+x', '--', tempFile.path]);
     }
-    if (config.puroExecutableOldFile.existsSync()) {
-      config.puroExecutableOldFile.deleteSync();
-    }
-    if (config.puroExecutableFile.existsSync()) {
-      config.puroExecutableFile.renameSync(config.puroExecutableOldFile.path);
-    }
+    config.puroExecutableFile.deleteOrRenameSync();
     tempFile.renameSync(config.puroExecutableFile.path);
 
     final terminal = Terminal.of(scope);

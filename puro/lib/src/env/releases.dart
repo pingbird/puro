@@ -36,6 +36,25 @@ Future<FlutterReleasesModel> fetchFlutterReleases({
   });
 }
 
+Future<FlutterReleasesModel?> getCachedFlutterReleases({
+  required Scope scope,
+  bool unlessStale = false,
+}) async {
+  final config = PuroConfig.of(scope);
+  final stat = config.cachedReleasesJsonFile.statSync();
+  if (stat.type == FileSystemEntityType.notFound ||
+      (unlessStale &&
+          clock.now().difference(stat.modified) > const Duration(hours: 1))) {
+    return null;
+  }
+  final content = await readAtomic(
+    scope: scope,
+    file: config.cachedReleasesJsonFile,
+  );
+  return FlutterReleasesModel.create()
+    ..mergeFromProto3Json(jsonDecode(content));
+}
+
 /// Searches [releases] for a specific version and/or channel.
 FlutterReleaseModel? searchFlutterVersions({
   required FlutterReleasesModel releases,

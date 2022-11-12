@@ -1,5 +1,6 @@
 import '../config.dart';
 import '../file_lock.dart';
+import '../git.dart';
 import '../provider.dart';
 import '../workspace/gitignore.dart';
 
@@ -7,6 +8,7 @@ Future<void> installEnvShims({
   required Scope scope,
   required EnvConfig environment,
 }) async {
+  final git = GitClient.of(scope);
   final flutterConfig = environment.flutter;
 
   // Delete these because running them can corrupt our cache
@@ -17,16 +19,19 @@ Future<void> installEnvShims({
     'update_dart_sdk.sh',
   };
 
+  final ignores = {
+    'bin/cache',
+    'bin/dart',
+    'bin/dart.bat',
+    'bin/flutter',
+    'bin/flutter.bat',
+    for (final name in sharedScripts) 'bin/internal/$name',
+  };
+
   await updateGitignore(
     scope: scope,
     projectDir: environment.flutterDir,
-    ignores: {
-      'bin/dart',
-      'bin/dart.bat',
-      'bin/flutter',
-      'bin/flutter.bat',
-      for (final name in sharedScripts) 'bin/internal/$name',
-    },
+    ignores: ignores,
   );
 
   for (final name in sharedScripts) {
@@ -70,4 +75,11 @@ Future<void> installEnvShims({
         'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
         '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!',
   );
+
+  for (final ignore in ignores.skip(1)) {
+    await git.assumeUnchanged(
+      repository: flutterConfig.sdkDir,
+      file: ignore,
+    );
+  }
 }

@@ -204,6 +204,7 @@ Future<void> cloneFlutterWithSharedRefs({
   required Directory repository,
   required FlutterVersion flutterVersion,
   String? forkRemoteUrl,
+  bool force = false,
 }) async {
   final git = GitClient.of(scope);
   final config = PuroConfig.of(scope);
@@ -267,22 +268,49 @@ Future<void> cloneFlutterWithSharedRefs({
 
     final branch = flutterVersion.branch;
     if (branch != null) {
-      // Reset branch to current commit, this allows flutter to correctly detect
-      // its version and feature flags.
-      if (await git.checkBranchExists(
+      // Unstage changes, excluded files may have been added by accident.
+      await git.reset(repository: repository);
+
+      final currentBranch = await git.tryRevParseSingle(
         repository: repository,
-        branch: branch,
-      )) {
-        await git.deleteBranch(
+        arg: 'HEAD',
+        abbreviation: true,
+      );
+
+      if (branch == currentBranch) {
+        // Reset the current branches commit to the target commit, attempt to
+        // merge uncomitted changes.
+        if (force) {
+          if (!await git.tryReset(
+            repository: repository,
+            ref: flutterVersion.commit,
+            merge: true,
+          )) {
+            // We are forcefully upgrading, ditch uncomitted changes.
+            await git.reset(
+              repository: repository,
+              ref: flutterVersion.commit,
+              hard: true,
+            );
+          }
+        } else {
+          await git.reset(
+            repository: repository,
+            ref: flutterVersion.commit,
+            merge: true,
+          );
+        }
+      } else {
+        // Reset branch to current commit, this allows flutter to correctly detect
+        // its version and feature flags.
+        await git.checkout(
           repository: repository,
-          branch: branch,
+          newBranch: branch,
+          ref: flutterVersion.commit,
+          force: force,
         );
       }
-      await git.checkout(
-        repository: repository,
-        newBranch: branch,
-        ref: flutterVersion.commit,
-      );
+
       await git.branch(
         repository: repository,
         setUpstream: 'origin/$branch',

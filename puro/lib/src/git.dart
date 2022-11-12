@@ -170,6 +170,7 @@ class GitClient {
     String? ref,
     bool detach = false,
     bool track = false,
+    bool force = false,
     String? newBranch,
   }) async {
     final result = await _git(
@@ -177,12 +178,63 @@ class GitClient {
         'checkout',
         if (detach) '--detach',
         if (track) '--track',
+        if (force) '-f',
         if (newBranch != null) ...['-b', newBranch],
         if (ref != null) ref,
       ],
       directory: repository,
     );
     _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git-reset
+  Future<void> reset({
+    required Directory repository,
+    String? ref,
+    bool soft = false,
+    bool mixed = false,
+    bool hard = false,
+    bool merge = false,
+    bool keep = false,
+  }) async {
+    final result = await _git(
+      [
+        'reset',
+        if (soft) '--soft',
+        if (mixed) '--mixed',
+        if (hard) '--hard',
+        if (merge) '--merge',
+        if (keep) '--keep',
+        if (ref != null) ref,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git-reset
+  Future<bool> tryReset({
+    required Directory repository,
+    String? ref,
+    bool soft = false,
+    bool mixed = false,
+    bool hard = false,
+    bool merge = false,
+    bool keep = false,
+  }) async {
+    final result = await _git(
+      [
+        'reset',
+        if (soft) '--soft',
+        if (mixed) '--mixed',
+        if (hard) '--hard',
+        if (merge) '--merge',
+        if (keep) '--keep',
+        if (ref != null) ref,
+      ],
+      directory: repository,
+    );
+    return result.exitCode == 0;
   }
 
   /// https://git-scm.com/docs/git-pull
@@ -317,10 +369,6 @@ class GitClient {
     return result?.single;
   }
 
-  final _branchRegex = RegExp(
-    r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\000-\037\177 ~^:?*[]+/[^\000-\037\177 ~^:?*[]+(?<!\.lock)(?<!/)(?<!\.)$',
-  );
-
   /// Returns true if the repository has uncomitted changes.
   Future<bool> hasUncomittedChanges({
     required Directory repository,
@@ -382,7 +430,6 @@ class GitClient {
     required Directory repository,
     required String branch,
   }) async {
-    if (!_branchRegex.hasMatch(branch)) return false;
     final result = await _git(
       [
         'branch',
@@ -689,6 +736,23 @@ class GitClient {
         }
       }
     }
+  }
+
+  /// https://git-scm.com/docs/git-update-index
+  Future<void> assumeUnchanged({
+    required Directory repository,
+    required String file,
+    bool value = true,
+  }) async {
+    final result = await _git(
+      [
+        'update-index',
+        if (value) '--assume-unchanged' else '--no-assume-unchanged',
+        file,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
   }
 
   static final provider = Provider<GitClient>((scope) {

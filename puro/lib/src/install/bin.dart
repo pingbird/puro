@@ -76,12 +76,8 @@ Future<void> _installTrampoline({
     }
   }
 
-  if (trampolineFile.existsSync()) {
-    trampolineFile.deleteSync();
-  }
-  if (executableFile.existsSync()) {
-    executableFile.deleteSync();
-  }
+  executableFile.deleteOrRenameSync();
+  trampolineFile.deleteOrRenameSync();
   trampolineFile.parent.createSync(recursive: true);
   trampolineFile.writeAsStringSync(trampolineScript);
 }

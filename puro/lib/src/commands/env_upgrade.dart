@@ -11,6 +11,11 @@ class EnvUpgradeCommand extends PuroCommand {
           'The Flutter channel, in case multiple channels have builds with the same version number.',
       valueHelp: 'name',
     );
+    argParser.addFlag(
+      'force',
+      help: 'Forcefully upgrade the instance, erasing any unstaged changes',
+      negatable: false,
+    );
   }
 
   @override
@@ -26,6 +31,7 @@ class EnvUpgradeCommand extends PuroCommand {
   Future<EnvUpgradeResult> run() async {
     final config = PuroConfig.of(scope);
     final channel = argResults!['channel'] as String?;
+    final force = argResults!['force'] as bool;
     final args = unwrapArguments(atLeast: 1, atMost: 2);
     final envName = args[0];
     var version = args.length > 1 ? args[1] : null;
@@ -55,6 +61,7 @@ class EnvUpgradeCommand extends PuroCommand {
         version: version,
         channel: channel,
       ),
+      force: force,
     );
   }
 }

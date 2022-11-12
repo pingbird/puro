@@ -11,7 +11,9 @@ import 'commands/env_rm.dart';
 import 'commands/env_upgrade.dart';
 import 'commands/env_use.dart';
 import 'commands/flutter.dart';
+import 'commands/gc.dart';
 import 'commands/generate_docs.dart';
+import 'commands/ls_versions.dart';
 import 'commands/pub.dart';
 import 'commands/puro_install.dart';
 import 'commands/puro_upgrade.dart';
@@ -195,7 +197,9 @@ void main(List<String> args) async {
     ..addCommand(PubCommand())
     ..addCommand(GenerateDocsCommand())
     ..addCommand(PuroUpgradeCommand())
-    ..addCommand(PuroInstallCommand());
+    ..addCommand(PuroInstallCommand())
+    ..addCommand(GcCommand())
+    ..addCommand(LsVersionsCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {

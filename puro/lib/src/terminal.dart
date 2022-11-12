@@ -20,6 +20,16 @@ String stripAnsiEscapes(String str) {
   return '${writer.buffer}';
 }
 
+String padLeftColored(String str, int width, [String padding = ' ']) {
+  final stripped = stripAnsiEscapes(str);
+  return padding * (width - stripped.length) + str;
+}
+
+String padRightColored(String str, int width, [String padding = ' ']) {
+  final stripped = stripAnsiEscapes(str);
+  return str + padding * (width - stripped.length);
+}
+
 const plainFormatter = OutputFormatter();
 const colorFormatter = ColorOutputFormatter();
 

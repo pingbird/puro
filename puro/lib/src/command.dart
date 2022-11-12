@@ -145,6 +145,13 @@ class BasicMessageResult extends CommandResult {
     this.model,
   }) : messages = [CommandMessage((format) => message, type: type)];
 
+  BasicMessageResult.format({
+    required this.success,
+    required String Function(OutputFormatter format) message,
+    CompletionType? type,
+    this.model,
+  }) : messages = [CommandMessage(message, type: type)];
+
   BasicMessageResult.list({
     required this.success,
     required this.messages,

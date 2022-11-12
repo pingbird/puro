@@ -166,8 +166,6 @@ class PuroConfig {
       binDir.childFile(buildTarget.flutterName);
   late final File puroExecutableTempFile =
       binDir.childFile('${buildTarget.executableName}.tmp');
-  late final File puroExecutableOldFile =
-      binDir.childFile('${buildTarget.executableName}.old');
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
