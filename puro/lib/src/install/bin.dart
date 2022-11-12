@@ -7,6 +7,23 @@ import '../process.dart';
 import '../provider.dart';
 import '../version.dart';
 
+const bashShimHeader = '''#!/usr/bin/env bash
+set -e
+unset CDPATH
+function follow_links() (
+  cd -P "\$(dirname -- "\$1")"
+  file="\$PWD/\$(basename -- "\$1")"
+  while [[ -h "\$file" ]]; do
+    cd -P "\$(dirname -- "\$file")"
+    file="\$(readlink -- "\$file")"
+    cd -P "\$(dirname -- "\$file")"
+    file="\$PWD/\$(basename -- "\$file")"
+  done
+  echo "\$file"
+)
+PROG_NAME="\$(follow_links "\${BASH_SOURCE[0]}")"
+''';
+
 Future<void> ensurePuroInstalled({
   required Scope scope,
   bool force = false,
@@ -106,18 +123,14 @@ Future<void> _installShims({
     await writePassiveAtomic(
       scope: scope,
       file: config.puroDartShimFile,
-      content: '#!/usr/bin/env bash\n'
-          'set -e\n'
-          'unset CDPATH\n'
+      content: '$bashShimHeader\n'
           'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
           '"\$PURO_BIN/puro" dart "\$@"',
     );
     await writePassiveAtomic(
       scope: scope,
       file: config.puroFlutterShimFile,
-      content: '#!/usr/bin/env bash\n'
-          'set -e\n'
-          'unset CDPATH\n'
+      content: '$bashShimHeader\n'
           'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
           '"\$PURO_BIN/puro" flutter "\$@"',
     );
