@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Bug fixes
+* Better support for standalone and pub installs
+
 ## 1.0.0
 
 * Bug fixes

@@ -30,7 +30,7 @@ class EnvUpgradeResult extends CommandResult {
   @override
   CommandMessage get message => CommandMessage(
         (format) => from.commit == to.commit
-            ? 'Environment `${environment.name}` already up to date'
+            ? 'Environment `${environment.name}` is already up to date'
             : 'Upgraded `${environment.name}` from $from to $to',
       );
 
