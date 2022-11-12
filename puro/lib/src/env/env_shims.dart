@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import '../config.dart';
 import '../file_lock.dart';
 import '../git.dart';
+import '../process.dart';
 import '../provider.dart';
 import '../workspace/gitignore.dart';
 
@@ -59,6 +62,19 @@ Future<void> installEnvShims({
         'PURO_BIN="\$FLUTTER_BIN/../../../../bin"'
         '"\$PURO_BIN/puro" flutter "\$@"',
   );
+
+  if (!Platform.isWindows) {
+    await runProcess(
+      scope,
+      'chmod',
+      [
+        '+x',
+        flutterConfig.binDir.childFile('dart').path,
+        flutterConfig.binDir.childFile('flutter').path,
+      ],
+    );
+  }
+
   await writePassiveAtomic(
     scope: scope,
     file: flutterConfig.binDir.childFile('dart.bat'),

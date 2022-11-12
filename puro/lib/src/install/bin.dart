@@ -3,6 +3,7 @@ import 'dart:io';
 import '../config.dart';
 import '../extensions.dart';
 import '../file_lock.dart';
+import '../process.dart';
 import '../provider.dart';
 import '../version.dart';
 
@@ -119,6 +120,15 @@ Future<void> _installShims({
           'unset CDPATH\n'
           'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
           '"\$PURO_BIN/puro" flutter "\$@"',
+    );
+    await runProcess(
+      scope,
+      'chmod',
+      [
+        '+x',
+        config.puroDartShimFile.path,
+        config.puroFlutterShimFile.path,
+      ],
     );
   }
 }
