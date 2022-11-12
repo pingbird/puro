@@ -127,18 +127,18 @@ Future<EnvUpgradeResult> upgradeEnvironment({
       forkRemoteUrl: prefs.hasForkRemoteUrl() ? prefs.forkRemoteUrl : null,
       force: force,
     );
-
-    // Replace flutter/dart with shims
-    await installEnvShims(
-      scope: scope,
-      environment: environment,
-    );
-
-    await setUpFlutterTool(
-      scope: scope,
-      environment: environment,
-    );
   }
+
+  // Replace flutter/dart with shims
+  await installEnvShims(
+    scope: scope,
+    environment: environment,
+  );
+
+  await setUpFlutterTool(
+    scope: scope,
+    environment: environment,
+  );
 
   if (environment.flutter.versionFile.existsSync()) {
     environment.flutter.versionFile.deleteSync();

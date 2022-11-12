@@ -48,7 +48,7 @@ Future<void> installEnvShims({
     file: flutterConfig.binDir.childFile('dart'),
     content: '$bashShimHeader\n'
         'export FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
-        'PURO_BIN="\$FLUTTER_BIN/../../../../bin"' // Backing out of envs/<name>/flutter/bin
+        'PURO_BIN="\$FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
         '"\$PURO_BIN/puro" dart "\$@"',
   );
   await writePassiveAtomic(
@@ -56,7 +56,7 @@ Future<void> installEnvShims({
     file: flutterConfig.binDir.childFile('flutter'),
     content: '$bashShimHeader\n'
         'export FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
-        'PURO_BIN="\$FLUTTER_BIN/../../../../bin"' // Backing out of envs/<name>/flutter/bin
+        'PURO_BIN="\$FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
         '"\$PURO_BIN/puro" flutter "\$@"',
   );
 
