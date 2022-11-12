@@ -113,9 +113,9 @@ commands:
 
 jobs:
   linux_tests:
-    environment:
-      DART_VERSION: "2.18.3"
-      DART_RELEASE: "stable"
+    environment: &dart_version
+      DART_VERSION: "2.19.0-361.0.dev"
+      DART_RELEASE: "dev"
     docker:
       - image: cimg/base:stable
     steps:
@@ -127,9 +127,7 @@ jobs:
       build_args:
         type: string
         default: ""
-    environment:
-      DART_VERSION: "2.18.3"
-      DART_RELEASE: "stable"
+    environment: *dart_version
     docker:
       - image: cimg/base:stable
     steps:
@@ -144,9 +142,7 @@ jobs:
       build_args:
         type: string
         default: ""
-    environment:
-      DART_VERSION: "2.18.3"
-      DART_RELEASE: "stable"
+    environment: *dart_version
     macos:
       xcode: 14.1.0
     steps:
@@ -161,9 +157,7 @@ jobs:
       build_args:
         type: string
         default: ""
-    environment:
-      DART_VERSION: "2.18.3"
-      DART_RELEASE: "stable"
+    environment: *dart_version
     executor:
       name: win/default
     steps:
@@ -199,9 +193,7 @@ jobs:
           to: s3://puro/builds/
 
   build_website:
-    environment:
-      DART_VERSION: "2.18.3"
-      DART_RELEASE: "stable"
+    environment: *dart_version
     docker:
       - image: cimg/python:3.9
     steps:
