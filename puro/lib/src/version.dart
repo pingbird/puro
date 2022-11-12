@@ -79,13 +79,14 @@ class PuroVersion {
 
     final executablePath = path.canonicalize(Platform.resolvedExecutable);
     final scriptFile = _fs.file(Platform.script.toFilePath());
-    late final String scriptPath;
+    late String scriptPath;
     try {
-      scriptPath = path.canonicalize(scriptFile.resolveSymbolicLinksSync());
+      scriptPath = scriptFile.resolveSymbolicLinksSync();
     } catch (e, bt) {
       log.w('Error while resolving Platform.script\n$e\n$bt');
       scriptPath = scriptFile.path;
     }
+    scriptPath = path.canonicalize(scriptPath);
     final scriptExtension = path.extension(scriptPath);
     final scriptIsExecutable = path.equals(scriptPath, executablePath);
     var packageRoot = _getRootFromPackageConfig();

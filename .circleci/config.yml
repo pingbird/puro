@@ -182,6 +182,7 @@ jobs:
       - aws-s3/sync:
           from: workspace/builds/
           to: s3://puro/builds/master/
+      - run: aws cloudfront create-invalidation --distribution-id $PURO_CF_DISTRIBUTION --paths "/builds/master/*"
 
   upload_release_builds:
     docker:
