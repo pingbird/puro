@@ -1,3 +1,9 @@
+## 1.1.0
+
+* Bug fixes
+* Added the `ls-versions` command
+* Added the `gc` command
+
 ## 1.0.1
 
 * Bug fixes

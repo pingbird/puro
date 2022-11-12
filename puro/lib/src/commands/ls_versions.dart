@@ -75,7 +75,7 @@ class LsVersionsCommand extends PuroCommand {
                       abbr: true,
                     ),
                 format.color(' | ', foregroundColor: Ansi8BitColor.grey),
-                release.hash.substring(0, 7),
+                release.hash.substring(0, 10),
                 format.color(' | ', foregroundColor: Ansi8BitColor.grey),
                 'Dart ${release.dartSdkVersion.split(' ').first}',
               ],
