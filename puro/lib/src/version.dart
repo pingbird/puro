@@ -73,6 +73,9 @@ class PuroVersion {
     final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
 
+    log.d('Platform.executable: $Platform.executable');
+    log.d('Platform.script: $Platform.script');
+
     final executablePath = path.absolute(Platform.executable);
     final scriptPath = Platform.script.toFilePath();
     final scriptFile = _fs.file(scriptPath);
