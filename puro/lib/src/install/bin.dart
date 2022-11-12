@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../config.dart';
+import '../extensions.dart';
 import '../file_lock.dart';
 import '../provider.dart';
 import '../version.dart';
@@ -22,10 +23,16 @@ Future<void> _installTrampoline({
 }) async {
   final version = await PuroVersion.of(scope);
   final config = PuroConfig.of(scope);
+  final executableFile = config.puroExecutableFile;
+  final trampolineFile = config.puroTrampolineFile;
+  final executableIsTrampoline = executableFile.pathEquals(trampolineFile);
 
   final String command;
   switch (version.type) {
     case PuroInstallationType.distribution:
+      if (!executableIsTrampoline && trampolineFile.existsSync()) {
+        trampolineFile.deleteSync();
+      }
       // Already installed
       return;
     case PuroInstallationType.standalone:
@@ -47,17 +54,18 @@ Future<void> _installTrampoline({
       ? '$command %* & exit /B !ERRORLEVEL!'
       : '#!/usr/bin/env bash\n$command "\$@"';
 
-  final executableFile = config.puroExecutableFile;
-  final trampolineFile = config.puroTrampolineFile;
-
-  final installed = trampolineFile.existsSync() || executableFile.existsSync();
+  final trampolineExists = trampolineFile.existsSync();
+  final executableExists =
+      executableIsTrampoline ? trampolineExists : executableFile.existsSync();
+  final installed = trampolineExists || executableExists;
 
   if (installed) {
-    final upToDate = await compareFileAtomic(
-      scope: scope,
-      file: trampolineFile,
-      content: trampolineScript,
-    );
+    final upToDate = trampolineExists &&
+        await compareFileAtomic(
+          scope: scope,
+          file: trampolineFile,
+          content: trampolineScript,
+        );
     if (upToDate) {
       return;
     } else if (!force) {

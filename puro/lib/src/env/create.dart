@@ -260,6 +260,11 @@ Future<void> cloneFlutterWithSharedRefs({
 
     node.description = 'Checking out $flutterVersion';
 
+    await git.fetch(
+      repository: repository,
+      all: true,
+    );
+
     final branch = flutterVersion.branch;
     if (branch != null) {
       // Reset branch to current commit, this allows flutter to correctly detect

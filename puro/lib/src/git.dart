@@ -357,22 +357,24 @@ class GitClient {
   }
 
   /// https://git-scm.com/docs/git-branch
-  Future<bool> branch({
+  Future<void> branch({
     required Directory repository,
     required String branch,
     String? setUpstream,
     bool force = false,
     bool delete = false,
   }) async {
-    if (!_branchRegex.hasMatch(branch)) return false;
-    final result = await _git([
-      'branch',
-      if (force) '-f',
-      if (delete) '-d',
-      if (setUpstream != null) ...['-u', setUpstream],
-      branch,
-    ]);
-    return result.exitCode == 0;
+    final result = await _git(
+      [
+        'branch',
+        if (force) '-f',
+        if (delete) '-d',
+        if (setUpstream != null) ...['-u', setUpstream],
+        branch,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
   }
 
   /// Returns true if the provided branch name exists.
