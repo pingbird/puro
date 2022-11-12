@@ -74,11 +74,18 @@ class PuroVersion {
     final config = PuroConfig.of(scope);
 
     log.d('Platform.executable: ${Platform.executable}');
+    log.d('Platform.resolvedExecutable: ${Platform.resolvedExecutable}');
     log.d('Platform.script: ${Platform.script}');
 
-    final executablePath = path.absolute(Platform.executable);
-    final scriptPath = Platform.script.toFilePath();
-    final scriptFile = _fs.file(scriptPath);
+    final executablePath = path.canonicalize(Platform.resolvedExecutable);
+    final scriptFile = _fs.file(Platform.script.toFilePath());
+    late final String scriptPath;
+    try {
+      scriptPath = path.canonicalize(scriptFile.resolveSymbolicLinksSync());
+    } catch (e, bt) {
+      log.w('Error while resolving Platform.script\n$e\n$bt');
+      scriptPath = scriptFile.path;
+    }
     final scriptExtension = path.extension(scriptPath);
     final scriptIsExecutable = path.equals(scriptPath, executablePath);
     var packageRoot = _getRootFromPackageConfig();
