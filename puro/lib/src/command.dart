@@ -399,6 +399,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       } else {
         terminal.preserveStatus();
       }
+      await stderr.flush();
       stdout.writeln(
         CommandMessage.formatMessages(
           messages: messages.followedBy(result.messages),

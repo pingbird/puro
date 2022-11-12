@@ -73,7 +73,7 @@ class PuroVersion {
     final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
 
-    final executablePath = Platform.executable;
+    final executablePath = path.absolute(Platform.executable);
     final scriptPath = Platform.script.toFilePath();
     final scriptFile = _fs.file(scriptPath);
     final scriptExtension = path.extension(scriptPath);

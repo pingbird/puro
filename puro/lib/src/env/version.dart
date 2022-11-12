@@ -45,12 +45,12 @@ class FlutterVersion {
   String toString() {
     final commitStr = commit.substring(0, 7);
     if (tag != null && tag != '$version' && tag != 'v$version') {
-      return 'tags/$tag ($commitStr)';
+      return 'tags/$tag -> $commitStr';
     } else if (version != null) {
       if (branch != null) {
-        return '$branch/$version ($commitStr)';
+        return '$branch/$version -> $commitStr';
       } else {
-        return '$version ($commitStr)';
+        return '$version -> $commitStr';
       }
     } else {
       return commitStr;
