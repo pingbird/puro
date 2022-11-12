@@ -28,7 +28,6 @@ commands:
           command: |-
             Write-Output "Installing dart $env:DART_VERSION"
             choco install dart-sdk --version $env:DART_VERSION -y
-
   pub_get:
     steps:
       - run:
@@ -114,8 +113,8 @@ commands:
 jobs:
   linux_tests:
     environment: &dart_version
-      DART_VERSION: "2.19.0-361.0.dev"
-      DART_RELEASE: "dev"
+      DART_VERSION: "2.18.4"
+      DART_RELEASE: "stable"
     docker:
       - image: cimg/base:stable
     steps:
