@@ -204,7 +204,13 @@ Future<bool> checkAtomic({
   required Future<bool> Function() condition,
   Future<void> Function()? onFail,
 }) async {
-  final pass = await lockFile(scope, file, (handle) => condition());
+  final pass = await lockFile(
+    scope,
+    file,
+    (handle) => condition(),
+    mode: FileMode.append,
+    exclusive: false,
+  );
   if (pass || onFail == null) return pass;
   return await lockFile(scope, file, (handle) async {
     if (await condition()) return true;
