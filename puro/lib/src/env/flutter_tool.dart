@@ -102,7 +102,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
   await checkAtomic(
     scope: scope,
     file: environment.updateLockFile,
-    condition: () async => !snapshotFile.existsSync(),
+    condition: () async => snapshotFile.existsSync(),
     onFail: () async {
       log.v('Flutter tool out of date');
 
