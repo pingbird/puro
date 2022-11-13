@@ -49,7 +49,7 @@ Future<void> installEnvShims({
     content: '$bashShimHeader\n'
         'export FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
         'PURO_BIN="\$FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
-        '"\$PURO_BIN/puro" dart "\$@"',
+        '"\$PURO_BIN/puro" dart "\$@"\n',
   );
   await writePassiveAtomic(
     scope: scope,
@@ -57,7 +57,7 @@ Future<void> installEnvShims({
     content: '$bashShimHeader\n'
         'export FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
         'PURO_BIN="\$FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
-        '"\$PURO_BIN/puro" flutter "\$@"',
+        '"\$PURO_BIN/puro" flutter "\$@"\n',
   );
 
   if (!Platform.isWindows) {
@@ -78,7 +78,7 @@ Future<void> installEnvShims({
     content: '@echo off\n'
         'FOR %%i IN ("%~dp0.") DO SET FLUTTER_BIN=%%~fi\n'
         'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
-        '"%PURO_BIN%\\puro" dart %* & exit /B !ERRORLEVEL!',
+        '"%PURO_BIN%\\puro" dart %* & exit /B !ERRORLEVEL!\n',
   );
   await writePassiveAtomic(
     scope: scope,
@@ -86,7 +86,7 @@ Future<void> installEnvShims({
     content: '@echo off\n'
         'FOR %%i IN ("%~dp0.") DO SET FLUTTER_BIN=%%~fi\n'
         'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
-        '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!',
+        '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!\n',
   );
 
   for (final ignore in ignores.skip(1)) {

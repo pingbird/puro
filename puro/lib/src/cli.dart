@@ -33,7 +33,7 @@ void main(List<String> args) async {
 
   final runner = PuroCommandRunner(
     'puro',
-    'An experimental tool for managing Flutter versions.',
+    'An experimental tool for managing Flutter versions',
     scope: scope,
     isJson: isJson,
   );
@@ -55,7 +55,7 @@ void main(List<String> args) async {
   runner.argParser
     ..addOption(
       'git-executable',
-      help: 'Overrides the path to the git executable.',
+      help: 'Overrides the path to the git executable',
       valueHelp: 'exe',
       callback: runner.wrapCallback((exe) {
         runner.gitExecutableOverride = exe;
@@ -71,7 +71,7 @@ void main(List<String> args) async {
     )
     ..addOption(
       'dir',
-      help: 'Overrides the current working directory.',
+      help: 'Overrides the current working directory',
       valueHelp: 'dir',
       callback: runner.wrapCallback((dir) {
         runner.workingDirOverride = dir;
@@ -80,7 +80,7 @@ void main(List<String> args) async {
     ..addOption(
       'project',
       abbr: 'p',
-      help: 'Overrides the selected flutter project.',
+      help: 'Overrides the selected flutter project',
       valueHelp: 'dir',
       callback: runner.wrapCallback((dir) {
         runner.projectDirOverride = dir;
@@ -89,7 +89,7 @@ void main(List<String> args) async {
     ..addOption(
       'env',
       abbr: 'e',
-      help: 'Overrides the selected environment.',
+      help: 'Overrides the selected environment',
       valueHelp: 'name',
       callback: runner.wrapCallback((name) {
         runner.environmentOverride = name?.toLowerCase();
@@ -97,7 +97,7 @@ void main(List<String> args) async {
     )
     ..addOption(
       'flutter-git-url',
-      help: 'Overrides the Flutter SDK git url.',
+      help: 'Overrides the Flutter SDK git url',
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
         runner.flutterGitUrlOverride = url;
@@ -105,7 +105,7 @@ void main(List<String> args) async {
     )
     ..addOption(
       'engine-git-url',
-      help: 'Overrides the Flutter Engine git url.',
+      help: 'Overrides the Flutter Engine git url',
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
         runner.engineGitUrlOverride = url;
@@ -113,7 +113,7 @@ void main(List<String> args) async {
     )
     ..addOption(
       'releases-json-url',
-      help: 'Overrides the Flutter releases json url.',
+      help: 'Overrides the Flutter releases json url',
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
         runner.versionsJsonUrlOverride = url;
@@ -121,7 +121,7 @@ void main(List<String> args) async {
     )
     ..addOption(
       'flutter-storage-base-url',
-      help: 'Overrides the Flutter storage base url.',
+      help: 'Overrides the Flutter storage base url',
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
         runner.flutterStorageBaseUrlOverride = url;
@@ -130,7 +130,7 @@ void main(List<String> args) async {
     ..addOption(
       'log-level',
       help: 'Changes how much information is logged to the console, 0 being '
-          'no logging at all, and 4 being extremely verbose.',
+          'no logging at all, and 4 being extremely verbose',
       valueHelp: '0-4',
       callback: runner.wrapCallback((str) {
         if (str == null) return;
@@ -151,7 +151,7 @@ void main(List<String> args) async {
     ..addFlag(
       'verbose',
       abbr: 'v',
-      help: 'Verbose logging, alias for --log-level=3.',
+      help: 'Verbose logging, alias for --log-level=3',
       callback: runner.wrapCallback((flag) {
         if (flag) {
           log.level = LogLevel.verbose;
@@ -160,7 +160,7 @@ void main(List<String> args) async {
     )
     ..addFlag(
       'color',
-      help: 'Enable or disable ANSI colors.',
+      help: 'Enable or disable ANSI colors',
       callback: runner.wrapCallback((flag) {
         if (runner.results!.wasParsed('color')) {
           terminal.enableColor = flag;
@@ -172,7 +172,7 @@ void main(List<String> args) async {
     )
     ..addFlag(
       'progress',
-      help: 'Enable progress bars.',
+      help: 'Enable progress bars',
       callback: runner.wrapCallback((flag) {
         if (runner.results!.wasParsed('progress')) {
           terminal.enableStatus = flag;
@@ -181,7 +181,12 @@ void main(List<String> args) async {
     )
     ..addFlag(
       'json',
-      help: 'Output in JSON where possible.',
+      help: 'Output in JSON where possible',
+      negatable: false,
+    )
+    ..addFlag(
+      'version',
+      help: 'Prints version information, same as the `version` command',
       negatable: false,
     );
   runner

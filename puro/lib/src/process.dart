@@ -22,7 +22,6 @@ Future<Process> startProcess(
   ProcessStartMode mode = ProcessStartMode.normal,
 }) async {
   final log = PuroLogger.of(scope);
-  log.d('${workingDirectory ?? ''}> ${[executable, ...arguments].join(' ')}');
   final start = clock.now();
   final process = await Process.start(
     executable,
@@ -33,11 +32,15 @@ Future<Process> startProcess(
     runInShell: runInShell,
     mode: mode,
   );
+  final executableName = path.basename(executable);
+  log.d('[$executableName ${process.pid}] ${workingDirectory ?? ''}> ${[
+    executable,
+    ...arguments
+  ].join(' ')}');
   unawaited(process.exitCode.then((exitCode) {
     final log = PuroLogger.of(scope);
-    final executableName = path.basename(executable);
     log.d(
-      '$executableName finished with $exitCode in ${DateTime.now().difference(start).inMilliseconds}ms',
+      '[$executableName ${process.pid}] finished with exit code $exitCode in ${DateTime.now().difference(start).inMilliseconds}ms',
     );
   }));
   return process;

@@ -469,6 +469,11 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       initialized = true;
     }
 
+    if (topLevelResults.wasParsed('version') &&
+        topLevelResults.command?.name != 'version') {
+      return run(['version']);
+    }
+
     return super.runCommand(topLevelResults);
   }
 }
