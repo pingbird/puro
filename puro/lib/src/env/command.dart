@@ -8,6 +8,7 @@ import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 import '../terminal.dart';
+import 'default.dart';
 import 'engine.dart';
 
 Future<int> runFlutterCommand({
@@ -88,6 +89,19 @@ Future<int> runDartCommand({
   log.v(
     'Setting up dart took ${clock.now().difference(start).inMilliseconds}ms',
   );
+  final nonOptionArgs = args.where((e) => !e.startsWith('-')).toList();
+  if (nonOptionArgs.length >= 2 &&
+      nonOptionArgs[0] == 'pub' &&
+      nonOptionArgs[1] == 'global') {
+    final defaultEnvName = await getDefaultEnvName(scope: scope);
+    if (environment.name != defaultEnvName) {
+      log.w(
+        'Warning: `pub global` should only be used with the default environment `$defaultEnvName`, '
+        'your current environment is `${environment.name}`\n'
+        'Due to a limitation in Dart, globally activated scripts can only use the default dart runtime',
+      );
+    }
+  }
   Terminal.of(scope).flushStatus();
   final dartProcess = await startProcess(
     scope,

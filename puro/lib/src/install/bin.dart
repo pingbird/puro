@@ -46,6 +46,7 @@ Future<void> _installTrampoline({
   final executableIsTrampoline = executableFile.pathEquals(trampolineFile);
 
   final String command;
+  final String installLocation;
   switch (version.type) {
     case PuroInstallationType.distribution:
       if (!executableIsTrampoline && trampolineFile.existsSync()) {
@@ -55,22 +56,29 @@ Future<void> _installTrampoline({
       return;
     case PuroInstallationType.standalone:
       command = '"${Platform.executable}"';
+      installLocation = Platform.executable;
       break;
     case PuroInstallationType.development:
       final puroDartFile =
           version.packageRoot!.childDirectory('bin').childFile('puro.dart');
       command = '"${Platform.executable}" "${puroDartFile.path}"';
+      installLocation = puroDartFile.path;
       break;
     case PuroInstallationType.pub:
       command = 'pub global run puro';
+      installLocation = 'pub';
       break;
     default:
       throw ArgumentError("Can't install puro: ${version.type.description}");
   }
 
+  final trampolineHeader = Platform.isWindows
+      ? '@echo off\nREM Puro installed at $installLocation'
+      : '#!/usr/bin/env bash\n# Puro installed at $installLocation';
+
   final trampolineScript = Platform.isWindows
-      ? '$command %* & exit /B !ERRORLEVEL!'
-      : '#!/usr/bin/env bash\n$command "\$@"';
+      ? '$trampolineHeader\n$command %* & exit /B !ERRORLEVEL!'
+      : '$trampolineHeader\n$command "\$@"';
 
   final trampolineExists = trampolineFile.existsSync();
   final executableExists =
@@ -82,7 +90,8 @@ Future<void> _installTrampoline({
         await compareFileAtomic(
           scope: scope,
           file: trampolineFile,
-          content: trampolineScript,
+          content: trampolineHeader,
+          prefix: true,
         );
     if (upToDate) {
       return;

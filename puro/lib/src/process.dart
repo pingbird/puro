@@ -194,6 +194,7 @@ Future<List<PsInfo>> getParentProcesses({
       if (result.stdout != '') log.w(result.stdout as String);
       if (result.stderr != '') log.w(result.stderr as String);
       log.w('Failed to query Get-WmiObject (exit code ${result.exitCode})');
+      return [];
     }
     List<dynamic> processInfo;
     try {

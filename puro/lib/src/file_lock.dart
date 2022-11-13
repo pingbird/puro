@@ -170,10 +170,13 @@ Future<bool> compareFileBytesAtomic({
   required Scope scope,
   required File file,
   required List<int> bytes,
+  bool prefix = false,
 }) {
   return lockFile(scope, file, (handle) async {
-    if (handle.lengthSync() != bytes.length) return false;
-    return _bytesEqual(await handle.read(handle.lengthSync()), bytes);
+    if (prefix
+        ? handle.lengthSync() < bytes.length
+        : handle.lengthSync() != bytes.length) return false;
+    return _bytesEqual(await handle.read(bytes.length), bytes);
   });
 }
 
@@ -181,10 +184,12 @@ Future<bool> compareFileAtomic({
   required Scope scope,
   required File file,
   required String content,
+  bool prefix = false,
 }) {
   return compareFileBytesAtomic(
     scope: scope,
     file: file,
     bytes: utf8.encode(content),
+    prefix: prefix,
   );
 }
