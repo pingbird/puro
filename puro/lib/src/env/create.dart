@@ -13,6 +13,7 @@ import '../provider.dart';
 import '../terminal.dart';
 import 'engine.dart';
 import 'env_shims.dart';
+import 'flutter_tool.dart';
 import 'version.dart';
 
 class EnvCreateResult extends CommandResult {

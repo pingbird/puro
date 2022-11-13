@@ -5,8 +5,8 @@ import '../logger.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';
 import 'create.dart';
-import 'engine.dart';
 import 'env_shims.dart';
+import 'flutter_tool.dart';
 import 'version.dart';
 
 class EnvUpgradeResult extends CommandResult {

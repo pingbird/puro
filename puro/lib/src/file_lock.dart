@@ -193,3 +193,22 @@ Future<bool> compareFileAtomic({
     prefix: prefix,
   );
 }
+
+/// Acquires a shared lock on a file and checks a condition.
+///
+/// If [onFail] is provided and [condition] returns false, this function
+/// acquires an exclusive lock which is released when [onFail] completes.
+Future<bool> checkAtomic({
+  required Scope scope,
+  required File file,
+  required Future<bool> Function() condition,
+  Future<void> Function()? onFail,
+}) async {
+  final pass = await lockFile(scope, file, (handle) => condition());
+  if (pass || onFail == null) return pass;
+  return await lockFile(scope, file, (handle) async {
+    if (await condition()) return true;
+    await onFail();
+    return false;
+  });
+}

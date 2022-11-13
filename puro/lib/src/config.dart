@@ -166,6 +166,8 @@ class PuroConfig {
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
   late final Directory pubCacheDir = sharedDir.childDirectory('pub_cache');
   late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
+  late final Directory sharedFlutterToolsDir =
+      sharedDir.childDirectory('flutter_tools');
   late final File puroExecutableFile =
       binDir.childFile(buildTarget.executableName);
   late final File puroTrampolineFile =
@@ -204,7 +206,7 @@ class PuroConfig {
   EnvConfig getEnv(String name) {
     name = name.toLowerCase();
     ensureValidName(name);
-    return EnvConfig(envDir: envsDir.childDirectory(name));
+    return EnvConfig(parentConfig: this, envDir: envsDir.childDirectory(name));
   }
 
   EnvConfig? tryGetProjectEnv() {
@@ -301,9 +303,11 @@ class PuroConfig {
 
 class EnvConfig {
   EnvConfig({
+    required this.parentConfig,
     required this.envDir,
   });
 
+  final PuroConfig parentConfig;
   final Directory envDir;
 
   late final String name = envDir.basename;
@@ -312,6 +316,7 @@ class EnvConfig {
   late final Directory flutterDir = envDir.childDirectory('flutter');
   late final FlutterConfig flutter = FlutterConfig(flutterDir);
   late final File prefsJsonFile = envDir.childFile('prefs.json');
+  late final File updateLockFile = envDir.childFile('update.lock');
 
   bool get exists => envDir.existsSync();
 
@@ -405,8 +410,6 @@ class FlutterCacheConfig {
   late final Directory dartSdkDir = cacheDir.childDirectory('dart-sdk');
   late final DartSdkConfig dartSdk = DartSdkConfig(dartSdkDir);
 
-  late final File flutterToolsSnapshotFile =
-      cacheDir.childFile('flutter_tools.snapshot');
   late final File flutterToolsStampFile =
       cacheDir.childFile('flutter_tools.stamp');
   late final File engineVersionFile =

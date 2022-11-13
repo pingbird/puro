@@ -1,9 +1,7 @@
 import 'dart:io';
-import 'dart:math';
 
 import '../config.dart';
 import '../downloader.dart';
-import '../git.dart';
 import '../http.dart';
 import '../logger.dart';
 import '../process.dart';
@@ -166,7 +164,7 @@ Future<bool> downloadSharedEngine({
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
   final sharedCache = config.getFlutterCache(engineVersion);
-  var didChangeEngine = false;
+  var didDownloadEngine = false;
 
   // Delete the current cache if it's corrupt
   if (sharedCache.exists) {
@@ -216,158 +214,8 @@ Future<bool> downloadSharedEngine({
 
     zipFile.deleteSync();
 
-    didChangeEngine = true;
+    didDownloadEngine = true;
   }
 
-  return didChangeEngine;
-}
-
-Future<void> setUpFlutterTool({
-  required Scope scope,
-  required EnvConfig environment,
-}) async {
-  final config = PuroConfig.of(scope);
-  final git = GitClient.of(scope);
-  final log = PuroLogger.of(scope);
-  final flutterConfig = environment.flutter;
-  final flutterCache = flutterConfig.cache;
-  final engineVersion = flutterConfig.engineVersion;
-
-  if (engineVersion == null) {
-    throw ArgumentError(
-      'Flutter installation corrupt, could not find engine version',
-    );
-  }
-
-  log.d('flutterCache.engineVersion: ${flutterCache.engineVersion}');
-  log.d('flutterConfig.engineVersion: $engineVersion');
-
-  final shouldUpdateEngine = flutterCache.engineVersion != engineVersion;
-  var didChangeEngine = false;
-
-  if (shouldUpdateEngine) {
-    log.v('Engine out of date');
-    didChangeEngine = await downloadSharedEngine(
-      scope: scope,
-      engineVersion: engineVersion,
-    );
-    final sharedCache = config.getFlutterCache(engineVersion);
-    sharedCache.engineVersionFile.writeAsStringSync(engineVersion);
-    final cacheExists = flutterCache.exists;
-    final cachePath = flutterConfig.cacheDir.path;
-    final link = config.fileSystem.link(cachePath);
-    final resolvedPath = cacheExists
-        ? flutterConfig.cacheDir.resolveSymbolicLinksSync()
-        : cachePath;
-    final isLink = cachePath != resolvedPath;
-    final linkNeedsUpdate = isLink && resolvedPath != sharedCache.cacheDir.path;
-    log.d('cacheExists: $cacheExists');
-    log.d('cachePath: $cachePath');
-    log.d('resolvedPath: $resolvedPath');
-    log.d('isLink: $isLink');
-    log.d('linkNeedsUpdate: $linkNeedsUpdate');
-    if (!cacheExists || linkNeedsUpdate) {
-      if (link.existsSync()) link.deleteSync();
-      link.createSync(sharedCache.cacheDir.path);
-    } else if (!isLink) {
-      throw AssertionError(
-        'Cache ${flutterConfig.cacheDir.path} already exists, was it created without puro?',
-      );
-    }
-  }
-
-  final flutterCommit =
-      await git.getCurrentCommitHash(repository: flutterConfig.sdkDir);
-  log.d('flutterCommit: $flutterCommit');
-
-  var flutterToolsStamp = '$flutterCommit:${environment.flutterToolArgs}';
-
-  if (Platform.isWindows) {
-    // Funny quirk in bin/internal/shared.bat
-    flutterToolsStamp = '"$flutterToolsStamp"';
-  }
-
-  final cachedFlutterToolsStamp = flutterCache.flutterToolsStamp;
-  final shouldRecompileTool =
-      didChangeEngine || cachedFlutterToolsStamp != flutterToolsStamp;
-
-  log.d('cachedFlutterToolsStamp: $cachedFlutterToolsStamp');
-  log.d('flutterToolsStamp: $flutterToolsStamp');
-
-  if (shouldRecompileTool) {
-    log.v('Flutter tool out of date');
-
-    final pubEnvironment =
-        '${Platform.environment['PUB_ENVIRONMENT'] ?? ''}:flutter_install:puro';
-
-    await ProgressNode.of(scope).wrap((scope, node) async {
-      var backoff = const Duration(seconds: 1);
-      final rand = Random();
-      for (var i = 0;; i++) {
-        node.description = 'Updating flutter tool';
-        final pubProcess = await runProcess(
-          scope,
-          flutterCache.dartSdk.dartExecutable.path,
-          [
-            '__deprecated_pub',
-            'upgrade',
-            '--verbosity=normal',
-            '--no-precompile',
-          ],
-          environment: {
-            'PUB_ENVIRONMENT': pubEnvironment,
-            'PUB_CACHE': config.pubCacheDir.path,
-          },
-          workingDirectory: flutterConfig.flutterToolsDir.path,
-        );
-        if (pubProcess.exitCode == 0) break;
-        if (i == 10) {
-          throw AssertionError('pub upgrade failed after 10 attempts');
-        } else {
-          // Exponential backoff with randomization
-          final randomizedBackoff = backoff +
-              Duration(
-                milliseconds:
-                    (backoff.inMilliseconds * rand.nextDouble() * 0.5).round(),
-              );
-          backoff += backoff;
-          log.w(
-            'Pub upgrade failed, trying again in ${randomizedBackoff.inMilliseconds}ms...',
-          );
-          node.description =
-              'Pub upgrade failed, waiting a little before trying again';
-          await Future<void>.delayed(randomizedBackoff);
-        }
-      }
-    });
-
-    await ProgressNode.of(scope).wrap((scope, node) async {
-      node.description = 'Compiling flutter tool';
-      await runProcess(
-        scope,
-        flutterCache.dartSdk.dartExecutable.path,
-        [
-          '--disable-dart-dev',
-          '--verbosity=error',
-          '--disable-dart-dev',
-          '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
-          if (environment.flutterToolArgs.isNotEmpty)
-            ...environment.flutterToolArgs.split(RegExp(r'\S+')),
-          '--snapshot=${flutterCache.flutterToolsSnapshotFile.path}',
-          '--no-enable-mirrors',
-          flutterConfig.flutterToolsScriptFile.path,
-        ],
-        environment: {
-          'PUB_CACHE': config.pubCacheDir.path,
-        },
-        throwOnFailure: true,
-      );
-    });
-
-    flutterCache.flutterToolsStampFile.writeAsStringSync(flutterToolsStamp);
-  }
-
-  // Explicitly set the last accessed time so `puro gc` can figure out which
-  // engines are less frequently used.
-  flutterCache.engineVersionFile.setLastAccessedSync(DateTime.now());
+  return didDownloadEngine;
 }

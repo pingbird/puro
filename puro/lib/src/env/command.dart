@@ -9,7 +9,7 @@ import '../process.dart';
 import '../provider.dart';
 import '../terminal.dart';
 import 'default.dart';
-import 'engine.dart';
+import 'flutter_tool.dart';
 
 Future<int> runFlutterCommand({
   required Scope scope,
@@ -25,7 +25,7 @@ Future<int> runFlutterCommand({
   final flutterConfig = environment.flutter;
   final log = PuroLogger.of(scope);
   final start = clock.now();
-  await setUpFlutterTool(
+  final toolInfo = await setUpFlutterTool(
     scope: scope,
     environment: environment,
   );
@@ -34,7 +34,6 @@ Future<int> runFlutterCommand({
   );
   Terminal.of(scope).flushStatus();
   final dartPath = flutterConfig.cache.dartSdk.dartExecutable.path;
-  final snapshotPath = flutterConfig.cache.flutterToolsSnapshotFile.path;
   final flutterProcess = await startProcess(
     scope,
     dartPath,
@@ -43,7 +42,7 @@ Future<int> runFlutterCommand({
       '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
       if (environment.flutterToolArgs.isNotEmpty)
         ...environment.flutterToolArgs.split(RegExp(r'\S+')),
-      snapshotPath,
+      toolInfo.snapshotFile.path,
       ...args,
     ],
     environment: {
