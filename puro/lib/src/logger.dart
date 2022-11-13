@@ -51,6 +51,10 @@ class PuroLogger {
 
   OutputFormatter get format => terminal?.format ?? plainFormatter;
 
+  bool shouldLog(LogLevel level) {
+    return this.level != null && level <= this.level!;
+  }
+
   void add(LogEntry event) {
     if (level == null || level! < event.level) return;
     _add(event);

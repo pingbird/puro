@@ -7,6 +7,7 @@ import 'package:clock/clock.dart';
 import 'package:path/path.dart' as path;
 import 'package:typed_data/typed_buffers.dart';
 
+import 'config.dart';
 import 'logger.dart';
 import 'provider.dart';
 
@@ -175,30 +176,53 @@ class PsInfo {
 
   final int id;
   final String name;
+
+  Map<String, Object> toJson() => {'id': id, 'name': name};
 }
 
 Future<List<PsInfo>> getParentProcesses({
   required Scope scope,
 }) async {
+  final log = PuroLogger.of(scope);
+  final stack = <PsInfo>[];
   if (Platform.isWindows) {
-    final stack = <PsInfo>[];
+    final result = await runProcess(scope, 'powershell', [
+      '-command',
+      'Get-WmiObject -Query "select Name,ParentProcessId,ProcessId from Win32_Process" | ConvertTo-Json',
+    ]);
+    if (result.exitCode != 0 || (result.stdout as String).isEmpty) {
+      if (result.stdout != '') log.w(result.stdout as String);
+      if (result.stderr != '') log.w(result.stderr as String);
+      log.w('Failed to query Get-WmiObject (exit code ${result.exitCode})');
+    }
+    List<dynamic> processInfo;
+    try {
+      processInfo = jsonDecode(result.stdout as String) as List<dynamic>;
+    } catch (e, bt) {
+      if (result.stdout != '') log.w(result.stdout as String);
+      if (result.stderr != '') log.w(result.stderr as String);
+      log.w('Error parsing Get-WmiObject\n$e\n$bt');
+      return [];
+    }
+    final parentIds = <int, int>{};
+    final names = <int, String>{};
+    for (final process in processInfo.cast<Map<String, dynamic>>()) {
+      final id = process['ProcessId'] as int?;
+      if (id == null) continue;
+      final ppid = process['ParentProcessId'] as int?;
+      final name = process['Name'] as String?;
+      if (ppid != null) parentIds[id] = ppid;
+      if (name != null) names[id] = name;
+    }
     var pid = io.pid;
     for (;;) {
-      final result = await runProcess(scope, 'powershell', [
-        '-command',
-        'Get-WmiObject Win32_Process -Filter ProcessId=$pid | ConvertTo-Json',
-      ]);
-      if (result.exitCode != 0) break;
-      final dynamic processInfo = jsonDecode(result.stdout as String);
-      final ppid = processInfo['ParentProcessId'] as int?;
-      final name = processInfo['Name'] as String?;
+      final ppid = parentIds[pid];
+      final name = names[pid];
       if (ppid == null || name == null) break;
       stack.add(PsInfo(pid, name));
       pid = ppid;
     }
-    return stack;
   } else {
-    final stack = <PsInfo>[];
     var pid = io.pid;
     for (;;) {
       final result = await runProcess(scope, 'ps', [
@@ -217,6 +241,7 @@ Future<List<PsInfo>> getParentProcesses({
       stack.add(PsInfo(pid, name));
       pid = ppid;
     }
-    return stack;
   }
+  if (log.shouldLog(LogLevel.debug)) log.d(prettyJsonEncoder.convert(stack));
+  return stack;
 }
