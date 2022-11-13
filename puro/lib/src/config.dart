@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file/file.dart';
+import 'package:path/path.dart' as path;
 import 'package:process/process.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -61,6 +62,12 @@ class PuroConfig {
   }) {
     final log = PuroLogger.of(scope);
 
+    final currentDir = workingDir == null
+        ? fileSystem.currentDirectory
+        : fileSystem.directory(workingDir).absolute;
+
+    if (projectDir != null) projectDir = path.join(currentDir.path, projectDir);
+
     gitExecutable ??= 'git';
     if (!const LocalProcessManager().canRun(gitExecutable)) {
       throw ArgumentError('Git executable not found');
@@ -73,27 +80,21 @@ class PuroConfig {
       homeDir = Platform.environment['HOME']!;
     }
 
-    final Directory? resultProjectDir;
-    final Directory? parentProjectDir;
+    final absoluteProjectDir =
+        projectDir == null ? null : fileSystem.directory(projectDir).absolute;
 
-    workingDir = projectDir ?? workingDir;
+    final resultProjectDir = absoluteProjectDir ??
+        findProjectDir(
+          currentDir,
+          'pubspec.yaml',
+        );
 
-    final currentDir = workingDir == null
-        ? fileSystem.currentDirectory
-        : fileSystem.directory(workingDir);
-
-    resultProjectDir = findProjectDir(
-      currentDir,
-      'pubspec.yaml',
-    );
-
-    parentProjectDir = projectDir != null
-        ? resultProjectDir
-        : findProjectDir(
-              currentDir,
-              dotfileName,
-            ) ??
-            resultProjectDir;
+    final parentProjectDir = absoluteProjectDir ??
+        findProjectDir(
+          currentDir,
+          dotfileName,
+        ) ??
+        resultProjectDir;
 
     final puroRootDir = puroRoot != null
         ? fileSystem.directory(puroRoot)
