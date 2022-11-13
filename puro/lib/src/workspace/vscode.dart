@@ -123,9 +123,10 @@ class VSCodeConfig extends IdeConfig {
     final workspaceDir = findProjectDir(projectDir, '.vscode');
     if (workspaceDir == null) {
       return VSCodeConfig(
-        workspaceDir:
-            findProjectDir(projectDir, '.git') ?? config.parentProjectDir!,
-        exists: true,
+        workspaceDir: findProjectDir(projectDir, '.git') ??
+            findProjectDir(projectDir, '.idea') ??
+            config.ensureParentProjectDir(),
+        exists: false,
       );
     }
     final vscodeConfig = VSCodeConfig(

@@ -18,6 +18,9 @@ Future<void> installIdeConfigs({
   bool? vscode,
   bool? intellij,
 }) async {
+  final log = PuroLogger.of(scope);
+  log.v('vscode override: $vscode');
+  log.v('intellij override: $vscode');
   await runOptional(
     scope,
     'installing IntelliJ config',
@@ -26,6 +29,7 @@ Future<void> installIdeConfigs({
         scope: scope,
         projectDir: projectDir,
       );
+      log.v('intellij exists: ${ideConfig.exists}');
       if (ideConfig.exists || intellij == true) {
         await installIdeConfig(
           scope: scope,
@@ -45,13 +49,8 @@ Future<void> installIdeConfigs({
         scope: scope,
         projectDir: projectDir,
       );
-      final gitignoreFile = ideConfig.workspaceDir.childFile('.gitignore');
-      if (ideConfig.exists ||
-          (gitignoreFile.existsSync() &&
-              (await gitignoreFile.readAsString())
-                  .split('\n')
-                  .contains('.vscode')) ||
-          vscode == true) {
+      log.v('vscode exists: ${ideConfig.exists}');
+      if (ideConfig.exists || vscode == true) {
         await installIdeConfig(
           scope: scope,
           ideConfig: ideConfig,

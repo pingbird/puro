@@ -73,7 +73,7 @@ class IntelliJConfig extends IdeConfig {
     final log = PuroLogger.of(scope);
 
     // The IntelliJ Dart plugin parses this file and walks its AST to extract
-    // the keys of this library map, this is dumb. 💀
+    // the keys of this library map. This is dumb. 💀
     // https://github.com/JetBrains/intellij-plugins/blob/0f07ca63355d5530b441ca566c98f17c560e77f8/Dart/src/com/jetbrains/lang/dart/ide/index/DartLibraryIndex.java#L132
     final librariesFileLines =
         await dartSdk.internalLibrariesDartFile.readAsLines();
@@ -156,8 +156,9 @@ class IntelliJConfig extends IdeConfig {
     final workspaceDir = findProjectDir(projectDir, '.idea');
     if (workspaceDir == null) {
       return IntelliJConfig(
-        workspaceDir:
-            findProjectDir(projectDir, '.git') ?? config.parentProjectDir!,
+        workspaceDir: findProjectDir(projectDir, '.git') ??
+            findProjectDir(projectDir, '.vscode') ??
+            config.ensureParentProjectDir(),
         exists: false,
       );
     }
