@@ -152,8 +152,10 @@ class IntelliJConfig extends IdeConfig {
     required Scope scope,
     required Directory projectDir,
   }) async {
+    final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
     final workspaceDir = findProjectDir(projectDir, '.idea');
+    log.v('intellij workspaceDir: $workspaceDir');
     if (workspaceDir == null) {
       return IntelliJConfig(
         workspaceDir: findProjectDir(projectDir, '.git') ??

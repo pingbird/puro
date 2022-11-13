@@ -119,8 +119,10 @@ class VSCodeConfig extends IdeConfig {
     required Scope scope,
     required Directory projectDir,
   }) async {
+    final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
     final workspaceDir = findProjectDir(projectDir, '.vscode');
+    log.v('vscode workspaceDir: $workspaceDir');
     if (workspaceDir == null) {
       return VSCodeConfig(
         workspaceDir: findProjectDir(projectDir, '.git') ??
