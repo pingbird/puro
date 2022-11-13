@@ -3,6 +3,7 @@ import 'package:file/file.dart';
 import '../config.dart';
 import '../json_edit/editor.dart';
 import '../logger.dart';
+import '../process.dart';
 import '../provider.dart';
 import 'common.dart';
 
@@ -149,4 +150,11 @@ class VSCodeConfig extends IdeConfig {
     }
     return vscodeConfig;
   }
+}
+
+Future<bool> isRunningInVscode({
+  required Scope scope,
+}) async {
+  final processes = await getParentProcesses(scope: scope);
+  return processes.any((e) => e.name == 'Code.exe' || e.name == 'code');
 }

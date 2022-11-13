@@ -4,6 +4,7 @@ import '../env/default.dart';
 import '../logger.dart';
 import '../terminal.dart';
 import '../workspace/install.dart';
+import '../workspace/vscode.dart';
 
 class EnvUseCommand extends PuroCommand {
   EnvUseCommand() {
@@ -61,12 +62,15 @@ class EnvUseCommand extends PuroCommand {
         message: 'Set global default environment to `${env.name}`',
       );
     }
+    var vscodeOverride =
+        argResults!.wasParsed('vscode') ? argResults!['vscode'] as bool : null;
+    if (vscodeOverride == null && await isRunningInVscode(scope: scope)) {
+      vscodeOverride = true;
+    }
     await switchEnvironment(
       scope: scope,
       envName: envName,
-      vscode: argResults!.wasParsed('vscode')
-          ? argResults!['vscode'] as bool
-          : null,
+      vscode: vscodeOverride,
       intellij: argResults!.wasParsed('intellij')
           ? argResults!['intellij'] as bool
           : null,

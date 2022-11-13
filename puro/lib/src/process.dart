@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:io' as io;
 
 import 'package:clock/clock.dart';
 import 'package:path/path.dart' as path;
@@ -167,4 +168,55 @@ Future<ProcessResult?> runProcessWithTimeout(
   }));
 
   return completer.future;
+}
+
+class PsInfo {
+  PsInfo(this.id, this.name);
+
+  final int id;
+  final String name;
+}
+
+Future<List<PsInfo>> getParentProcesses({
+  required Scope scope,
+}) async {
+  if (Platform.isWindows) {
+    final stack = <PsInfo>[];
+    var pid = io.pid;
+    for (;;) {
+      final result = await runProcess(scope, 'powershell', [
+        '-command',
+        'Get-WmiObject Win32_Process -Filter ProcessId=$pid | ConvertTo-Json',
+      ]);
+      if (result.exitCode != 0) break;
+      final dynamic processInfo = jsonDecode(result.stdout as String);
+      final ppid = processInfo['ParentProcessId'] as int?;
+      final name = processInfo['Name'] as String?;
+      if (ppid == null || name == null) break;
+      stack.add(PsInfo(pid, name));
+      pid = ppid;
+    }
+    return stack;
+  } else {
+    final stack = <PsInfo>[];
+    var pid = io.pid;
+    for (;;) {
+      final result = await runProcess(scope, 'ps', [
+        '--no-headers',
+        '-o',
+        '%P\n%c',
+        '-p',
+        '$pid',
+      ]);
+      if (result.exitCode != 0) break;
+      final lines = (result.stdout as String).trim().split('\n');
+      if (lines.length != 2) break;
+      final ppid = int.tryParse(lines[0].trim());
+      final name = lines[1].trim();
+      if (ppid == null || name.isEmpty) break;
+      stack.add(PsInfo(pid, name));
+      pid = ppid;
+    }
+    return stack;
+  }
 }
