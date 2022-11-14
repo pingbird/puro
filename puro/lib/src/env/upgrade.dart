@@ -66,10 +66,13 @@ Future<EnvUpgradeResult> upgradeEnvironment({
   final currentCommit = await git.getCurrentCommitHash(repository: repository);
 
   final branch = await git.getBranch(repository: repository);
-  final fromVersion = await getEnvironmentFlutterVersion(
-    scope: scope,
-    environment: environment,
-  );
+  var prefs = await environment.readPrefs(scope: scope);
+  final fromVersion = prefs.hasDesiredVersion()
+      ? FlutterVersion.fromModel(prefs.desiredVersion)
+      : await getEnvironmentFlutterVersion(
+          scope: scope,
+          environment: environment,
+        );
 
   if (fromVersion == null) {
     throw ArgumentError("Couldn't find Flutter version, corrupt environment?");
@@ -77,7 +80,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
 
   if (currentCommit != toVersion.commit ||
       (toVersion.branch != null && branch != toVersion.branch)) {
-    final prefs = await environment.updatePrefs(
+    prefs = await environment.updatePrefs(
       scope: scope,
       fn: (prefs) {
         prefs.desiredVersion = toVersion.toModel();
