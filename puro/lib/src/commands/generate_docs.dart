@@ -29,14 +29,14 @@ class GenerateDocsCommand extends PuroCommand {
     final scriptPath = Platform.script.toFilePath();
     final config = PuroConfig.of(scope);
     if (!scriptPath.endsWith('.dart')) {
-      throw AssertionError('Development only');
+      throw CommandError('Development only');
     }
     final scriptFile = config.fileSystem.file(scriptPath);
     final puroDir = scriptFile.parent.parent;
     final rootDir = puroDir.parent;
     final docsDir = rootDir.childDirectory('website').childDirectory('docs');
     if (!docsDir.existsSync()) {
-      throw AssertionError('Development only');
+      throw CommandError('Could not find ${docsDir.path}');
     }
     final referenceDir = docsDir.childDirectory('reference');
     referenceDir.createSync(recursive: true);
@@ -76,7 +76,7 @@ class GenerateDocsCommand extends PuroCommand {
       await indexFile.writeAsString(index);
     }
 
-    return BasicMessageResult(success: true, message: 'Generated docs');
+    return BasicMessageResult('Generated docs');
   }
 
   String allowedTitle(Option option, String allowed) {

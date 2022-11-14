@@ -79,10 +79,7 @@ Future<void> cleanWorkspace({
   Directory? projectDir,
 }) async {
   final config = PuroConfig.of(scope);
-  projectDir ??= config.parentProjectDir;
-  if (projectDir == null) {
-    throw AssertionError("Couldn't find dart project in current directory");
-  }
+  projectDir ??= config.ensureParentProjectDir();
   await runOptional(scope, 'restoring gitignore', () {
     return updateGitignore(
       scope: scope,

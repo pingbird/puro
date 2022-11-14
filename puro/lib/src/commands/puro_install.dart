@@ -67,24 +67,21 @@ class PuroInstallCommand extends PuroCommand {
       alwaysNotify: true,
     );
 
-    return BasicMessageResult.list(
-      success: true,
-      messages: [
-        if (externalMessage != null) externalMessage,
-        if (updateMessage != null) updateMessage,
-        if (profilePath != null)
-          CommandMessage(
-            (format) => 'Updated PATH in $profilePath',
-          ),
-        if (updatedWindowsRegistry)
-          CommandMessage(
-            (format) => 'Updated PATH in windows registry',
-          ),
+    return BasicMessageResult.list([
+      if (externalMessage != null) externalMessage,
+      if (updateMessage != null) updateMessage,
+      if (profilePath != null)
         CommandMessage(
-          (format) =>
-              'Successfully installed Puro ${puroVersion.semver} to `${config.puroRoot.path}`',
+          (format) => 'Updated PATH in $profilePath',
         ),
-      ],
-    );
+      if (updatedWindowsRegistry)
+        CommandMessage(
+          (format) => 'Updated PATH in windows registry',
+        ),
+      CommandMessage(
+        (format) =>
+            'Successfully installed Puro ${puroVersion.semver} to `${config.puroRoot.path}`',
+      ),
+    ]);
   }
 }

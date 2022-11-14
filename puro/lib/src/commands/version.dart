@@ -43,18 +43,15 @@ class VersionCommand extends PuroCommand {
       runner: runner,
       alwaysNotify: true,
     );
-    return BasicMessageResult.list(
-      success: true,
-      messages: [
-        if (externalMessage != null) externalMessage,
-        if (updateMessage != null) updateMessage,
-        CommandMessage(
-          (format) => 'Puro ${puroVersion.semver} '
-              '(${puroVersion.type.name}/${puroVersion.target.name})\n'
-              'Dart ${Platform.version}',
-          type: CompletionType.info,
-        ),
-      ],
-    );
+    return BasicMessageResult.list([
+      if (externalMessage != null) externalMessage,
+      if (updateMessage != null) updateMessage,
+      CommandMessage(
+        (format) => 'Puro ${puroVersion.semver} '
+            '(${puroVersion.type.name}/${puroVersion.target.name})\n'
+            'Dart ${Platform.version}',
+        type: CompletionType.info,
+      ),
+    ]);
   }
 }

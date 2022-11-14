@@ -81,8 +81,9 @@ Future<EnvCreateResult> createEnvironment({
       repository: environment.flutterDir,
     );
     if (commit != null) {
-      throw ArgumentError(
-        'Environment `$envName` already exists, use `puro upgrade` to switch version or `puro rm` before trying again',
+      throw CommandError(
+        'Environment `$envName` already exists, use `puro upgrade` to switch '
+        'version or `puro rm` before trying again',
       );
     }
   }

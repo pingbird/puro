@@ -8,8 +8,6 @@ Future<void> deleteEnvironment({
 }) async {
   final config = PuroConfig.of(scope);
   final env = config.getEnv(name);
-  if (!env.exists) {
-    throw ArgumentError('No such environment `$name`');
-  }
+  env.ensureExists();
   await env.envDir.delete(recursive: true);
 }

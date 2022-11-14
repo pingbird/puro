@@ -19,9 +19,6 @@ class EnvRmCommand extends PuroCommand {
       scope: scope,
       name: name,
     );
-    return BasicMessageResult(
-      success: true,
-      message: 'Deleted environment `$name`',
-    );
+    return BasicMessageResult('Deleted environment `$name`');
   }
 }

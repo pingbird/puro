@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../command_result.dart';
 import '../config.dart';
 import '../extensions.dart';
 import '../file_lock.dart';
@@ -69,7 +70,7 @@ Future<void> _installTrampoline({
       installLocation = 'pub';
       break;
     default:
-      throw ArgumentError("Can't install puro: ${version.type.description}");
+      throw CommandError("Can't install puro: ${version.type.description}");
   }
 
   final trampolineHeader = Platform.isWindows
@@ -96,7 +97,7 @@ Future<void> _installTrampoline({
     if (upToDate) {
       return;
     } else if (!force) {
-      throw ArgumentError(
+      throw CommandError(
         'A different version of puro is installed in `${config.puroRoot.path}`, '
         'run `puro install-puro --force` to overwrite it',
       );

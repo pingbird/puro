@@ -8,6 +8,7 @@ import 'package:process/process.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../models.dart';
+import 'command_result.dart';
 import 'extensions.dart';
 import 'file_lock.dart';
 import 'http.dart';
@@ -70,7 +71,19 @@ class PuroConfig {
 
     gitExecutable ??= 'git';
     if (!const LocalProcessManager().canRun(gitExecutable)) {
-      throw ArgumentError('Git executable not found');
+      final String instructions;
+      if (Platform.isWindows) {
+        instructions = 'getting it at https://git-scm.com/download/win';
+      } else if (Platform.isLinux) {
+        instructions = 'running `apt install git`';
+      } else if (Platform.isMacOS) {
+        instructions = 'running `brew install git`';
+      } else {
+        throw UnsupportedOSError();
+      }
+      throw CommandError(
+        'Could not find git executable, consider $instructions',
+      );
     }
 
     final String homeDir;
@@ -187,7 +200,10 @@ class PuroConfig {
   Directory ensureParentProjectDir() {
     final dir = parentProjectDir;
     if (dir == null) {
-      throw AssertionError('No Dart project in current directory');
+      throw CommandError(
+        'Could not find a dart project in the current directory and no '
+        'path selected with --project',
+      );
     }
     return dir;
   }
@@ -222,14 +238,12 @@ class PuroConfig {
 
   File get dotfileForWriting {
     if (projectDir?.path != parentProjectDir?.path) {
-      throw AssertionError(
+      throw CommandError(
         'Ambiguous project selection between `$projectDir` and `$parentProjectDir`,'
-        ' run this command in parent directory or use --project to disambiguate.',
+        ' run this command in the parent directory or use --project to disambiguate',
       );
     }
-    if (puroDotfile == null) {
-      throw AssertionError('Could not find project root');
-    }
+    if (puroDotfile == null) ensureParentProjectDir();
     return puroDotfile!;
   }
 
@@ -320,9 +334,9 @@ class EnvConfig {
 
   bool get exists => envDir.existsSync();
 
-  void ensureExists() {
+  void ensureExists([String? message]) {
     if (!exists) {
-      throw ArgumentError('No such environment `$name`');
+      throw CommandError(message ?? 'Environment `$name` does not exist');
     }
   }
 
@@ -462,7 +476,7 @@ Version? tryParseVersion(String text) {
   try {
     text = text.trim();
     return Version.parse(text.startsWith('v') ? text.substring(1) : text);
-  } catch (_) {
+  } catch (exception) {
     return null;
   }
 }
@@ -477,12 +491,13 @@ void ensureValidName(String name) {
         (codeUnit >= 0x61 && codeUnit <= 0x7a)) {
       continue;
     }
-    throw ArgumentError(
-      'Unexpected `$char` at index $i of name `$name`\nNames must match pattern [_\\-a-z][_\\-a-z0-9]*',
+    throw CommandError(
+      'Unexpected `$char` at index $i of name `$name`\n'
+      'Names must match pattern [_\\-a-z][_\\-a-z0-9]*',
     );
   }
   if (!isValidName(name)) {
-    throw ArgumentError('Not a valid name: `$name`');
+    throw CommandError('Not a valid name: `$name`');
   }
 }
 

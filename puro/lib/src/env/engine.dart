@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../command_result.dart';
 import '../config.dart';
 import '../downloader.dart';
 import '../http.dart';
@@ -105,9 +106,7 @@ Future<Uri> getEngineReleaseZipUrl({
       throw AssertionError('Unrecognized architecture: `$unameStdout`');
     }
   } else {
-    throw AssertionError(
-      'Unrecognized operating system: ${Platform.operatingSystem}',
-    );
+    throw UnsupportedOSError();
   }
 
   final target = EngineBuildTarget.from(os, arch);
@@ -151,9 +150,7 @@ Future<void> unzip({
       throwOnFailure: true,
     );
   } else {
-    throw AssertionError(
-      'Unrecognized operating system: ${Platform.operatingSystem}',
-    );
+    throw UnsupportedOSError();
   }
 }
 
@@ -181,7 +178,7 @@ Future<bool> downloadSharedEngine({
           },
         );
       });
-    } catch (e) {
+    } catch (exception) {
       log.w('dart version check failed, deleting cache');
       sharedCache.cacheDir.deleteSync(recursive: true);
     }

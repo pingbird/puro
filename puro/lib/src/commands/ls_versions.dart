@@ -63,8 +63,7 @@ class LsVersionsCommand extends PuroCommand {
     };
 
     return BasicMessageResult.format(
-      success: true,
-      message: (format) {
+      (format) {
         List<List<String>> formatReleases(List<FlutterReleaseModel> releases) {
           return [
             for (final release in releases)

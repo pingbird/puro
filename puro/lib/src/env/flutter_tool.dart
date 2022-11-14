@@ -38,8 +38,8 @@ Future<FlutterToolInfo> setUpFlutterTool({
   final desiredEngineVersion = flutterConfig.engineVersion;
 
   if (desiredEngineVersion == null) {
-    throw ArgumentError(
-      'Flutter installation corrupt, could not find engine version',
+    throw AssertionError(
+      'Flutter installation corrupt: Could not find engine version',
     );
   }
 

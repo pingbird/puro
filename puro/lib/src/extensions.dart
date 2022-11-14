@@ -65,13 +65,13 @@ extension FileExtensions on File {
     if (oldFile.existsSync()) {
       try {
         oldFile.deleteSync();
-      } catch (e) {
+      } catch (exception) {
         // Might fail if its still open, idk
       }
     }
     try {
       deleteSync();
-    } catch (e) {
+    } catch (exception) {
       if (existsSync()) {
         renameSync(oldFile.path);
       }

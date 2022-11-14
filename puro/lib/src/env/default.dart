@@ -1,3 +1,4 @@
+import '../command_result.dart';
 import '../config.dart';
 import '../provider.dart';
 import 'version.dart';
@@ -12,9 +13,10 @@ Future<EnvConfig> getProjectEnvOrDefault({
     if (!env.exists) {
       if (FlutterChannel.parse(env.name) != null ||
           tryParseVersion(env.name) != null) {
-        throw ArgumentError(
+        throw CommandError(
           'No environment named `${env.name}`\n'
-          'That looks like a version, you probably meant to do `puro create my_env ${env.name}; puro use my_env`',
+          'That looks like a version, to create a new environment '
+          'use `puro create my_env ${env.name}; puro use my_env`',
         );
       }
       env.ensureExists();
@@ -24,14 +26,14 @@ Future<EnvConfig> getProjectEnvOrDefault({
   var env = config.tryGetProjectEnv();
   if (env == null) {
     if (config.environmentOverride != null) {
-      throw ArgumentError(
+      throw CommandError(
         'Selected environment `${config.environmentOverride}` does not exist',
       );
     }
     final envName = await getDefaultEnvName(scope: scope);
     env = config.getEnv(envName);
     if (!env.exists) {
-      throw ArgumentError(
+      throw CommandError(
         'No environment selected and default environment `$envName` does not exist',
       );
     }

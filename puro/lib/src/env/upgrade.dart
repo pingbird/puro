@@ -75,7 +75,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
         );
 
   if (fromVersion == null) {
-    throw ArgumentError("Couldn't find Flutter version, corrupt environment?");
+    throw CommandError("Couldn't find Flutter version, corrupt environment?");
   }
 
   if (currentCommit != toVersion.commit ||
@@ -89,12 +89,12 @@ Future<EnvUpgradeResult> upgradeEnvironment({
 
     if (prefs.hasForkRemoteUrl()) {
       if (branch == null) {
-        throw ArgumentError(
+        throw CommandError(
           'HEAD is not attached to a branch, could not upgrade fork',
         );
       }
       if (await git.hasUncomittedChanges(repository: repository)) {
-        throw ArgumentError(
+        throw CommandError(
           "Can't upgrade fork with uncomitted changes",
         );
       }

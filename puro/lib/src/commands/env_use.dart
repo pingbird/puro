@@ -45,8 +45,7 @@ class EnvUseCommand extends PuroCommand {
       if (envName == null) {
         final current = await getDefaultEnvName(scope: scope);
         return BasicMessageResult(
-          success: true,
-          message: 'The current global default environment is `$current`',
+          'The current global default environment is `$current`',
           type: CompletionType.info,
         );
       }
@@ -59,8 +58,7 @@ class EnvUseCommand extends PuroCommand {
         envName: env.name,
       );
       return BasicMessageResult(
-        success: true,
-        message: 'Set global default environment to `${env.name}`',
+        'Set global default environment to `${env.name}`',
       );
     }
     var vscodeOverride =
@@ -77,8 +75,7 @@ class EnvUseCommand extends PuroCommand {
           : null,
     );
     return BasicMessageResult(
-      success: true,
-      message: 'Switched to environment `$envName`',
+      'Switched to environment `$envName`',
     );
   }
 }

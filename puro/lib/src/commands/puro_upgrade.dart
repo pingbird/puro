@@ -56,29 +56,25 @@ class PuroUpgradeCommand extends PuroCommand {
         final stdout = result.stdout as String;
         if (stdout.contains('already activated at newest available version')) {
           return BasicMessageResult(
-            success: true,
-            message: 'Puro is up to date with $currentVersion',
-            type: CompletionType.indeterminate,
+            'Puro is up to date with $currentVersion',
           );
         } else {
           return BasicMessageResult(
-            success: true,
-            message: 'Upgraded puro to latest pub version',
+            'Upgraded puro to latest pub version',
           );
         }
       } else {
         return BasicMessageResult(
-          success: true,
-          message:
-              '`dart pub global activate puro` failed with exit code ${result.exitCode}\n${result.stderr}'
-                  .trim(),
+          '`dart pub global activate puro` failed with exit code ${result.exitCode}\n${result.stderr}'
+              .trim(),
+          success: false,
         );
       }
     } else if (puroVersion.type != PuroInstallationType.distribution &&
         !force) {
       return BasicMessageResult(
+        "Can't upgrade: ${puroVersion.type.description}",
         success: false,
-        message: "Can't upgrade: ${puroVersion.type.description}",
       );
     }
 
@@ -91,16 +87,10 @@ class PuroUpgradeCommand extends PuroCommand {
       targetVersionString = latestVersionResponse.body.trim();
       targetVersion = Version.parse(targetVersionString);
       if (currentVersion == targetVersion && !force) {
-        return BasicMessageResult(
-          success: true,
-          message: 'Puro is up to date with $targetVersion',
-          type: CompletionType.indeterminate,
-        );
+        return BasicMessageResult('Puro is up to date with $targetVersion');
       } else if (currentVersion > targetVersion && !force) {
         return BasicMessageResult(
-          success: true,
-          message:
-              'Puro is a newer version $currentVersion than the available $targetVersion',
+          'Puro is a newer version $currentVersion than the available $targetVersion',
           type: CompletionType.indeterminate,
         );
       }
@@ -108,9 +98,7 @@ class PuroUpgradeCommand extends PuroCommand {
       targetVersion = Version.parse(targetVersionString);
       if (currentVersion == targetVersion && !force) {
         return BasicMessageResult(
-          success: true,
-          message: 'Puro is already the desired version $targetVersion',
-          type: CompletionType.indeterminate,
+          'Puro is the desired version $targetVersion',
         );
       }
     }

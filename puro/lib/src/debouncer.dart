@@ -48,8 +48,8 @@ class Debouncer<T> {
     _isUpdating = true;
     try {
       await onUpdate(_value);
-    } catch (error, stackTrace) {
-      Zone.current.handleUncaughtError(error, stackTrace);
+    } catch (exception, stackTrace) {
+      Zone.current.handleUncaughtError(exception, stackTrace);
     }
     _isUpdating = false;
     if (_shouldUpdate) {

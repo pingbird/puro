@@ -1,4 +1,5 @@
 import '../command.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../env/upgrade.dart';
 import '../env/version.dart';
@@ -50,7 +51,9 @@ class EnvUpgradeCommand extends PuroCommand {
     }
 
     if (version == null && channel == null) {
-      throw ArgumentError('No version provided and no branch to upgrade from');
+      throw CommandError(
+        'No version provided and environment `${environment.name}` is not on a branch',
+      );
     }
 
     return upgradeEnvironment(

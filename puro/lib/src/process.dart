@@ -202,10 +202,10 @@ Future<List<PsInfo>> getParentProcesses({
     List<dynamic> processInfo;
     try {
       processInfo = jsonDecode(result.stdout as String) as List<dynamic>;
-    } catch (e, bt) {
+    } catch (exception, stackTrace) {
       if (result.stdout != '') log.w(result.stdout as String);
       if (result.stderr != '') log.w(result.stderr as String);
-      log.w('Error parsing Get-WmiObject\n$e\n$bt');
+      log.w('Error parsing Get-WmiObject\n$exception\n$stackTrace');
       return [];
     }
     final parentIds = <int, int>{};

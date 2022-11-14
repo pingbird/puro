@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../models.dart';
 import 'terminal.dart';
 
@@ -77,24 +79,33 @@ class CommandHelpResult extends CommandResult {
   CommandResultModel? get model => CommandResultModel(usage: usage);
 }
 
-class CommandMessage {
-  CommandMessage(this.message, {this.type});
-  final CompletionType? type;
-  final String Function(OutputFormatter format) message;
+class BasicMessageResult extends CommandResult {
+  BasicMessageResult(
+    String message, {
+    this.success = true,
+    CompletionType? type,
+    this.model,
+  }) : messages = [CommandMessage((format) => message, type: type)];
 
-  static String formatMessages({
-    required Iterable<CommandMessage> messages,
-    required OutputFormatter format,
-    required bool success,
-  }) {
-    return messages
-        .map((e) => format.complete(
-              e.message(format),
-              type: e.type ??
-                  (success ? CompletionType.success : CompletionType.failure),
-            ))
-        .join('\n');
-  }
+  BasicMessageResult.format(
+    String Function(OutputFormatter format) message, {
+    this.success = true,
+    CompletionType? type,
+    this.model,
+  }) : messages = [CommandMessage(message, type: type)];
+
+  BasicMessageResult.list(
+    this.messages, {
+    this.success = true,
+    this.model,
+  });
+
+  @override
+  final bool success;
+  @override
+  final List<CommandMessage> messages;
+  @override
+  final CommandResultModel? model;
 }
 
 abstract class CommandResult {
@@ -124,31 +135,69 @@ abstract class CommandResult {
       );
 }
 
-class BasicMessageResult extends CommandResult {
-  BasicMessageResult({
-    required this.success,
-    required String message,
+class CommandMessage {
+  CommandMessage(this.message, {this.type});
+  final CompletionType? type;
+  final String Function(OutputFormatter format) message;
+
+  static String formatMessages({
+    required Iterable<CommandMessage> messages,
+    required OutputFormatter format,
+    required bool success,
+  }) {
+    return messages
+        .map((e) => format.complete(
+              e.message(format),
+              type: e.type ??
+                  (success ? CompletionType.success : CompletionType.failure),
+            ))
+        .join('\n');
+  }
+}
+
+/// Like [CommandResult] but thrown as an exception.
+class CommandError implements Exception {
+  CommandError(
+    String message, {
     CompletionType? type,
-    this.model,
-  }) : messages = [CommandMessage((format) => message, type: type)];
+    CommandResultModel? model,
+    bool success = false,
+  }) : result = BasicMessageResult(
+          message,
+          success: success,
+          type: type,
+          model: model,
+        );
 
-  BasicMessageResult.format({
-    required this.success,
-    required String Function(OutputFormatter format) message,
+  CommandError.format(
+    String Function(OutputFormatter format) message, {
     CompletionType? type,
-    this.model,
-  }) : messages = [CommandMessage(message, type: type)];
+    CommandResultModel? model,
+    bool success = false,
+  }) : result = BasicMessageResult.format(
+          message,
+          success: success,
+          type: type,
+          model: model,
+        );
 
-  BasicMessageResult.list({
-    required this.success,
-    required this.messages,
-    this.model,
-  });
+  CommandError.list(
+    List<CommandMessage> messages, {
+    CommandResultModel? model,
+    bool success = false,
+  }) : result = BasicMessageResult.list(
+          messages,
+          success: success,
+          model: model,
+        );
+
+  final CommandResult result;
 
   @override
-  final bool success;
-  @override
-  final List<CommandMessage> messages;
-  @override
-  final CommandResultModel? model;
+  String toString() => result.toString();
+}
+
+class UnsupportedOSError extends CommandError {
+  UnsupportedOSError()
+      : super('Unrecognized operating system: `${Platform.operatingSystem}`');
 }

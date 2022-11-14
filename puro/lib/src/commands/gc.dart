@@ -14,15 +14,10 @@ class GcCommand extends PuroCommand {
   Future<CommandResult> run() async {
     final bytes = await collectGarbage(scope: scope);
     if (bytes == 0) {
-      return BasicMessageResult(
-        success: true,
-        message: 'Nothing to clean up',
-      );
+      return BasicMessageResult('Nothing to clean up');
     } else {
       return BasicMessageResult(
-        success: true,
-        message:
-            'Cleaned up caches and reclaimed ${bytes.prettyAbbr(metric: true)}B',
+        'Cleaned up caches and reclaimed ${bytes.prettyAbbr(metric: true)}B',
       );
     }
   }

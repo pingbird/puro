@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../../models.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../git.dart';
 import '../logger.dart';
@@ -84,8 +85,8 @@ class FlutterVersion {
       parsedChannel = FlutterChannel.parse(channel);
       if (parsedChannel == null) {
         final allChannels = FlutterChannel.values.map((e) => e.name).join(', ');
-        throw ArgumentError(
-          'Invalid Flutter channel "$channel", valid channels: $allChannels',
+        throw CommandError(
+          'Invalid Flutter channel `$channel`, valid channels: $allChannels',
         );
       }
     } else {
@@ -98,8 +99,8 @@ class FlutterVersion {
     if (parsedVersion != null || parsedChannel != null) {
       if (parsedChannel == FlutterChannel.master) {
         if (parsedVersion != null) {
-          throw ArgumentError(
-            'Unexpected version $version, the master channel is not versioned',
+          throw CommandError(
+            'Unexpected version $version, the master channel does not have versions',
           );
         }
       } else {
@@ -175,8 +176,9 @@ class FlutterVersion {
     cacheResult = await checkCache();
     if (cacheResult != null) return cacheResult;
 
-    throw ArgumentError(
-      'Could not find flutter version `$version`, expected a valid commit, branch, tag, or version.',
+    throw CommandError(
+      'Could not find flutter version from `$version`, expected a valid '
+      'commit, branch, tag, or version.',
     );
   }
 

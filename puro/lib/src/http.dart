@@ -204,7 +204,7 @@ class HttpException implements Exception {
   static String _tryPrettifyJson(String body) {
     try {
       return const JsonEncoder.withIndent('  ').convert(jsonDecode(body));
-    } catch (e) {
+    } catch (exception) {
       return body;
     }
   }

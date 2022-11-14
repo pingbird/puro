@@ -137,8 +137,8 @@ void main(List<String> args) async {
         if (str == null) return;
         final logLevel = int.parse(str);
         if (logLevel < 0 || logLevel > 4) {
-          throw ArgumentError(
-            'log-level must be a number between 0 and 4, inclusive',
+          throw CommandError(
+            'Argument `log-level` must be a number between 0 and 4, inclusive',
           );
         }
         log.level = {
@@ -213,6 +213,9 @@ void main(List<String> args) async {
     } else {
       await runner.writeResultAndExit(result);
     }
+  } on CommandError catch (exception, stackTrace) {
+    log.v('$stackTrace');
+    await runner.writeResultAndExit(exception.result);
   } on UsageException catch (exception) {
     await runner.writeResultAndExit(
       CommandHelpResult(

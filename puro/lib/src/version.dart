@@ -79,8 +79,8 @@ class PuroVersion {
         );
       }
       return _fs.directory(rootPath);
-    } catch (e, bt) {
-      log.w('Error while parsing package config$e\n$bt');
+    } catch (exception, stackTrace) {
+      log.w('Error while parsing package config$exception\n$stackTrace');
       return null;
     }
   }
@@ -109,8 +109,8 @@ class PuroVersion {
       try {
         scriptPath =
             config.fileSystem.file(scriptPath).resolveSymbolicLinksSync();
-      } catch (e, bt) {
-        log.w('Error while resolving Platform.script\n$e\n$bt');
+      } catch (exception, stackTrace) {
+        log.w('Error while resolving Platform.script\n$exception\n$stackTrace');
       }
     }
     scriptPath = path.canonicalize(scriptPath);
@@ -198,8 +198,9 @@ class PuroVersion {
           version = Version.parse(
             pubspecLock['packages']['puro']['version'] as String,
           );
-        } catch (e, bt) {
-          log.w('Error while parsing ${pubspecLockFile.path}\n$e\n$bt');
+        } catch (exception, stackTrace) {
+          log.w(
+              'Error while parsing ${pubspecLockFile.path}\n$exception\n$stackTrace');
         }
       }
     }

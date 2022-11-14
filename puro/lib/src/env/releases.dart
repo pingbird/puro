@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:clock/clock.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+import '../command_result.dart';
 import '../config.dart';
 import '../extensions.dart';
 import '../file_lock.dart';
@@ -118,9 +119,9 @@ Future<FlutterReleaseModel> findFrameworkRelease({
         try {
           cachedReleases = FlutterReleasesModel.create()
             ..mergeFromProto3Json(jsonDecode(contents));
-        } catch (error, stackTrace) {
+        } catch (exception, stackTrace) {
           log.w('Error while parsing cached releases');
-          log.w('$error\n$stackTrace');
+          log.w('$exception\n$stackTrace');
           cacheIsFresh = false;
         }
       },
@@ -147,15 +148,15 @@ Future<FlutterReleaseModel> findFrameworkRelease({
 
   if (version == null) {
     channel ??= FlutterChannel.stable;
-    throw AssertionError(
+    throw CommandError(
       'Could not find latest version of the ${channel.name} channel',
     );
   } else if (channel == null) {
-    throw AssertionError(
+    throw CommandError(
       'Could not find version $version',
     );
   } else {
-    throw AssertionError(
+    throw CommandError(
       'Could not find version $version in the $channel channel',
     );
   }
