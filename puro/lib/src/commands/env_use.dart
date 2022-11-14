@@ -1,4 +1,5 @@
 import '../command.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../env/default.dart';
 import '../logger.dart';

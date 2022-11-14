@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../command.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../downloader.dart';
 import '../extensions.dart';

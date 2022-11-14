@@ -1,4 +1,5 @@
 import '../command.dart';
+import '../command_result.dart';
 import '../env/gc.dart';
 import '../extensions.dart';
 

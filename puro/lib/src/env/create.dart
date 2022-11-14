@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
 
-import '../command.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../git.dart';
 import '../http.dart';

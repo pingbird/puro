@@ -1,4 +1,5 @@
 import '../command.dart';
+import '../command_result.dart';
 import '../workspace/clean.dart';
 
 class CleanCommand extends PuroCommand {

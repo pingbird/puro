@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:file/file.dart';
 import 'package:neoansi/neoansi.dart';
 
-import '../command.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../proto/puro.pb.dart';
 import '../provider.dart';

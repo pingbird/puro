@@ -9,6 +9,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart';
 
 import 'command.dart';
+import 'command_result.dart';
 import 'config.dart';
 import 'file_lock.dart';
 import 'git.dart';

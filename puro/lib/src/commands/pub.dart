@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 
 import '../command.dart';
+import '../command_result.dart';
 import '../env/command.dart';
 import '../env/default.dart';
 

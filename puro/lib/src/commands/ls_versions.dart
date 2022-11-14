@@ -5,6 +5,7 @@ import 'package:neoansi/neoansi.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../command.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../env/releases.dart';
 import '../extensions.dart';

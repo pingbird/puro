@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../command.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../install/bin.dart';
 import '../install/profile.dart';
