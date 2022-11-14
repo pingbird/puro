@@ -367,8 +367,8 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   }
 
   @override
-  void printUsage() {
-    writeResultAndExit(
+  Future<void> printUsage() async {
+    await writeResultAndExit(
       CommandHelpResult(
         didRequestHelp: didRequestHelp,
         usage: usage,
@@ -383,7 +383,10 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     messages.add(CommandMessage((format) => message, type: type));
   }
 
+  var _exiting = false;
   Future<Never> writeResultAndExit(CommandResult result) async {
+    if (_exiting) await Completer<void>().future;
+    _exiting = true;
     final model = result.toModel();
     if (isJson) {
       final resultJson = model.toProto3Json();
@@ -457,9 +460,9 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       log.d('Config: $config');
 
       final commandName = topLevelResults.command?.name;
-      if (commandName != null &&
-          !((commands[commandName] as PuroCommand?)?.allowUpdateCheck ??
-              true)) {
+      final command = commandName == null ? null : commands[commandName];
+      if (command != null &&
+          (command is! PuroCommand || !command.allowUpdateCheck)) {
         final message =
             await checkIfUpdateAvailable(scope: scope, runner: this);
         if (message != null) {

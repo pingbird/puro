@@ -208,7 +208,7 @@ void main(List<String> args) async {
   try {
     final result = await runner.run(args);
     if (result == null) {
-      runner.printUsage();
+      await runner.printUsage();
     } else {
       await runner.writeResultAndExit(result);
     }
