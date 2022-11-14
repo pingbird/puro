@@ -406,6 +406,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       } else {
         terminal.preserveStatus();
       }
+      terminal.enableStatus = false;
       await stderr.flush();
       stdout.writeln(
         CommandMessage.formatMessages(

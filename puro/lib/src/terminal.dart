@@ -156,7 +156,7 @@ class Terminal extends StringSink {
   }
 
   String _flushStatusStr(String pendingStatus) {
-    if (pendingStatus == _status) return '';
+    if (!enableStatus || pendingStatus == _status) return '';
     final clear = _clearStatusStr();
     _status = pendingStatus;
     return '$clear$pendingStatus';

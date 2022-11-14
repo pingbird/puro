@@ -6,6 +6,7 @@ import '../config.dart';
 import '../file_lock.dart';
 import '../git.dart';
 import '../install/bin.dart';
+import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 import '../workspace/gitignore.dart';
@@ -36,8 +37,11 @@ Future<void> installEnvShims({
   required Scope scope,
   required EnvConfig environment,
 }) async {
+  final log = PuroLogger.of(scope);
   final git = GitClient.of(scope);
   final flutterConfig = environment.flutter;
+
+  log.d('installEnvShims');
 
   for (var name in _binFiles) {
     name = name.replaceAll('/', path.context.separator);
@@ -45,8 +49,10 @@ Future<void> installEnvShims({
     final bakFile = flutterConfig.sdkDir.childFile('$name.bak');
     if (bakFile.existsSync()) {
       if (file.existsSync()) {
+        log.d('deleting $bakFile');
         bakFile.deleteSync();
       } else {
+        log.d('renaming $bakFile -> $file');
         bakFile.renameSync(file.path);
       }
     }
@@ -121,15 +127,19 @@ Future<void> uninstallEnvShims({
   required Scope scope,
   required EnvConfig environment,
 }) async {
+  final log = PuroLogger.of(scope);
   final flutterConfig = environment.flutter;
+  log.d('uninstallEnvShims');
   for (var name in _binFiles) {
     name = name.replaceAll('/', path.context.separator);
     final file = flutterConfig.sdkDir.childFile(name);
     final bakFile = flutterConfig.sdkDir.childFile('$name.bak');
     if (file.existsSync()) {
       if (bakFile.existsSync()) {
+        log.d('deleting $bakFile');
         bakFile.deleteSync();
       }
+      log.d('renaming $file -> $bakFile');
       file.renameSync(bakFile.path);
     }
   }
