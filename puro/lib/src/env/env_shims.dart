@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as path;
+
 import '../config.dart';
 import '../file_lock.dart';
 import '../git.dart';
@@ -8,6 +10,28 @@ import '../process.dart';
 import '../provider.dart';
 import '../workspace/gitignore.dart';
 
+// Delete these because running them can corrupt our cache
+final _sharedScripts = {
+  'shared.bat',
+  'shared.sh',
+  'update_dart_sdk.ps1',
+  'update_dart_sdk.sh',
+};
+
+final _binFiles = {
+  'bin/dart',
+  'bin/dart.bat',
+  'bin/flutter',
+  'bin/flutter.bat',
+};
+
+final _ignores = {
+  'bin/cache',
+  ..._binFiles,
+  for (final name in _binFiles) '$name.bak',
+  for (final name in _sharedScripts) 'bin/internal/$name',
+};
+
 Future<void> installEnvShims({
   required Scope scope,
   required EnvConfig environment,
@@ -15,30 +39,26 @@ Future<void> installEnvShims({
   final git = GitClient.of(scope);
   final flutterConfig = environment.flutter;
 
-  // Delete these because running them can corrupt our cache
-  final sharedScripts = {
-    'shared.bat',
-    'shared.sh',
-    'update_dart_sdk.ps1',
-    'update_dart_sdk.sh',
-  };
-
-  final ignores = {
-    'bin/cache',
-    'bin/dart',
-    'bin/dart.bat',
-    'bin/flutter',
-    'bin/flutter.bat',
-    for (final name in sharedScripts) 'bin/internal/$name',
-  };
+  for (var name in _binFiles) {
+    name = name.replaceAll('/', path.context.separator);
+    final file = flutterConfig.sdkDir.childFile(name);
+    final bakFile = flutterConfig.sdkDir.childFile('$name.bak');
+    if (bakFile.existsSync()) {
+      if (file.existsSync()) {
+        bakFile.deleteSync();
+      } else {
+        bakFile.renameSync(file.path);
+      }
+    }
+  }
 
   await updateGitignore(
     scope: scope,
     projectDir: environment.flutterDir,
-    ignores: ignores,
+    ignores: _ignores,
   );
 
-  for (final name in sharedScripts) {
+  for (final name in _sharedScripts) {
     final file = flutterConfig.binInternalDir.childFile(name);
     if (file.existsSync()) file.deleteSync();
   }
@@ -89,10 +109,28 @@ Future<void> installEnvShims({
         '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!\n',
   );
 
-  for (final ignore in ignores.skip(1)) {
+  for (final ignore in _binFiles.followedBy(_sharedScripts)) {
     await git.assumeUnchanged(
       repository: flutterConfig.sdkDir,
       file: ignore,
     );
+  }
+}
+
+Future<void> uninstallEnvShims({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  final flutterConfig = environment.flutter;
+  for (var name in _binFiles) {
+    name = name.replaceAll('/', path.context.separator);
+    final file = flutterConfig.sdkDir.childFile(name);
+    final bakFile = flutterConfig.sdkDir.childFile('$name.bak');
+    if (file.existsSync()) {
+      if (bakFile.existsSync()) {
+        bakFile.deleteSync();
+      }
+      file.renameSync(bakFile.path);
+    }
   }
 }

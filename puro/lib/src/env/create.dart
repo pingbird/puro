@@ -123,6 +123,7 @@ Future<EnvCreateResult> createEnvironment({
   await cloneFlutterWithSharedRefs(
     scope: scope,
     repository: environment.flutterDir,
+    environment: environment,
     flutterVersion: flutterVersion,
     forkRemoteUrl: forkRemoteUrl,
   );
@@ -203,6 +204,7 @@ Future<bool> isSharedFlutterCommitCached({
 Future<void> cloneFlutterWithSharedRefs({
   required Scope scope,
   required Directory repository,
+  required EnvConfig environment,
   required FlutterVersion flutterVersion,
   String? forkRemoteUrl,
   bool force = false,
@@ -295,11 +297,17 @@ Future<void> cloneFlutterWithSharedRefs({
             );
           }
         } else {
-          await git.reset(
-            repository: repository,
-            ref: flutterVersion.commit,
-            merge: true,
-          );
+          // Uninstall shims so they don't interfere with merges
+          await uninstallEnvShims(scope: scope, environment: environment);
+          try {
+            await git.reset(
+              repository: repository,
+              ref: flutterVersion.commit,
+              merge: true,
+            );
+          } finally {
+            await installEnvShims(scope: scope, environment: environment);
+          }
         }
       } else {
         // Reset branch to current commit, this allows flutter to correctly detect
