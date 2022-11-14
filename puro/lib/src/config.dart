@@ -430,8 +430,15 @@ class DartSdkConfig {
   final Directory sdkDir;
 
   late final Directory binDir = sdkDir.childDirectory('bin');
+
   late final File dartExecutable =
       binDir.childFile(Platform.isWindows ? 'dart.exe' : 'dart');
+
+  // This no longer exists on recent versions of Dart where we instead use
+  // `dart pub`.
+  late final File oldPubExecutable =
+      binDir.childFile(Platform.isWindows ? 'pub.bat' : 'pub');
+
   late final Directory libDir = sdkDir.childDirectory('lib');
   late final Directory internalLibDir = libDir.childDirectory('_internal');
   late final File librariesJsonFile = libDir.childFile('libraries.json');

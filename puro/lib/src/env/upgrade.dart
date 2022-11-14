@@ -16,6 +16,7 @@ class EnvUpgradeResult extends CommandResult {
     required this.to,
     required this.forkRemoteUrl,
     this.switchedBranch = false,
+    required this.toolInfo,
   });
 
   final EnvConfig environment;
@@ -23,6 +24,7 @@ class EnvUpgradeResult extends CommandResult {
   final FlutterVersion to;
   final String? forkRemoteUrl;
   final bool switchedBranch;
+  final FlutterToolInfo toolInfo;
 
   @override
   bool get success => true;
@@ -30,8 +32,10 @@ class EnvUpgradeResult extends CommandResult {
   @override
   CommandMessage get message => CommandMessage(
         (format) => from.commit == to.commit
-            ? 'Environment `${environment.name}` is already up to date'
-            : 'Upgraded `${environment.name}` from $from to $to',
+            ? toolInfo.didUpdateTool || toolInfo.didUpdateEngine
+                ? 'Finished installation of $to in environment `${environment.name}`'
+                : 'Environment `${environment.name}` is already up to date'
+            : 'Upgraded environment `${environment.name}` from $from to $to',
       );
 
   @override
@@ -106,7 +110,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
         fastForwardOnly: true,
       );
 
-      await setUpFlutterTool(
+      final toolInfo = await setUpFlutterTool(
         scope: scope,
         environment: environment,
       );
@@ -117,6 +121,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
         to: toVersion,
         forkRemoteUrl: prefs.forkRemoteUrl,
         switchedBranch: switchBranch,
+        toolInfo: toolInfo,
       );
     }
 
@@ -136,7 +141,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
     environment: environment,
   );
 
-  await setUpFlutterTool(
+  final toolInfo = await setUpFlutterTool(
     scope: scope,
     environment: environment,
   );
@@ -150,5 +155,6 @@ Future<EnvUpgradeResult> upgradeEnvironment({
     from: fromVersion,
     to: toVersion,
     forkRemoteUrl: null,
+    toolInfo: toolInfo,
   );
 }

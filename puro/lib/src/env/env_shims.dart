@@ -13,10 +13,10 @@ import '../workspace/gitignore.dart';
 
 // Delete these because running them can corrupt our cache
 final _sharedScripts = {
-  'shared.bat',
-  'shared.sh',
-  'update_dart_sdk.ps1',
-  'update_dart_sdk.sh',
+  'bin/internal/shared.bat',
+  'bin/internal/shared.sh',
+  'bin/internal/update_dart_sdk.ps1',
+  'bin/internal/update_dart_sdk.sh',
 };
 
 final _binFiles = {
@@ -30,7 +30,7 @@ final _ignores = {
   'bin/cache',
   ..._binFiles,
   for (final name in _binFiles) '$name.bak',
-  for (final name in _sharedScripts) 'bin/internal/$name',
+  ..._sharedScripts,
 };
 
 Future<void> installEnvShims({
@@ -64,8 +64,9 @@ Future<void> installEnvShims({
     ignores: _ignores,
   );
 
-  for (final name in _sharedScripts) {
-    final file = flutterConfig.binInternalDir.childFile(name);
+  for (var name in _sharedScripts) {
+    name = name.replaceAll('/', path.context.separator);
+    final file = flutterConfig.sdkDir.childFile(name);
     if (file.existsSync()) file.deleteSync();
   }
 
@@ -115,12 +116,10 @@ Future<void> installEnvShims({
         '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!\n',
   );
 
-  for (final ignore in _binFiles.followedBy(_sharedScripts)) {
-    await git.assumeUnchanged(
-      repository: flutterConfig.sdkDir,
-      file: ignore,
-    );
-  }
+  await git.assumeUnchanged(
+    repository: flutterConfig.sdkDir,
+    files: _binFiles.followedBy(_sharedScripts),
+  );
 }
 
 Future<void> uninstallEnvShims({

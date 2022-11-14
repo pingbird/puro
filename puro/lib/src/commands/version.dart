@@ -15,6 +15,7 @@ class VersionCommand extends PuroCommand {
     argParser.addFlag(
       'release',
       negatable: false,
+      hide: true,
     );
   }
 

@@ -741,14 +741,15 @@ class GitClient {
   /// https://git-scm.com/docs/git-update-index
   Future<void> assumeUnchanged({
     required Directory repository,
-    required String file,
+    required Iterable<String> files,
     bool value = true,
   }) async {
     final result = await _git(
       [
         'update-index',
         if (value) '--assume-unchanged' else '--no-assume-unchanged',
-        file,
+        '--',
+        ...files,
       ],
       directory: repository,
     );

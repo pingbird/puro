@@ -114,11 +114,16 @@ Future<FlutterToolInfo> setUpFlutterTool({
         final rand = Random();
         for (var i = 0;; i++) {
           node.description = 'Updating flutter tool';
+          final oldPubExecutable = flutterCache.dartSdk.oldPubExecutable;
+          final usePubExecutable = oldPubExecutable.existsSync();
+
           final pubProcess = await runProcess(
             scope,
-            flutterCache.dartSdk.dartExecutable.path,
+            usePubExecutable
+                ? oldPubExecutable.path
+                : flutterCache.dartSdk.dartExecutable.path,
             [
-              '__deprecated_pub',
+              if (!usePubExecutable) '__deprecated_pub',
               'upgrade',
               '--verbosity=normal',
               '--no-precompile',
