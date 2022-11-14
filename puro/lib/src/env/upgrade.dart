@@ -124,6 +124,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
       scope: scope,
       repository: environment.flutterDir,
       flutterVersion: toVersion,
+      environment: environment,
       forkRemoteUrl: prefs.hasForkRemoteUrl() ? prefs.forkRemoteUrl : null,
       force: force,
     );
