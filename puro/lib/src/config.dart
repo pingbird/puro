@@ -109,9 +109,17 @@ class PuroConfig {
         ) ??
         resultProjectDir;
 
-    final puroRootDir = puroRoot != null
+    final envPuroRoot = Platform.environment['PURO_ROOT'];
+
+    var puroRootDir = puroRoot != null
         ? fileSystem.directory(puroRoot)
-        : fileSystem.directory(homeDir).childDirectory('.puro');
+        : envPuroRoot?.isNotEmpty ?? false
+            ? fileSystem.directory(puroRoot)
+            : fileSystem.directory(homeDir).childDirectory('.puro');
+
+    puroRootDir.createSync(recursive: true);
+    puroRootDir =
+        fileSystem.directory(puroRootDir.resolveSymbolicLinksSync()).absolute;
 
     if (environmentOverride == null) {
       final flutterBin = Platform.environment['FLUTTER_BIN'];
@@ -522,6 +530,7 @@ Future<PuroGlobalPrefsModel> updateGlobalPrefs({
   bool background = false,
 }) {
   final config = PuroConfig.of(scope);
+  config.globalPrefsJsonFile.parent.createSync(recursive: true);
   return lockFile(
     scope,
     config.globalPrefsJsonFile,

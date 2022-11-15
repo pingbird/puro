@@ -64,7 +64,8 @@ void main(List<String> args) async {
     )
     ..addOption(
       'root',
-      help: 'Overrides the global puro root directory. (defaults to `~/.puro`)',
+      help:
+          'Overrides the global puro root directory. (defaults to `~/.puro` or \$PURO_ROOT)',
       valueHelp: 'dir',
       callback: runner.wrapCallback((dir) {
         runner.rootDirOverride = dir;

@@ -29,6 +29,10 @@ Future<void> ensurePuroInstalled({
   required Scope scope,
   bool force = false,
 }) async {
+  final config = PuroConfig.of(scope);
+  if (!config.globalPrefsJsonFile.existsSync()) {
+    await updateGlobalPrefs(scope: scope, fn: (prefs) async {});
+  }
   await _installTrampoline(
     scope: scope,
     force: force,
