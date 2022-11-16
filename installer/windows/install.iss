@@ -17,6 +17,7 @@ AppUpdatesURL={#AppURL}
 DefaultDirName={%USERPROFILE}\.puro
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
+DisableDirPage=No
 LicenseFile=..\..\puro\LICENSE
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
