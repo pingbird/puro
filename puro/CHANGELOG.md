@@ -1,3 +1,8 @@
+## 1.1.4
+
+* Bug fixes
+* Improved installing puro inside symlinks and non-standard paths
+
 ## 1.1.3
 
 * Bug fixes
