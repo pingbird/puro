@@ -114,7 +114,7 @@ class PuroConfig {
     var puroRootDir = puroRoot != null
         ? fileSystem.directory(puroRoot)
         : envPuroRoot?.isNotEmpty ?? false
-            ? fileSystem.directory(puroRoot)
+            ? fileSystem.directory(envPuroRoot)
             : fileSystem.directory(homeDir).childDirectory('.puro');
 
     puroRootDir.createSync(recursive: true);
