@@ -36,7 +36,7 @@ Source: "..\..\puro\bin\puro.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Run]
-Filename: "{app}\bin\{#AppExeName}"; Parameters: "install-puro --root={app}"
+Filename: "{app}\bin\{#AppExeName}"; Parameters: "install-puro --root=."; WorkingDir="{app}"
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\bin\{#AppExeName}"
