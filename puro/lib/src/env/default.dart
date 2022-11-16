@@ -1,6 +1,8 @@
 import '../command_result.dart';
 import '../config.dart';
 import '../provider.dart';
+import 'create.dart';
+import 'releases.dart';
 import 'version.dart';
 
 Future<EnvConfig> getProjectEnvOrDefault({
@@ -9,19 +11,28 @@ Future<EnvConfig> getProjectEnvOrDefault({
 }) async {
   final config = PuroConfig.of(scope);
   if (envName != null) {
-    final env = config.getEnv(envName);
-    if (!env.exists) {
-      if (FlutterChannel.parse(env.name) != null ||
-          tryParseVersion(env.name) != null) {
+    final environment = config.getEnv(envName);
+    if (!environment.exists) {
+      if (pseudoEnvironmentNames.contains(environment.name)) {
+        await createEnvironment(
+          scope: scope,
+          envName: environment.name,
+          flutterVersion: await FlutterVersion.query(
+            scope: scope,
+            version: environment.name,
+          ),
+        );
+      } else if (FlutterChannel.parse(environment.name) != null ||
+          tryParseVersion(environment.name) != null) {
         throw CommandError(
-          'No environment named `${env.name}`\n'
+          'No environment named `${environment.name}`\n'
           'That looks like a version, to create a new environment '
-          'use `puro create my_env ${env.name}; puro use my_env`',
+          'use `puro create my_env ${environment.name}; puro use my_env`',
         );
       }
-      env.ensureExists();
+      environment.ensureExists();
     }
-    return env;
+    return environment;
   }
   var env = config.tryGetProjectEnv();
   if (env == null) {
@@ -45,7 +56,7 @@ Future<String> getDefaultEnvName({
   required Scope scope,
 }) async {
   final prefs = await readGlobalPrefs(scope: scope);
-  return prefs.hasDefaultEnvironment() ? prefs.defaultEnvironment : 'default';
+  return prefs.hasDefaultEnvironment() ? prefs.defaultEnvironment : 'stable';
 }
 
 Future<void> setDefaultEnvName({

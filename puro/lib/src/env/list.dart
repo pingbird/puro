@@ -9,6 +9,7 @@ import '../proto/puro.pb.dart';
 import '../provider.dart';
 import '../terminal.dart';
 import 'default.dart';
+import 'releases.dart';
 import 'version.dart';
 
 class EnvironmentInfoResult {
@@ -70,7 +71,7 @@ class ListEnvironmentResult extends CommandResult {
           for (var i = 0; i < lines.length; i++)
             lines[i].padRight(linePadding) +
                 format.color(
-                  ' (${results[i].version ?? 'unknown'})',
+                  ' (${results[i].environment.exists ? results[i].version ?? 'unknown' : 'not installed'})',
                   foregroundColor: Ansi8BitColor.grey,
                 ),
           '',
@@ -99,12 +100,25 @@ Future<ListEnvironmentResult> listEnvironments({
   final config = PuroConfig.of(scope);
   final results = <EnvironmentInfoResult>[];
 
+  for (final name in pseudoEnvironmentNames) {
+    final environment = config.getEnv(name);
+    FlutterVersion? version;
+    if (environment.exists) {
+      version = await getEnvironmentFlutterVersion(
+        scope: scope,
+        environment: environment,
+      );
+    }
+    results.add(EnvironmentInfoResult(environment, version));
+  }
+
   if (config.envsDir.existsSync()) {
     for (final childEntity in config.envsDir.listSync()) {
       if (childEntity is! Directory || !isValidName(childEntity.basename)) {
         continue;
       }
       final environment = config.getEnv(childEntity.basename);
+      if (pseudoEnvironmentNames.contains(environment.name)) continue;
       final version = await getEnvironmentFlutterVersion(
         scope: scope,
         environment: environment,
@@ -112,6 +126,7 @@ Future<ListEnvironmentResult> listEnvironments({
       results.add(EnvironmentInfoResult(environment, version));
     }
   }
+
   return ListEnvironmentResult(
     results: results,
     selectedEnvironment: config.tryGetProjectEnv()?.name ??
