@@ -108,7 +108,7 @@ Future<void> _installTrampoline({
     log.d('exists: $exists');
     log.d('needsChmod: $needsChmod');
     log.d('upToDate: $upToDate');
-    log.d('trampolineStat.mode: ${trampolineStat.mode.toStringAsFixed(16)}');
+    log.d('trampolineStat.mode: ${trampolineStat.mode.toRadixString(16)}');
     if (upToDate) {
       if (needsChmod) {
         await runProcess(scope, 'chmod', ['+x', trampolineFile.path]);
