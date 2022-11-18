@@ -91,7 +91,9 @@ Future<void> _installTrampoline({
   final installed = trampolineExists || executableExists;
 
   if (installed) {
-    final upToDate = trampolineExists &&
+    final trampolineStat = trampolineFile.statSync();
+    final upToDate = trampolineStat.type == FileSystemEntityType.file &&
+        (!Platform.isWindows || trampolineStat.mode & 0x111 != 0) &&
         await compareFileAtomic(
           scope: scope,
           file: trampolineFile,
@@ -112,6 +114,9 @@ Future<void> _installTrampoline({
   trampolineFile.deleteOrRenameSync();
   trampolineFile.parent.createSync(recursive: true);
   trampolineFile.writeAsStringSync(trampolineScript);
+  if (!Platform.isWindows) {
+    await runProcess(scope, 'chmod', ['+x', trampolineFile.path]);
+  }
 }
 
 Future<void> _installShims({

@@ -96,7 +96,7 @@ class PuroConfig {
     final absoluteProjectDir =
         projectDir == null ? null : fileSystem.directory(projectDir).absolute;
 
-    final resultProjectDir = absoluteProjectDir ??
+    var resultProjectDir = absoluteProjectDir ??
         findProjectDir(
           currentDir,
           'pubspec.yaml',
@@ -108,6 +108,8 @@ class PuroConfig {
           dotfileName,
         ) ??
         resultProjectDir;
+
+    resultProjectDir ??= parentProjectDir;
 
     final envPuroRoot = Platform.environment['PURO_ROOT'];
 
@@ -245,9 +247,9 @@ class PuroConfig {
   }
 
   File get dotfileForWriting {
-    if (projectDir?.path != parentProjectDir?.path) {
+    if (projectDir?.pathEquals(parentProjectDir!) ?? false) {
       throw CommandError(
-        'Ambiguous project selection between `$projectDir` and `$parentProjectDir`,'
+        'Ambiguous project selection between `${projectDir?.path}` and `${parentProjectDir?.path}`,'
         ' run this command in the parent directory or use --project to disambiguate',
       );
     }
