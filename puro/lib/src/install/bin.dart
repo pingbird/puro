@@ -95,7 +95,8 @@ Future<void> _installTrampoline({
   if (installed) {
     final trampolineStat = trampolineFile.statSync();
     final exists = trampolineStat.type == FileSystemEntityType.file;
-    final needsChmod = !Platform.isWindows && trampolineStat.mode & 0x111 == 0;
+    final needsChmod =
+        !Platform.isWindows && trampolineStat.mode & 0x111 != 0x111;
     final upToDate = exists &&
         await compareFileAtomic(
           scope: scope,
@@ -107,6 +108,7 @@ Future<void> _installTrampoline({
     log.d('exists: $exists');
     log.d('needsChmod: $needsChmod');
     log.d('upToDate: $upToDate');
+    log.d('trampolineStat.mode: ${trampolineStat.mode.toStringAsFixed(16)}');
     if (upToDate) {
       if (needsChmod) {
         await runProcess(scope, 'chmod', ['+x', trampolineFile.path]);
