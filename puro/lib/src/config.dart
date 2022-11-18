@@ -263,8 +263,12 @@ class PuroConfig {
   File get dotfileForWriting {
     if (!(projectDir?.pathEquals(parentProjectDir!) ?? true)) {
       throw CommandError(
-        'Ambiguous project selection between `${projectDir?.path}` and `${parentProjectDir?.path}`,'
-        ' run this command in the parent directory or use --project to disambiguate',
+        'Found projects in both `${projectDir?.path}` and `${parentProjectDir?.path}`,'
+        ' run this command in the parent directory or use `--project '
+        '${path.relative(projectDir!.path, from: path.current)}'
+        '` to switch regardless\n'
+        'This check is done to make sure nested projects arent using a different '
+        'version as their parent',
       );
     }
     if (puroDotfile == null) ensureParentProjectDir();
