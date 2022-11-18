@@ -102,11 +102,25 @@ class PuroConfig {
           'pubspec.yaml',
         );
 
-    final parentProjectDir = absoluteProjectDir ??
+    // Puro looks for a suitable project root in the following order:
+    //   1. Directory specified in `--project`
+    //   2. Closest parent directory with a `.puro.json`
+    //   3. Closest grandparent directory with a `pubspec.yaml`
+    //
+    // If Puro finds a grandparent and tries to access the parentProjectDir with
+    // dotfileForWriting, it throws an error indicating the selection is
+    // ambiguous.
+    final Directory? parentProjectDir = absoluteProjectDir ??
         findProjectDir(
           currentDir,
           dotfileName,
         ) ??
+        (resultProjectDir != null
+            ? findProjectDir(
+                resultProjectDir.parent,
+                'pubspec.yaml',
+              )
+            : null) ??
         resultProjectDir;
 
     resultProjectDir ??= parentProjectDir;
