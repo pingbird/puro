@@ -4,6 +4,7 @@ import '../command_result.dart';
 import '../config.dart';
 import '../extensions.dart';
 import '../file_lock.dart';
+import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 import '../version.dart';
@@ -46,6 +47,7 @@ Future<void> _installTrampoline({
 }) async {
   final version = await PuroVersion.of(scope);
   final config = PuroConfig.of(scope);
+  final log = PuroLogger.of(scope);
   final executableFile = config.puroExecutableFile;
   final trampolineFile = config.puroTrampolineFile;
   final executableIsTrampoline = executableFile.pathEquals(trampolineFile);
@@ -92,8 +94,9 @@ Future<void> _installTrampoline({
 
   if (installed) {
     final trampolineStat = trampolineFile.statSync();
+    log.d('trampolineStat: $trampolineStat');
     final upToDate = trampolineStat.type == FileSystemEntityType.file &&
-        (!Platform.isWindows || trampolineStat.mode & 0x111 != 0) &&
+        (Platform.isWindows || trampolineStat.mode & 0x111 != 0) &&
         await compareFileAtomic(
           scope: scope,
           file: trampolineFile,
