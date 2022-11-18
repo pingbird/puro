@@ -247,7 +247,7 @@ class PuroConfig {
   }
 
   File get dotfileForWriting {
-    if (projectDir?.pathEquals(parentProjectDir!) ?? false) {
+    if (!(projectDir?.pathEquals(parentProjectDir!) ?? true)) {
       throw CommandError(
         'Ambiguous project selection between `${projectDir?.path}` and `${parentProjectDir?.path}`,'
         ' run this command in the parent directory or use --project to disambiguate',
