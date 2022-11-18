@@ -268,7 +268,7 @@ class PuroConfig {
         '${path.relative(projectDir!.path, from: path.current)}'
         '` to switch regardless\n'
         'This check is done to make sure nested projects arent using a different '
-        'version as their parent',
+        'Flutter version as their parent',
       );
     }
     if (puroDotfile == null) ensureParentProjectDir();
