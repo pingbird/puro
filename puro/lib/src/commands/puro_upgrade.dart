@@ -21,6 +21,10 @@ class PuroUpgradeCommand extends PuroCommand {
           'Installs a new puro executable even if it wont replace an existing one',
       negatable: false,
     );
+    argParser.addFlag(
+      'path',
+      help: 'Whether or not to update the PATH automatically',
+    );
   }
 
   @override
@@ -130,6 +134,8 @@ class PuroUpgradeCommand extends PuroCommand {
         if (terminal.enableColor) '--color',
         if (terminal.enableStatus) '--progress',
         'install-puro',
+        if (argResults!.wasParsed('path'))
+          if (argResults!['path'] as bool) '--path' else '--no-path',
       ],
     );
     final stdoutFuture =
