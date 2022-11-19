@@ -72,7 +72,7 @@ Future<void> _installTrampoline({
       installLocation = puroDartFile.path;
       break;
     case PuroInstallationType.pub:
-      command = 'pub global run puro';
+      command = 'dart pub global run puro';
       installLocation = 'pub';
       break;
     default:

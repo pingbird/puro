@@ -34,7 +34,9 @@ With Puro you can:
 
     [:material-console: Standalone](https://puro.dev/builds/master/windows-x64/puro.exe){ .md-button }
 
-    Flutter also requires [git](https://git-scm.com/), it can be installed at [https://git-scm.com/download/win](https://git-scm.com/download/win)
+    ---
+        
+    note: Flutter requires [git](https://git-scm.com/) which can be installed at [https://git-scm.com/download/win](https://git-scm.com/download/win)
 
 === "Linux"
 
@@ -48,7 +50,9 @@ With Puro you can:
 
     [:material-console: Standalone](https://puro.dev/builds/master/linux-x64/puro){ .md-button }
 
-    Flutter also requires [git](https://git-scm.com/), it can be installed with most package managers e.g. apt:
+    ---
+
+    note: Flutter requires [git](https://git-scm.com/) which can be installed with most package managers e.g. apt:
 
     ```sh
     sudo apt install git
@@ -66,7 +70,9 @@ With Puro you can:
 
     [:material-console: Standalone](https://puro.dev/builds/master/darwin-x64/puro){ .md-button }
 
-    Flutter also requires [git](https://git-scm.com/), it can be installed with [Homebrew](https://brew.sh/) for macOS:
+    ---
+
+    note: Flutter requires [git](https://git-scm.com/) which can be installed with [Homebrew](https://brew.sh/) for macOS:
 
     ```sh
     brew install git
