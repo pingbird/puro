@@ -5,6 +5,25 @@ import 'create.dart';
 import 'releases.dart';
 import 'version.dart';
 
+Future<EnvConfig> _getPseudoEnvironment({
+  required Scope scope,
+  required String envName,
+}) async {
+  final config = PuroConfig.of(scope);
+  final environment = config.getEnv(envName);
+  if (!environment.exists) {
+    await createEnvironment(
+      scope: scope,
+      envName: environment.name,
+      flutterVersion: await FlutterVersion.query(
+        scope: scope,
+        version: environment.name,
+      ),
+    );
+  }
+  return environment;
+}
+
 Future<EnvConfig> getProjectEnvOrDefault({
   required Scope scope,
   String? envName,
@@ -14,14 +33,7 @@ Future<EnvConfig> getProjectEnvOrDefault({
     final environment = config.getEnv(envName);
     if (!environment.exists) {
       if (pseudoEnvironmentNames.contains(environment.name)) {
-        await createEnvironment(
-          scope: scope,
-          envName: environment.name,
-          flutterVersion: await FlutterVersion.query(
-            scope: scope,
-            version: environment.name,
-          ),
-        );
+        return _getPseudoEnvironment(scope: scope, envName: envName);
       } else if (FlutterChannel.parse(environment.name) != null ||
           tryParseVersion(environment.name) != null) {
         throw CommandError(
@@ -36,12 +48,19 @@ Future<EnvConfig> getProjectEnvOrDefault({
   }
   var env = config.tryGetProjectEnv();
   if (env == null) {
-    if (config.environmentOverride != null) {
+    final override = config.environmentOverride;
+    if (override != null) {
+      if (pseudoEnvironmentNames.contains(override)) {
+        return _getPseudoEnvironment(scope: scope, envName: override);
+      }
       throw CommandError(
         'Selected environment `${config.environmentOverride}` does not exist',
       );
     }
     final envName = await getDefaultEnvName(scope: scope);
+    if (pseudoEnvironmentNames.contains(envName)) {
+      return _getPseudoEnvironment(scope: scope, envName: envName);
+    }
     env = config.getEnv(envName);
     if (!env.exists) {
       throw CommandError(
