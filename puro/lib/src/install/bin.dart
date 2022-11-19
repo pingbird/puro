@@ -29,16 +29,39 @@ PROG_NAME="\$(follow_links "\${BASH_SOURCE[0]}")"
 Future<void> ensurePuroInstalled({
   required Scope scope,
   bool force = false,
+  bool promote = false,
 }) async {
   final config = PuroConfig.of(scope);
   if (!config.globalPrefsJsonFile.existsSync()) {
     await updateGlobalPrefs(scope: scope, fn: (prefs) async {});
   }
-  await _installTrampoline(
-    scope: scope,
-    force: force,
-  );
+  if (promote) {
+    await _promoteStandalone(scope: scope);
+  } else {
+    await _installTrampoline(
+      scope: scope,
+      force: force,
+    );
+  }
   await _installShims(scope: scope);
+}
+
+Future<void> _promoteStandalone({required Scope scope}) async {
+  final version = await PuroVersion.of(scope);
+  if (version.type == PuroInstallationType.distribution) {
+    return;
+  } else if (version.type != PuroInstallationType.standalone) {
+    throw CommandError('Only standalone executables can be promoted');
+  }
+  final config = PuroConfig.of(scope);
+  final executableFile = config.puroExecutableFile;
+  final trampolineFile = config.puroTrampolineFile;
+  final executableIsTrampoline = executableFile.pathEquals(trampolineFile);
+  if (!executableIsTrampoline && trampolineFile.existsSync()) {
+    trampolineFile.deleteSync();
+  }
+  executableFile.deleteOrRenameSync();
+  version.puroExecutable!.renameSync(executableFile.path);
 }
 
 Future<void> _installTrampoline({
@@ -136,44 +159,53 @@ Future<void> _installShims({
   required Scope scope,
 }) async {
   final config = PuroConfig.of(scope);
-  if (Platform.isWindows) {
-    await writePassiveAtomic(
-      scope: scope,
-      file: config.puroDartShimFile,
-      content: '@echo off\n'
-          'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
-          '"%PURO_BIN%\\puro.exe" dart %* & exit /B !ERRORLEVEL!',
-    );
-    await writePassiveAtomic(
-      scope: scope,
-      file: config.puroFlutterShimFile,
-      content: '@echo off\n'
-          'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
-          '"%PURO_BIN%\\puro.exe" flutter %* & exit /B !ERRORLEVEL!',
-    );
+  if (config.enableShims) {
+    if (Platform.isWindows) {
+      await writePassiveAtomic(
+        scope: scope,
+        file: config.puroDartShimFile,
+        content: '@echo off\n'
+            'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
+            '"%PURO_BIN%\\puro.exe" dart %* & exit /B !ERRORLEVEL!',
+      );
+      await writePassiveAtomic(
+        scope: scope,
+        file: config.puroFlutterShimFile,
+        content: '@echo off\n'
+            'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
+            '"%PURO_BIN%\\puro.exe" flutter %* & exit /B !ERRORLEVEL!',
+      );
+    } else {
+      await writePassiveAtomic(
+        scope: scope,
+        file: config.puroDartShimFile,
+        content: '$bashShimHeader\n'
+            'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
+            '"\$PURO_BIN/puro" dart "\$@"',
+      );
+      await writePassiveAtomic(
+        scope: scope,
+        file: config.puroFlutterShimFile,
+        content: '$bashShimHeader\n'
+            'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
+            '"\$PURO_BIN/puro" flutter "\$@"',
+      );
+      await runProcess(
+        scope,
+        'chmod',
+        [
+          '+x',
+          config.puroDartShimFile.path,
+          config.puroFlutterShimFile.path,
+        ],
+      );
+    }
   } else {
-    await writePassiveAtomic(
-      scope: scope,
-      file: config.puroDartShimFile,
-      content: '$bashShimHeader\n'
-          'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
-          '"\$PURO_BIN/puro" dart "\$@"',
-    );
-    await writePassiveAtomic(
-      scope: scope,
-      file: config.puroFlutterShimFile,
-      content: '$bashShimHeader\n'
-          'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
-          '"\$PURO_BIN/puro" flutter "\$@"',
-    );
-    await runProcess(
-      scope,
-      'chmod',
-      [
-        '+x',
-        config.puroDartShimFile.path,
-        config.puroFlutterShimFile.path,
-      ],
-    );
+    if (config.puroDartShimFile.existsSync()) {
+      config.puroDartShimFile.deleteSync();
+    }
+    if (config.puroFlutterShimFile.existsSync()) {
+      config.puroFlutterShimFile.deleteSync();
+    }
   }
 }

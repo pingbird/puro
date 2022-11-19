@@ -84,11 +84,10 @@ Future<File?> tryUpdateProfile({
   final home = config.homeDir.path;
   final bin = config.binDir.path.replaceAll(home, '\$HOME');
   final pubCacheBin = config.pubCacheBinDir.path.replaceAll(home, '\$HOME');
-  var export = 'export PATH="\$PATH:$bin"\n'
-      'export PATH="\$PATH:$pubCacheBin"\n'
-      'export PURO_ROOT="${config.puroRoot.path}"';
-  export =
-      export.trim().split('\n').map((e) => '$e $_kProfileComment').join('\n');
+  final export = [
+    for (final path in config.desiredEnvPaths) 'export PATH="\$PATH:$path"',
+    'export PURO_ROOT="${config.puroRoot.path}"'
+  ].map((e) => '$e $_kProfileComment').join('\n');
   return await lockFile(
     scope,
     file,
@@ -224,18 +223,14 @@ Future<bool> tryUpdateWindowsPath({
     valueName: 'Path',
   );
   final config = PuroConfig.of(scope);
-  final expectedPaths = {
-    config.binDir.path,
-    config.pubCacheBinDir.path,
-  };
   final paths = (currentPath ?? '').split(';');
-  if (!expectedPaths.any((e) => !paths.contains(e))) {
+  if (!config.desiredEnvPaths.any((e) => !paths.contains(e))) {
     // Already has all of our paths
     return false;
   }
   while (paths.isNotEmpty && paths.last.isEmpty) paths.removeLast();
-  paths.removeWhere(expectedPaths.contains);
-  paths.addAll(expectedPaths);
+  paths.removeWhere(config.desiredEnvPaths.contains);
+  paths.addAll(config.desiredEnvPaths);
   await writeWindowsRegistryValue(
     scope: scope,
     key: 'HKEY_CURRENT_USER\\Environment',

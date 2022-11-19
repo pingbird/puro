@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../command_result.dart';
 import '../config.dart';
 import '../provider.dart';
@@ -89,4 +91,28 @@ Future<void> setDefaultEnvName({
       prefs.defaultEnvironment = envName;
     },
   );
+  await updateDefaultEnvSymlink(
+    scope: scope,
+    name: envName,
+  );
+}
+
+Future<void> updateDefaultEnvSymlink({
+  required Scope scope,
+  String? name,
+}) async {
+  final config = PuroConfig.of(scope);
+  name ??= await getDefaultEnvName(scope: scope);
+  final environment = config.getEnv(name);
+  final path = environment.envDir.path;
+  final link = config.defaultEnvLink;
+  final stat = link.statSync();
+  if (stat.type != FileSystemEntityType.link) {
+    if (stat.type != FileSystemEntityType.notFound) {
+      link.deleteSync();
+    }
+    link.createSync(path);
+  } else if (link.targetSync() != path) {
+    link.updateSync(path);
+  }
 }

@@ -46,6 +46,7 @@ class PuroConfig {
     required this.environmentOverride,
     required this.puroBuildsUrl,
     required this.buildTarget,
+    required this.enableShims,
   }) : puroRoot = puroRoot.absolute;
 
   factory PuroConfig.fromCommandLine({
@@ -174,6 +175,7 @@ class PuroConfig {
       environmentOverride: environmentOverride,
       puroBuildsUrl: Uri.parse('https://puro.dev/builds'),
       buildTarget: PuroBuildTarget.query(),
+      enableShims: false,
     );
   }
 
@@ -190,6 +192,7 @@ class PuroConfig {
   final String? environmentOverride;
   final Uri puroBuildsUrl;
   final PuroBuildTarget buildTarget;
+  final bool enableShims;
 
   static const dotfileName = '.puro.json';
 
@@ -217,9 +220,17 @@ class PuroConfig {
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
+  late final Link defaultEnvLink = puroRoot.childLink('default');
+  late final Directory defaultEnvDir = puroRoot.childDirectory('default');
   late final Uri puroLatestVersionUrl = puroBuildsUrl.append(path: 'latest');
   late final File globalPrefsJsonFile = puroRoot.childFile('prefs.json');
   late final File puroLatestVersionFile = puroRoot.childFile('latest_version');
+
+  late List<String> desiredEnvPaths = [
+    binDir.path,
+    pubCacheBinDir.path,
+    defaultEnvDir.childDirectory('flutter').childDirectory('bin').path,
+  ];
 
   Directory ensureParentProjectDir() {
     final dir = parentProjectDir;

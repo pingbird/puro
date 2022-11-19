@@ -15,6 +15,11 @@ class PuroInstallCommand extends PuroCommand {
       negatable: false,
     );
     argParser.addFlag(
+      'promote',
+      help: 'Promotes a standalone executable to a full installation',
+      negatable: false,
+    );
+    argParser.addFlag(
       'path',
       help: 'Whether or not to update the PATH automatically',
     );
@@ -38,16 +43,22 @@ class PuroInstallCommand extends PuroCommand {
     final config = PuroConfig.of(scope);
 
     final force = argResults!['force'] as bool;
+    final promote = argResults!['promote'] as bool;
     final updatePath =
         argResults!.wasParsed('path') ? argResults!['path'] as bool : null;
 
-    await ensurePuroInstalled(scope: scope, force: force);
+    await ensurePuroInstalled(
+      scope: scope,
+      force: force,
+      promote: promote,
+    );
 
     // Update the PATH by default if this is a distribution install.
     String? profilePath;
     var updatedWindowsRegistry = false;
     final homeDir = config.homeDir.path;
-    if (updatePath ?? puroVersion.type == PuroInstallationType.distribution) {
+    if (updatePath ??
+        (puroVersion.type == PuroInstallationType.distribution || promote)) {
       if (Platform.isLinux || Platform.isMacOS) {
         final profile = await tryUpdateProfile(scope: scope);
         profilePath = profile?.path.replaceAll(homeDir, '~');

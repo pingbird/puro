@@ -38,12 +38,14 @@ class PuroVersion {
     required this.type,
     required this.target,
     required this.packageRoot,
+    required this.puroExecutable,
   });
 
   final Version semver;
   final PuroInstallationType type;
   final PuroBuildTarget target;
   final Directory? packageRoot;
+  final File? puroExecutable;
 
   bool get isUnknown => semver == unknownSemver;
 
@@ -150,6 +152,7 @@ class PuroVersion {
     log.d('scriptExtension: $scriptExtension');
 
     var installationType = PuroInstallationType.unknown;
+    File? puroExecutable;
     if (scriptFile.basename == 'puro.dart' &&
         scriptFile.parent.basename == 'bin' &&
         scriptFile.parent.parent.parent.childDirectory('.git').existsSync()) {
@@ -164,6 +167,7 @@ class PuroVersion {
         installationType = PuroInstallationType.development;
       }
     } else if (scriptIsExecutable) {
+      puroExecutable = config.fileSystem.file(executablePath);
       if (path.equals(
         executablePath,
         config.puroExecutableFile.path,
@@ -212,6 +216,7 @@ class PuroVersion {
       type: installationType,
       target: target,
       packageRoot: packageRoot,
+      puroExecutable: puroExecutable,
     );
   });
 
