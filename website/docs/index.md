@@ -20,19 +20,15 @@ With Puro you can:
 
 === "Windows"
 
-    Puro has a graphical installer for Windows:
-
-    [:material-monitor-arrow-down-variant: Desktop Installer](https://puro.dev/builds/master/windows-x64/puro_installer.exe){ .md-button .md-button--primary }
-
-    It can also be installed from powershell:
+    Puro can be installed on Windows with PowerShell:
 
     ```ps1
-    Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro.exe" -OutFile "$env:temp\puro.exe"; Start-Process "$env:temp\puro.exe" install-puro --promote
+    Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro.exe" -OutFile "$env:temp\puro.exe"; &"$env:temp\puro.exe" install-puro --promote
     ```
 
-    Or as a standalone executable:
+    It also has a graphical installer and standalone executable:
 
-    [:material-console: Standalone](https://puro.dev/builds/master/windows-x64/puro.exe){ .md-button }
+    [:material-monitor-arrow-down-variant: Desktop Installer](https://puro.dev/builds/master/windows-x64/puro_installer.exe){ .md-button .md-button--primary } [:material-console: Standalone](https://puro.dev/builds/master/windows-x64/puro.exe){ .md-button }
 
     ---
         

@@ -47,6 +47,12 @@ class PuroInstallCommand extends PuroCommand {
     final updatePath =
         argResults!.wasParsed('path') ? argResults!['path'] as bool : null;
 
+    if (updatePath != null) {
+      updateGlobalPrefs(scope: scope, fn: (prefs) async {
+        prefs
+      });
+    }
+
     await ensurePuroInstalled(
       scope: scope,
       force: force,
@@ -87,7 +93,7 @@ class PuroInstallCommand extends PuroCommand {
         ),
       if (updatedWindowsRegistry)
         CommandMessage(
-          (format) => 'Updated PATH in windows registry',
+          (format) => 'Updated PATH in the Windows registry',
         ),
       CommandMessage(
         (format) =>

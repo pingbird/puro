@@ -39,7 +39,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
 
   if (desiredEngineVersion == null) {
     throw AssertionError(
-      'Flutter installation corrupt: Could not find engine version',
+      'Flutter installation corrupt: Could not find engine version at ${flutterConfig.engineVersionFile.path}',
     );
   }
 
