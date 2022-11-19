@@ -27,8 +27,6 @@ class PubCommand extends PuroCommand {
       scope: scope,
       environment: environment,
       args: ['pub', ...argResults!.arguments],
-      onStdout: stdout.add,
-      onStderr: stderr.add,
       mode: ProcessStartMode.inheritStdio,
     );
     await runner.exitPuro(exitCode);
