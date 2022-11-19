@@ -82,10 +82,9 @@ Future<File?> tryUpdateProfile({
     return null;
   }
   final home = config.homeDir.path;
-  final bin = config.binDir.path.replaceAll(home, '\$HOME');
-  final pubCacheBin = config.pubCacheBinDir.path.replaceAll(home, '\$HOME');
   final export = [
-    for (final path in config.desiredEnvPaths) 'export PATH="\$PATH:$path"',
+    for (final path in config.desiredEnvPaths)
+      'export PATH="\$PATH:${path.replaceAll(home, '\$HOME')}"',
     'export PURO_ROOT="${config.puroRoot.path}"'
   ].map((e) => '$e $_kProfileComment').join('\n');
   return await lockFile(

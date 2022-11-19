@@ -47,12 +47,6 @@ class PuroInstallCommand extends PuroCommand {
     final updatePath =
         argResults!.wasParsed('path') ? argResults!['path'] as bool : null;
 
-    if (updatePath != null) {
-      updateGlobalPrefs(scope: scope, fn: (prefs) async {
-        prefs
-      });
-    }
-
     await ensurePuroInstalled(
       scope: scope,
       force: force,
