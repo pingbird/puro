@@ -325,8 +325,7 @@ Future<CommandMessage?> checkIfUpdateAvailable({
       },
     );
     return CommandMessage(
-      (format) =>
-          'A new version of Puro is available, run `puro upgrade-puro` to upgrade',
+      'A new version of Puro is available, run `puro upgrade-puro` to upgrade',
       type: CompletionType.info,
     );
   } else if (shouldVersionCheck) {

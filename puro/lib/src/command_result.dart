@@ -29,8 +29,7 @@ class CommandErrorResult extends CommandResult {
   final StackTrace stackTrace;
 
   @override
-  CommandMessage get message =>
-      CommandMessage((format) => '$exception\n$stackTrace');
+  CommandMessage get message => CommandMessage('$exception\n$stackTrace');
 
   @override
   bool get success => false;
@@ -60,12 +59,12 @@ class CommandHelpResult extends CommandResult {
   Iterable<CommandMessage> get messages => [
         if (message != null)
           CommandMessage(
-            (format) => help!,
+            help!,
             type: CompletionType.failure,
           ),
         if (usage != null)
           CommandMessage(
-            (format) => usage!,
+            usage!,
             type: message == null && didRequestHelp
                 ? CompletionType.plain
                 : CompletionType.info,
@@ -85,14 +84,14 @@ class BasicMessageResult extends CommandResult {
     this.success = true,
     CompletionType? type,
     this.model,
-  }) : messages = [CommandMessage((format) => message, type: type)];
+  }) : messages = [CommandMessage(message, type: type)];
 
   BasicMessageResult.format(
     String Function(OutputFormatter format) message, {
     this.success = true,
     CompletionType? type,
     this.model,
-  }) : messages = [CommandMessage(message, type: type)];
+  }) : messages = [CommandMessage.format(message, type: type)];
 
   BasicMessageResult.list(
     this.messages, {
@@ -136,7 +135,9 @@ abstract class CommandResult {
 }
 
 class CommandMessage {
-  CommandMessage(this.message, {this.type});
+  CommandMessage(String message, {this.type}) : message = ((format) => message);
+  CommandMessage.format(this.message, {this.type});
+
   final CompletionType? type;
   final String Function(OutputFormatter format) message;
 

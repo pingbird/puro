@@ -56,7 +56,7 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
   log.d('puroFlutterShimFile: ${config.puroFlutterShimFile.path}');
 
   if (offending.isNotEmpty) {
-    return CommandMessage(
+    return CommandMessage.format(
       (format) => 'Other Flutter or Dart installations detected\n'
           'Puro recommends removing the following from your PATH:\n'
           '${offending.map((e) => '${format.color(

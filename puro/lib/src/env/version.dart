@@ -44,14 +44,14 @@ class FlutterVersion {
 
   @override
   String toString() {
-    final commitStr = commit.substring(0, 7);
+    final commitStr = commit.substring(0, 10);
     if (tag != null && tag != '$version' && tag != 'v$version') {
-      return 'tags/$tag -> $commitStr';
+      return 'tags / $tag / $commitStr';
     } else if (version != null) {
       if (branch != null) {
-        return '$branch/$version -> $commitStr';
+        return '$branch / $version / $commitStr';
       } else {
-        return '$version -> $commitStr';
+        return '$version / $commitStr';
       }
     } else {
       return commitStr;
@@ -246,8 +246,10 @@ Future<FlutterVersion?> getEnvironmentFlutterVersion({
   if (versionFile.existsSync()) {
     version = tryParseVersion(versionFile.readAsStringSync().trim());
   }
+  final branch = await git.getBranch(repository: flutterConfig.sdkDir);
   return FlutterVersion(
     commit: commit,
     version: version,
+    branch: branch,
   );
 }

@@ -28,8 +28,7 @@ class EnvCreateResult extends CommandResult {
 
   @override
   CommandMessage get message => CommandMessage(
-        (format) =>
-            'Created new environment at `${environment.flutterDir.path}`',
+        'Created new environment at `${environment.flutterDir.path}`',
       );
 }
 
@@ -270,16 +269,30 @@ Future<void> cloneFlutterWithSharedRefs({
       all: true,
     );
 
+    Future<void> guardCheckout(Future<void> Function() fn) async {
+      // Uninstall shims so they don't interfere with merges
+      await uninstallEnvShims(scope: scope, environment: environment);
+      try {
+        await fn();
+      } catch (exception, stackTrace) {
+        throw CommandError.list([
+          CommandMessage(
+            'To overwrite local changes, try passing --force',
+            type: CompletionType.info,
+          ),
+          CommandMessage('$exception\n$stackTrace'),
+        ]);
+      } finally {
+        await installEnvShims(scope: scope, environment: environment);
+      }
+    }
+
     final branch = flutterVersion.branch;
     if (branch != null) {
       // Unstage changes, excluded files may have been added by accident.
       await git.reset(repository: repository);
 
-      final currentBranch = await git.tryRevParseSingle(
-        repository: repository,
-        arg: 'HEAD',
-        abbreviation: true,
-      );
+      final currentBranch = await git.getBranch(repository: repository);
 
       if (branch == currentBranch) {
         // Reset the current branches commit to the target commit, attempt to
@@ -298,27 +311,34 @@ Future<void> cloneFlutterWithSharedRefs({
             );
           }
         } else {
-          // Uninstall shims so they don't interfere with merges
-          await uninstallEnvShims(scope: scope, environment: environment);
-          try {
+          await guardCheckout(() async {
             await git.reset(
               repository: repository,
               ref: flutterVersion.commit,
               merge: true,
             );
-          } finally {
-            await installEnvShims(scope: scope, environment: environment);
-          }
+          });
         }
       } else {
-        // Reset branch to current commit, this allows flutter to correctly detect
-        // its version and feature flags.
-        await git.checkout(
-          repository: repository,
-          newBranch: branch,
-          ref: flutterVersion.commit,
-          force: force,
-        );
+        // Delete the target branch if it exists (unless we are on a fork).
+        if (await git.checkBranchExists(
+              repository: repository,
+              branch: branch,
+            ) &&
+            forkRemoteUrl == null) {
+          await git.deleteBranch(repository: repository, branch: branch);
+        }
+
+        await guardCheckout(() async {
+          // Reset branch to current commit, this allows flutter to correctly detect
+          // its version and feature flags.
+          await git.checkout(
+            repository: repository,
+            newBranch: branch,
+            ref: flutterVersion.commit,
+            force: force,
+          );
+        });
       }
 
       await git.branch(

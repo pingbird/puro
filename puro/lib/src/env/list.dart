@@ -41,7 +41,7 @@ class ListEnvironmentResult extends CommandResult {
 
   @override
   CommandMessage get message {
-    return CommandMessage(
+    return CommandMessage.format(
       (format) {
         if (results.isEmpty) {
           return 'No environments, use `puro create` to create one';

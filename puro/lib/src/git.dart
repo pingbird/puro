@@ -450,7 +450,7 @@ class GitClient {
     final result = await _git(
       [
         'branch',
-        '-d',
+        '-D',
         branch,
       ],
       directory: repository,
@@ -465,7 +465,7 @@ class GitClient {
     bool short = false,
     String ref = 'HEAD',
   }) async {
-    final result = await revParseSingle(
+    final result = await tryRevParseSingle(
       repository: repository,
       short: short,
       arg: ref,

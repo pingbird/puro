@@ -229,7 +229,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     String message, {
     CompletionType? type = CompletionType.info,
   }) {
-    messages.add(CommandMessage((format) => message, type: type));
+    messages.add(CommandMessage(message, type: type));
   }
 
   var _exiting = false;

@@ -47,9 +47,9 @@ class VersionCommand extends PuroCommand {
       if (externalMessage != null) externalMessage,
       if (updateMessage != null) updateMessage,
       CommandMessage(
-        (format) => 'Puro ${puroVersion.semver} '
-            '(${puroVersion.type.name}/${puroVersion.target.name})\n'
-            'Dart ${Platform.version}',
+        'Puro ${puroVersion.semver} '
+        '(${puroVersion.type.name}/${puroVersion.target.name})\n'
+        'Dart ${Platform.version}',
         type: CompletionType.info,
       ),
     ]);

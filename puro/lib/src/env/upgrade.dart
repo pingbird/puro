@@ -30,7 +30,7 @@ class EnvUpgradeResult extends CommandResult {
   bool get success => true;
 
   @override
-  CommandMessage get message => CommandMessage(
+  CommandMessage get message => CommandMessage.format(
         (format) => from.commit == to.commit
             ? toolInfo.didUpdateTool || toolInfo.didUpdateEngine
                 ? 'Finished installation of $to in environment `${environment.name}`'
