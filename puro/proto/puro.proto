@@ -56,7 +56,8 @@ message PuroGlobalPrefsModel {
   optional string lastUpdateCheck = 2;
   optional string lastUpdateNotification = 3;
   optional bool enableUpdateCheck = 4;
-  optional bool enablePathChange = 5;
+  optional bool enableProfileUpdate = 5;
+  optional string profileOverride = 6;
 }
 
 message PuroEnvPrefsModel {

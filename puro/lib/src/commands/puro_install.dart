@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../models.dart';
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
@@ -23,6 +24,11 @@ class PuroInstallCommand extends PuroCommand {
       'path',
       help: 'Whether or not to update the PATH automatically',
     );
+    argParser.addOption(
+      'profile',
+      help:
+          'Overrides the profile script puro appends to when updating the PATH',
+    );
   }
 
   @override
@@ -44,6 +50,7 @@ class PuroInstallCommand extends PuroCommand {
 
     final force = argResults!['force'] as bool;
     final promote = argResults!['promote'] as bool;
+    final profileOverride = argResults!['profile'] as String?;
     final updatePath =
         argResults!.wasParsed('path') ? argResults!['path'] as bool : null;
 
@@ -53,14 +60,32 @@ class PuroInstallCommand extends PuroCommand {
       promote: promote,
     );
 
+    final PuroGlobalPrefsModel prefs;
+    if (profileOverride != null || updatePath != null) {
+      prefs = await updateGlobalPrefs(
+        scope: scope,
+        fn: (prefs) {
+          if (profileOverride != null) prefs.profileOverride = profileOverride;
+          if (updatePath != null) prefs.enableProfileUpdate = updatePath;
+        },
+      );
+    } else {
+      prefs = await readGlobalPrefs(scope: scope);
+    }
+
     // Update the PATH by default if this is a distribution install.
     String? profilePath;
     var updatedWindowsRegistry = false;
     final homeDir = config.homeDir.path;
-    if (updatePath ??
-        (puroVersion.type == PuroInstallationType.distribution || promote)) {
+    if (puroVersion.type == PuroInstallationType.distribution || promote
+        ? !prefs.hasEnableProfileUpdate() || prefs.enableProfileUpdate
+        : updatePath ?? false) {
       if (Platform.isLinux || Platform.isMacOS) {
-        final profile = await tryUpdateProfile(scope: scope);
+        final profile = await tryUpdateProfile(
+          scope: scope,
+          profileOverride:
+              prefs.hasProfileOverride() ? prefs.profileOverride : null,
+        );
         profilePath = profile?.path.replaceAll(homeDir, '~');
       } else if (Platform.isWindows) {
         updatedWindowsRegistry = await tryUpdateWindowsPath(

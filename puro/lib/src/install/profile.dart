@@ -75,9 +75,12 @@ const _kProfileComment = '# Added by Puro';
 
 Future<File?> tryUpdateProfile({
   required Scope scope,
+  String? profileOverride,
 }) async {
   final config = PuroConfig.of(scope);
-  final file = detectProfile(scope: scope);
+  final file = profileOverride == null
+      ? detectProfile(scope: scope)
+      : config.fileSystem.file(profileOverride).absolute;
   if (file == null) {
     return null;
   }
