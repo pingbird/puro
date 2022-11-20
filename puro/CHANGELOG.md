@@ -1,3 +1,9 @@
+## 1.1.7
+
+* Bug fixes
+* Added global configuration for bash/zsh profiles
+* Improved Windows installer
+
 ## 1.1.6
 
 * Bug fixes
