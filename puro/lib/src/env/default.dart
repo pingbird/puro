@@ -111,6 +111,7 @@ Future<void> updateDefaultEnvSymlink({
     if (link.existsSync()) {
       link.deleteSync();
     }
+    link.parent.createSync(recursive: true);
     link.createSync(path);
   } else if (link.targetSync() != path) {
     link.updateSync(path);
