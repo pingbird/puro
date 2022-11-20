@@ -37,18 +37,18 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji 
+      emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
   - pymdownx.tabbed:
-      alternate_style: true 
+      alternate_style: true
 extra:
   generator: false
   analytics:
     provider: google
-    property: G-245TJ8036B'
+    property: G-245TJ8036B
   social:
     - icon: fontawesome/solid/heart
       link: https://tst.sh
