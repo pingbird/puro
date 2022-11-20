@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as path;
 import 'package:process/process.dart';
+import 'package:protobuf/protobuf.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../models.dart';
@@ -355,6 +356,9 @@ class PuroConfig {
         '  releasesJsonUrl: $releasesJsonUrl,\n'
         '  flutterStorageBaseUrl: $flutterStorageBaseUrl,\n'
         '  environmentOverride: $environmentOverride,\n'
+        '  puroBuildsUrl: $puroBuildsUrl,\n'
+        '  buildTarget: $buildTarget,\n'
+        '  enableShims: $enableShims,\n'
         ')';
   }
 
@@ -589,4 +593,56 @@ Future<PuroGlobalPrefsModel> updateGlobalPrefs({
     },
     mode: FileMode.append,
   );
+}
+
+class PuroInternalPrefsVars {
+  PuroInternalPrefsVars({required this.scope, required this.config});
+
+  final Scope scope;
+  final PuroConfig config;
+  PuroGlobalPrefsModel? prefs;
+
+  static final _fieldInfo = PuroGlobalPrefsModel.getDefault().info_.fieldInfo;
+  static final _fields = {
+    for (final field in _fieldInfo.values) field.name: field,
+  };
+
+  Future<dynamic> readVar(String key) async {
+    if (!_fields.containsKey(key)) {
+      throw 'No such key ${jsonEncode(key)}, valid keys: ${_fields.keys.toList()}';
+    }
+    prefs ??= await readGlobalPrefs(scope: scope);
+    final data = prefs!.toProto3Json() as Map<String, dynamic>;
+    return data[key];
+  }
+
+  Future<void> writeVar(String key, String value) async {
+    final field = _fields[key];
+    if (field == null) {
+      throw 'No such key ${jsonEncode(key)}, valid keys: ${_fields.keys.toList()}';
+    }
+    await updateGlobalPrefs(
+      scope: scope,
+      fn: (prefs) {
+        final data = prefs.toProto3Json() as Map<String, dynamic>;
+
+        if (value == 'null') {
+          data.remove(key);
+        } else {
+          // If the field is a string, and the value does not start with ", just use
+          // that literal value, otherwise we interpret it as json.
+          if (field.type & PbFieldType.OS == PbFieldType.OS &&
+              !value.startsWith('"')) {
+            data[key] = value;
+          } else {
+            data[key] = jsonDecode(value);
+          }
+          prefs = prefs;
+        }
+
+        prefs.clear();
+        prefs.mergeFromProto3Json(data);
+      },
+    );
+  }
 }

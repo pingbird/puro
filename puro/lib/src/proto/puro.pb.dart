@@ -949,6 +949,12 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
             ? ''
             : 'enableUpdateCheck',
         protoName: 'enableUpdateCheck')
+    ..aOB(
+        5,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'enablePathChange',
+        protoName: 'enablePathChange')
     ..hasRequiredFields = false;
 
   PuroGlobalPrefsModel._() : super();
@@ -957,6 +963,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     $core.String? lastUpdateCheck,
     $core.String? lastUpdateNotification,
     $core.bool? enableUpdateCheck,
+    $core.bool? enablePathChange,
   }) {
     final _result = create();
     if (defaultEnvironment != null) {
@@ -970,6 +977,9 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     }
     if (enableUpdateCheck != null) {
       _result.enableUpdateCheck = enableUpdateCheck;
+    }
+    if (enablePathChange != null) {
+      _result.enablePathChange = enablePathChange;
     }
     return _result;
   }
@@ -1048,6 +1058,18 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   $core.bool hasEnableUpdateCheck() => $_has(3);
   @$pb.TagNumber(4)
   void clearEnableUpdateCheck() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get enablePathChange => $_getBF(4);
+  @$pb.TagNumber(5)
+  set enablePathChange($core.bool v) {
+    $_setBool(4, v);
+  }
+
+  @$pb.TagNumber(5)
+  $core.bool hasEnablePathChange() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEnablePathChange() => clearField(5);
 }
 
 class PuroEnvPrefsModel extends $pb.GeneratedMessage {
