@@ -115,7 +115,7 @@ Future<void> installWorkspaceEnvironment({
 }
 
 /// Switches the environment of the current project.
-Future<void> switchEnvironment({
+Future<EnvConfig> switchEnvironment({
   required Scope scope,
   required String? envName,
   bool? vscode,
@@ -137,4 +137,5 @@ Future<void> switchEnvironment({
     vscode: vscode,
     intellij: intellij,
   );
+  return environment;
 }

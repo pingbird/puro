@@ -66,7 +66,7 @@ class EnvUseCommand extends PuroCommand {
     if (vscodeOverride == null && await isRunningInVscode(scope: scope)) {
       vscodeOverride = true;
     }
-    await switchEnvironment(
+    final environment = await switchEnvironment(
       scope: scope,
       envName: envName,
       vscode: vscodeOverride,
@@ -75,7 +75,7 @@ class EnvUseCommand extends PuroCommand {
           : null,
     );
     return BasicMessageResult(
-      'Switched to environment `$envName`',
+      'Switched to environment `${environment.name}`',
     );
   }
 }

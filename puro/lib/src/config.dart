@@ -220,8 +220,7 @@ class PuroConfig {
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
-  late final Link defaultEnvLink = puroRoot.childLink('default');
-  late final Directory defaultEnvDir = puroRoot.childDirectory('default');
+  late final Link defaultEnvLink = envsDir.childLink('default');
   late final Uri puroLatestVersionUrl = puroBuildsUrl.append(path: 'latest');
   late final File globalPrefsJsonFile = puroRoot.childFile('prefs.json');
   late final File puroLatestVersionFile = puroRoot.childFile('latest_version');
@@ -229,7 +228,7 @@ class PuroConfig {
   late List<String> desiredEnvPaths = [
     binDir.path,
     pubCacheBinDir.path,
-    defaultEnvDir.childDirectory('flutter').childDirectory('bin').path,
+    getEnv('default', resolve: false).flutter.binDir.path,
   ];
 
   Directory ensureParentProjectDir() {
@@ -254,7 +253,15 @@ class PuroConfig {
     return FlutterCacheConfig(sharedCachesDir.childDirectory(engineVersion));
   }
 
-  EnvConfig getEnv(String name) {
+  EnvConfig getEnv(String name, {bool resolve = true}) {
+    if (resolve && name == 'default') {
+      if (defaultEnvLink.existsSync()) {
+        final target = fileSystem.directory(defaultEnvLink.targetSync());
+        name = target.basename;
+      } else {
+        name = 'stable';
+      }
+    }
     name = name.toLowerCase();
     ensureValidName(name);
     return EnvConfig(parentConfig: this, envDir: envsDir.childDirectory(name));
@@ -268,7 +275,8 @@ class PuroConfig {
     if (parentPuroDotfile?.existsSync() != true) return null;
     final dotfile = readDotfile();
     if (!dotfile.hasEnv()) return null;
-    return getEnv(dotfile.env);
+    final result = getEnv(dotfile.env);
+    return result.exists ? result : null;
   }
 
   File get dotfileForWriting {

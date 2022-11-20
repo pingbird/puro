@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../command_result.dart';
 import '../config.dart';
+import '../env/default.dart';
 import '../extensions.dart';
 import '../file_lock.dart';
 import '../logger.dart';
@@ -44,6 +45,7 @@ Future<void> ensurePuroInstalled({
     );
   }
   await _installShims(scope: scope);
+  await updateDefaultEnvSymlink(scope: scope);
 }
 
 Future<void> _promoteStandalone({required Scope scope}) async {

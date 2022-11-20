@@ -106,6 +106,7 @@ Future<void> updateDefaultEnvSymlink({
   final environment = config.getEnv(name);
   final path = environment.envDir.path;
   final link = config.defaultEnvLink;
+
   final stat = link.statSync();
   if (stat.type != FileSystemEntityType.link) {
     if (stat.type != FileSystemEntityType.notFound) {
