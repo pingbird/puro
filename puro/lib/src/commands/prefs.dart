@@ -11,6 +11,9 @@ class PrefsCommand extends PuroCommand {
   final description = 'Manages hidden configuration settings';
 
   @override
+  bool get hidden => true;
+
+  @override
   String? get argumentUsage => '<key> [value]';
 
   @override

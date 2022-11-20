@@ -107,9 +107,8 @@ Future<void> updateDefaultEnvSymlink({
   final path = environment.envDir.path;
   final link = config.defaultEnvLink;
 
-  final stat = link.statSync();
-  if (stat.type != FileSystemEntityType.link) {
-    if (stat.type != FileSystemEntityType.notFound) {
+  if (!FileSystemEntity.isLinkSync(link.path)) {
+    if (link.existsSync()) {
       link.deleteSync();
     }
     link.createSync(path);
