@@ -191,7 +191,7 @@ class HttpException implements Exception {
     );
   }
 
-  static void ensureSuccess(Response response) {
+  static void ensureSuccess(BaseResponse response) {
     if (response.statusCode ~/ 100 != 2) {
       throw HttpException.fromResponse(response);
     }

@@ -58,62 +58,54 @@ enum EngineBuildTarget {
     }
     throw AssertionError('Unsupported build target: $os $arch');
   }
-}
 
-Future<Uri> getEngineReleaseZipUrl({
-  required Scope scope,
-  required String engineVersion,
-}) async {
-  final config = PuroConfig.of(scope);
-  final baseUrl = config.flutterStorageBaseUrl;
-  final EngineOS os;
-  final EngineArch arch;
-  if (Platform.isWindows) {
-    os = EngineOS.windows;
-    arch = EngineArch.x64;
-  } else if (Platform.isMacOS) {
-    os = EngineOS.macOS;
-    final sysctlResult = await runProcess(
-      scope,
-      'sysctl',
-      ['-n', 'hw.optional.arm64'],
-      runInShell: true,
-    );
-    if (sysctlResult.exitCode != 0 || sysctlResult.stdout == '0') {
+  static Future<EngineBuildTarget> query({
+    required Scope scope,
+  }) async {
+    final EngineOS os;
+    final EngineArch arch;
+    if (Platform.isWindows) {
+      os = EngineOS.windows;
       arch = EngineArch.x64;
-    } else if (sysctlResult.stdout == '1') {
-      arch = EngineArch.arm64;
-    } else {
-      throw AssertionError(
-        'Unexpected result from sysctl: `${sysctlResult.stdout}`',
+    } else if (Platform.isMacOS) {
+      os = EngineOS.macOS;
+      final sysctlResult = await runProcess(
+        scope,
+        'sysctl',
+        ['-n', 'hw.optional.arm64'],
+        runInShell: true,
       );
-    }
-  } else if (Platform.isLinux) {
-    os = EngineOS.linux;
-    final unameResult = await runProcess(
-      scope,
-      'uname',
-      ['-m'],
-      runInShell: true,
-      throwOnFailure: true,
-    );
-    final unameStdout = unameResult.stdout as String;
-    if (const ['arm64', 'aarch64', 'armv8'].any(unameStdout.contains)) {
-      arch = EngineArch.arm64;
-    } else if (const ['x64', 'x86_64'].any(unameStdout.contains)) {
-      arch = EngineArch.x64;
+      if (sysctlResult.exitCode != 0 || sysctlResult.stdout == '0') {
+        arch = EngineArch.x64;
+      } else if (sysctlResult.stdout == '1') {
+        arch = EngineArch.arm64;
+      } else {
+        throw AssertionError(
+          'Unexpected result from sysctl: `${sysctlResult.stdout}`',
+        );
+      }
+    } else if (Platform.isLinux) {
+      os = EngineOS.linux;
+      final unameResult = await runProcess(
+        scope,
+        'uname',
+        ['-m'],
+        runInShell: true,
+        throwOnFailure: true,
+      );
+      final unameStdout = unameResult.stdout as String;
+      if (const ['arm64', 'aarch64', 'armv8'].any(unameStdout.contains)) {
+        arch = EngineArch.arm64;
+      } else if (const ['x64', 'x86_64'].any(unameStdout.contains)) {
+        arch = EngineArch.x64;
+      } else {
+        throw AssertionError('Unrecognized architecture: `$unameStdout`');
+      }
     } else {
-      throw AssertionError('Unrecognized architecture: `$unameStdout`');
+      throw UnsupportedOSError();
     }
-  } else {
-    throw UnsupportedOSError();
+    return EngineBuildTarget.from(os, arch);
   }
-
-  final target = EngineBuildTarget.from(os, arch);
-
-  return baseUrl.append(
-    path: 'flutter_infra_release/flutter/$engineVersion/${target.zipName}',
-  );
 }
 
 Future<void> unzip({
@@ -186,18 +178,39 @@ Future<bool> downloadSharedEngine({
 
   if (!sharedCache.exists) {
     log.v('Downloading engine');
-    final engineZipUrl = await getEngineReleaseZipUrl(
-      scope: scope,
-      engineVersion: engineVersion,
+
+    final target = await EngineBuildTarget.query(scope: scope);
+    final engineZipUrl = config.flutterStorageBaseUrl.append(
+      path: 'flutter_infra_release/flutter/$engineVersion/${target.zipName}',
     );
     sharedCache.cacheDir.createSync(recursive: true);
     final zipFile = config.sharedCachesDir.childFile('$engineVersion.zip');
-    await downloadFile(
-      scope: scope,
-      url: engineZipUrl,
-      file: zipFile,
-      description: 'Downloading engine',
-    );
+    try {
+      await downloadFile(
+        scope: scope,
+        url: engineZipUrl,
+        file: zipFile,
+        description: 'Downloading engine',
+      );
+    } on HttpException catch (e) {
+      // Flutter versions older than 3.0.0 don't have builds for M1 chips but
+      // the intel ones will run fine, in the future we could check the contents
+      // of shared.sh or the git tree, but this is much simpler.
+      if (e.statusCode == 404 && target == EngineBuildTarget.macosArm64) {
+        final engineZipUrl = config.flutterStorageBaseUrl.append(
+          path: 'flutter_infra_release/flutter/$engineVersion/'
+              '${EngineBuildTarget.macosX64.zipName}',
+        );
+        await downloadFile(
+          scope: scope,
+          url: engineZipUrl,
+          file: zipFile,
+          description: 'Downloading engine',
+        );
+      } else {
+        rethrow;
+      }
+    }
 
     log.v('Unzipping into ${config.sharedCachesDir}');
     await ProgressNode.of(scope).wrap((scope, node) async {

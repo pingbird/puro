@@ -21,11 +21,7 @@ Future<void> downloadFile({
   await ProgressNode.of(scope).wrap((scope, node) async {
     node.description = description ?? 'Downloading ${url.pathSegments.last}';
     final response = await httpClient.send(Request('GET', url));
-    if (response.statusCode ~/ 100 != 2) {
-      throw AssertionError(
-        'HTTP ${response.statusCode} on GET $url',
-      );
-    }
+    HttpException.ensureSuccess(response);
     await node.wrapHttpResponse(response).pipe(sink);
   });
 }

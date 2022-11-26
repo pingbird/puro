@@ -6,6 +6,7 @@ import 'command.dart';
 import 'command_result.dart';
 import 'commands/clean.dart';
 import 'commands/dart.dart';
+import 'commands/engine.dart';
 import 'commands/env_create.dart';
 import 'commands/env_ls.dart';
 import 'commands/env_rm.dart';
@@ -208,6 +209,7 @@ void main(List<String> args) async {
     ..addCommand(PuroInstallCommand())
     ..addCommand(GcCommand())
     ..addCommand(LsVersionsCommand())
+    ..addCommand(EngineCommand())
     ..addCommand(PrefsCommand());
   try {
     final result = await runner.run(args);

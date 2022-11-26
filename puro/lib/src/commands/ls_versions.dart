@@ -13,6 +13,15 @@ import '../proto/flutter_releases.pb.dart';
 import '../terminal.dart';
 
 class LsVersionsCommand extends PuroCommand {
+  LsVersionsCommand() {
+    argParser.addFlag(
+      'full',
+      aliases: ['all'],
+      help: 'Prints all releases instead of the last 10',
+      negatable: false,
+    );
+  }
+
   @override
   final name = 'ls-versions';
 
@@ -24,6 +33,8 @@ class LsVersionsCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
+    final full = argResults!['full'] as bool;
+
     final flutterVersions =
         await getCachedFlutterReleases(scope: scope, unlessStale: true) ??
             await fetchFlutterReleases(scope: scope);
@@ -44,15 +55,19 @@ class LsVersionsCommand extends PuroCommand {
       Version? lastVersion;
       for (final release in candidates) {
         final version = parsedVersions[release.version]!;
+
+        // Can contain duplicates for each architecture
+        if (version == lastVersion) continue;
+
         final isPreviousPatch = lastVersion != null &&
             version.major == lastVersion.major &&
             version.minor == lastVersion.minor;
         lastVersion = version;
-        if (releases.length >= 5 && isPreviousPatch) {
+        if (releases.length >= 5 && isPreviousPatch && !full) {
           continue;
         }
         releases.add(release);
-        if (releases.length >= 10) break;
+        if (releases.length >= 10 && !full) break;
       }
       return releases;
     }

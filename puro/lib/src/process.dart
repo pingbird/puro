@@ -55,6 +55,8 @@ Future<ProcessResult> runProcess(
   bool includeParentEnvironment = true,
   bool runInShell = false,
   bool throwOnFailure = false,
+  Encoding? stdoutEncoding = systemEncoding,
+  Encoding? stderrEncoding = systemEncoding,
 }) async {
   final start = clock.now();
   final executableName = path.basename(executable);
@@ -67,6 +69,58 @@ Future<ProcessResult> runProcess(
     environment: environment,
     includeParentEnvironment: includeParentEnvironment,
     runInShell: runInShell,
+    stdoutEncoding: stdoutEncoding,
+    stderrEncoding: stderrEncoding,
+  );
+  log.d(
+    '$executableName finished in ${DateTime.now().difference(start).inMilliseconds}ms',
+  );
+  final resultStdout = result.stdout as String;
+  final resultStderr = result.stderr as String;
+  if (result.exitCode != 0) {
+    final message =
+        '$executable subprocess failed with exit code ${result.exitCode}';
+    if (throwOnFailure) {
+      if (resultStdout.isNotEmpty) log.v('$executableName: $resultStdout');
+      if (resultStderr.isNotEmpty) log.e('$executableName: $resultStderr');
+      throw AssertionError(message);
+    } else {
+      if (resultStdout.isNotEmpty) log.v('$executableName: $resultStdout');
+      if (resultStderr.isNotEmpty) log.v('$executableName: $resultStderr');
+      log.v(message);
+    }
+  } else {
+    if (resultStdout.isNotEmpty) log.d('$executableName: $resultStdout');
+    if (resultStderr.isNotEmpty) log.v('$executableName: $resultStderr');
+  }
+  return result;
+}
+
+ProcessResult runProcessSync(
+  Scope scope,
+  String executable,
+  List<String> arguments, {
+  String? workingDirectory,
+  Map<String, String>? environment,
+  bool includeParentEnvironment = true,
+  bool runInShell = false,
+  bool throwOnFailure = false,
+  Encoding? stdoutEncoding = systemEncoding,
+  Encoding? stderrEncoding = systemEncoding,
+}) {
+  final start = clock.now();
+  final executableName = path.basename(executable);
+  final log = PuroLogger.of(scope);
+  log.d('${workingDirectory ?? ''}> ${[executable, ...arguments].join(' ')}');
+  final result = Process.runSync(
+    executable,
+    arguments,
+    workingDirectory: workingDirectory,
+    environment: environment,
+    includeParentEnvironment: includeParentEnvironment,
+    runInShell: runInShell,
+    stdoutEncoding: stdoutEncoding,
+    stderrEncoding: stderrEncoding,
   );
   log.d(
     '$executableName finished in ${DateTime.now().difference(start).inMilliseconds}ms',
