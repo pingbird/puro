@@ -1,6 +1,6 @@
 name: puro
 description: An experimental tool for managing Flutter versions.
-version: 1.1.7
+version: 1.1.8
 repository: https://github.com/PixelToast/puro
 homepage: https://puro.dev
 
