@@ -5,6 +5,7 @@ import 'package:file/file.dart';
 
 import '../command_result.dart';
 import '../config.dart';
+import '../file_lock.dart';
 import '../git.dart';
 import '../http.dart';
 import '../logger.dart';
@@ -87,65 +88,68 @@ Future<EnvCreateResult> createEnvironment({
     }
   }
 
-  environment.envDir.createSync(recursive: true);
-  await environment.updatePrefs(
-    scope: scope,
-    fn: (prefs) {
-      prefs.clear();
-      prefs.desiredVersion = flutterVersion.toModel();
-    },
-  );
-
-  final startTime = clock.now();
-  DateTime? cacheEngineTime;
-
-  final engineTask = runOptional(
-    scope,
-    'Pre-caching engine',
-    () async {
-      final engineVersion = await getEngineVersionOfCommit(
-        scope: scope,
-        commit: flutterVersion.commit,
-      );
-      log.d('Pre-caching engine $engineVersion');
-      if (engineVersion == null) {
-        return;
-      }
-      await downloadSharedEngine(
-        scope: scope,
-        engineVersion: engineVersion,
-      );
-      cacheEngineTime = clock.now();
-    },
-  );
-
-  // Clone flutter
-  await cloneFlutterWithSharedRefs(
-    scope: scope,
-    repository: environment.flutterDir,
-    environment: environment,
-    flutterVersion: flutterVersion,
-    forkRemoteUrl: forkRemoteUrl,
-  );
-
-  // Replace flutter/dart with shims
-  await installEnvShims(
-    scope: scope,
-    environment: environment,
-  );
-
-  final cloneTime = clock.now();
-
-  await engineTask;
-
-  if (cacheEngineTime != null) {
-    final wouldveTaken = (cloneTime.difference(startTime)) +
-        (cacheEngineTime!.difference(startTime));
-    final took = clock.now().difference(startTime);
-    log.v(
-      'Saved ${(wouldveTaken - took).inMilliseconds}ms by pre-caching engine',
+  environment.updateLockFile.parent.createSync(recursive: true);
+  await lockFile(scope, environment.updateLockFile, (lockHandle) async {
+    environment.envDir.createSync(recursive: true);
+    await environment.updatePrefs(
+      scope: scope,
+      fn: (prefs) {
+        prefs.clear();
+        prefs.desiredVersion = flutterVersion.toModel();
+      },
     );
-  }
+
+    final startTime = clock.now();
+    DateTime? cacheEngineTime;
+
+    final engineTask = runOptional(
+      scope,
+      'Pre-caching engine',
+      () async {
+        final engineVersion = await getEngineVersionOfCommit(
+          scope: scope,
+          commit: flutterVersion.commit,
+        );
+        log.d('Pre-caching engine $engineVersion');
+        if (engineVersion == null) {
+          return;
+        }
+        await downloadSharedEngine(
+          scope: scope,
+          engineVersion: engineVersion,
+        );
+        cacheEngineTime = clock.now();
+      },
+    );
+
+    // Clone flutter
+    await cloneFlutterWithSharedRefs(
+      scope: scope,
+      repository: environment.flutterDir,
+      environment: environment,
+      flutterVersion: flutterVersion,
+      forkRemoteUrl: forkRemoteUrl,
+    );
+
+    // Replace flutter/dart with shims
+    await installEnvShims(
+      scope: scope,
+      environment: environment,
+    );
+
+    final cloneTime = clock.now();
+
+    await engineTask;
+
+    if (cacheEngineTime != null) {
+      final wouldveTaken = (cloneTime.difference(startTime)) +
+          (cacheEngineTime!.difference(startTime));
+      final took = clock.now().difference(startTime);
+      log.v(
+        'Saved ${(wouldveTaken - took).inMilliseconds}ms by pre-caching engine',
+      );
+    }
+  });
 
   // Set up engine and compile tool
   await setUpFlutterTool(

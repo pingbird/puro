@@ -432,10 +432,8 @@ class GitClient {
   }) async {
     final result = await _git(
       [
-        'branch',
-        '-a',
-        '--list',
-        branch,
+        'show-ref',
+        'refs/heads/$branch',
       ],
       directory: repository,
     );
