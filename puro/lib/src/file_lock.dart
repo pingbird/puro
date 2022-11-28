@@ -27,6 +27,7 @@ Future<T> lockFile<T>(
   FileMode mode = FileMode.read,
   bool? exclusive,
   bool background = false,
+  bool create = true,
 }) async {
   final canonicalPath = path.join(
     file.absolute.parent.resolveSymbolicLinksSync(),
@@ -38,7 +39,17 @@ Future<T> lockFile<T>(
     exclusive ??= mode != FileMode.read;
     final fileLock =
         exclusive ? FileLock.blockingExclusive : FileLock.blockingShared;
-    final handle = await file.open(mode: mode);
+    RandomAccessFile handle;
+    try {
+      handle = await file.open(mode: mode);
+    } catch (e) {
+      if (create && !file.existsSync()) {
+        file.createSync(recursive: true);
+        handle = await file.open(mode: mode);
+      } else {
+        rethrow;
+      }
+    }
     if (background) {
       await handle.lock(fileLock);
     } else {
