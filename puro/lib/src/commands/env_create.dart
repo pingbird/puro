@@ -1,5 +1,7 @@
 import '../command.dart';
+import '../config.dart';
 import '../env/create.dart';
+import '../env/releases.dart';
 import '../env/version.dart';
 import '../install/bin.dart';
 
@@ -34,7 +36,8 @@ class EnvCreateCommand extends PuroCommand {
     final fork = argResults!['fork'] as String?;
     final args = unwrapArguments(atLeast: 1, atMost: 2);
     final version = args.length > 1 ? args[1] : null;
-    final envName = args.first;
+    final envName = args.first.toLowerCase();
+    ensureValidName(envName);
 
     await ensurePuroInstalled(scope: scope);
 
@@ -45,7 +48,9 @@ class EnvCreateCommand extends PuroCommand {
         scope: scope,
         version: version,
         channel: channel,
-        defaultChannel: fork == null ? 'stable' : 'master',
+        defaultChannel: fork == null
+            ? (pseudoEnvironmentNames.contains(envName) ? envName : 'stable')
+            : 'master',
       ),
       forkRemoteUrl: fork,
     );

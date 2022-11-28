@@ -1,6 +1,7 @@
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
+import '../env/releases.dart';
 import '../env/upgrade.dart';
 import '../env/version.dart';
 
@@ -34,10 +35,9 @@ class EnvUpgradeCommand extends PuroCommand {
     final channel = argResults!['channel'] as String?;
     final force = argResults!['force'] as bool;
     final args = unwrapArguments(atLeast: 1, atMost: 2);
-    final envName = args[0];
     var version = args.length > 1 ? args[1] : null;
 
-    final environment = config.getEnv(envName);
+    final environment = config.getEnv(args[0]);
     environment.ensureExists();
 
     if (version == null && channel == null) {
@@ -51,9 +51,13 @@ class EnvUpgradeCommand extends PuroCommand {
     }
 
     if (version == null && channel == null) {
-      throw CommandError(
-        'No version provided and environment `${environment.name}` is not on a branch',
-      );
+      if (pseudoEnvironmentNames.contains(environment.name)) {
+        version = environment.name;
+      } else {
+        throw CommandError(
+          'No version provided and environment `${environment.name}` is not on a branch',
+        );
+      }
     }
 
     return upgradeEnvironment(
