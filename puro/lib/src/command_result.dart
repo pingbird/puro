@@ -29,7 +29,14 @@ class CommandErrorResult extends CommandResult {
   final StackTrace stackTrace;
 
   @override
-  CommandMessage get message => CommandMessage('$exception\n$stackTrace');
+  Iterable<CommandMessage> get messages {
+    return [
+      CommandMessage('$exception\n$stackTrace'),
+      CommandMessage(
+        'Puro crashed! Please file an issue at https://github.com/PixelToast/puro',
+      ),
+    ];
+  }
 
   @override
   bool get success => false;
