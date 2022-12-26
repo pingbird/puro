@@ -158,7 +158,7 @@ class IntelliJConfig extends IdeConfig {
     log.v('intellij workspaceDir: $workspaceDir');
     if (workspaceDir == null) {
       return IntelliJConfig(
-        workspaceDir: findProjectDir(projectDir, '.vscode') ??
+        workspaceDir: config.findVSCodeWorkspaceDir(projectDir) ??
             config.ensureParentProjectDir(),
         exists: false,
       );

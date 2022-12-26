@@ -122,7 +122,7 @@ class VSCodeConfig extends IdeConfig {
   }) async {
     final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
-    final workspaceDir = findProjectDir(projectDir, '.vscode');
+    final workspaceDir = config.findVSCodeWorkspaceDir(projectDir);
     log.v('vscode workspaceDir: $workspaceDir');
     if (workspaceDir == null) {
       return VSCodeConfig(

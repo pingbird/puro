@@ -343,6 +343,14 @@ class PuroConfig {
     return null;
   }
 
+  Directory? findVSCodeWorkspaceDir(Directory projectDir) {
+    final dir = findProjectDir(projectDir, '.vscode');
+    if (dir != null && dir.pathEquals(homeDir)) {
+      return null;
+    }
+    return dir;
+  }
+
   @override
   String toString() {
     return 'PuroConfig(\n'

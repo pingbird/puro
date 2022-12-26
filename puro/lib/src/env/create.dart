@@ -12,6 +12,7 @@ import '../logger.dart';
 import '../progress.dart';
 import '../provider.dart';
 import '../terminal.dart';
+import 'default.dart';
 import 'engine.dart';
 import 'env_shims.dart';
 import 'flutter_tool.dart';
@@ -150,6 +151,9 @@ Future<EnvCreateResult> createEnvironment({
       );
     }
   });
+
+  // In case we are creating the default environment
+  await updateDefaultEnvSymlink(scope: scope);
 
   // Set up engine and compile tool
   await setUpFlutterTool(
