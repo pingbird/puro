@@ -1,3 +1,7 @@
+## 1.1.10
+
+* Bug fixes
+
 ## 1.1.9
 
 * Bug fixes
