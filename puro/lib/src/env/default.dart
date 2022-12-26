@@ -104,16 +104,20 @@ Future<void> updateDefaultEnvSymlink({
   final config = PuroConfig.of(scope);
   name ??= await getDefaultEnvName(scope: scope);
   final environment = config.getEnv(name);
-  final path = environment.envDir.path;
   final link = config.defaultEnvLink;
 
-  if (!FileSystemEntity.isLinkSync(link.path)) {
-    if (link.existsSync()) {
-      link.deleteSync();
+  if (environment.exists) {
+    final path = environment.envDir.path;
+    if (!FileSystemEntity.isLinkSync(link.path)) {
+      if (link.existsSync()) {
+        link.deleteSync();
+      }
+      link.parent.createSync(recursive: true);
+      link.createSync(path);
+    } else if (link.targetSync() != path) {
+      link.updateSync(path);
     }
-    link.parent.createSync(recursive: true);
-    link.createSync(path);
-  } else if (link.targetSync() != path) {
-    link.updateSync(path);
+  } else if (FileSystemEntity.isLinkSync(link.path)) {
+    link.deleteSync();
   }
 }

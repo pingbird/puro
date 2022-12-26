@@ -75,7 +75,7 @@ Future<void> installIdeConfig({
       (ideConfig.dartSdkDir != null &&
           ideConfig.dartSdkDir?.path != dartSdkPath)) {
     log.v('Configuring ${ideConfig.name}...');
-    ideConfig.dartSdkDir = null;
+    ideConfig.dartSdkDir = environment.flutter.cache.dartSdkDir;
     ideConfig.flutterSdkDir = environment.flutterDir;
     await ideConfig.backup(scope: scope);
     await ideConfig.save(scope: scope);

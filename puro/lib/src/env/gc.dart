@@ -46,7 +46,9 @@ Future<int> collectGarbage({
         size += await deleteRecursive(child);
       }
     }
-    entity.deleteSync();
+    // This shouldn't need to be recursive but I saw a "Directory not empty"
+    // error in the wild.
+    entity.deleteSync(recursive: true);
     return size;
   }
 
