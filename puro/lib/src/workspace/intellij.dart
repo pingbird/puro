@@ -107,7 +107,7 @@ class IntelliJConfig extends IdeConfig {
     final urls = <String>[
       for (final libName in libraries)
         '${Uri.file(path.canonicalize(dartSdk.libDir.path))}/$libName'
-            .replaceAll('/$homeDirStr', r'$USER_HOME$'),
+            .replaceAll('$homeDirStr', r'$USER_HOME$'),
     ];
     urls.sort();
     final document = XmlDocument(

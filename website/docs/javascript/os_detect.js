@@ -17,9 +17,9 @@ function getOS() {
         return 'iOS';
     } else if (windowsPlatforms.indexOf(platform) !== -1) {
         return 'Windows';
-    } else if (/Android/.test(userAgent)) {
+    } else if (/android/.test(userAgent)) {
         return 'Android';
-    } else if (/Linux/.test(platform)) {
+    } else if (/linux/.test(platform)) {
         return 'Linux';
     }
 }
