@@ -9,7 +9,7 @@ if [ -z "${PURO_VERSION-}" ]; then
 fi
 
 PURO_BIN="$PURO_ROOT/bin"
-PURO_EXE="$PURO_BIN/puro"
+PURO_EXE="$PURO_BIN/puro.new"
 
 is_sourced() {
   if [ -n "$ZSH_VERSION" ]; then
@@ -53,10 +53,10 @@ command -v curl > /dev/null 2>&1 || {
 }
 
 mkdir -p "$PURO_BIN"
-curl -f --retry 3 --output "$PURO_EXE.new" "$DOWNLOAD_URL" || {
+curl -f --retry 3 --output "$PURO_EXE" "$DOWNLOAD_URL" || {
   >&2 echo "Error downloading $DOWNLOAD_URL"
   $ret $?
 }
-chmod +x "$PURO_EXE.new" || $ret $?
+chmod +x "$PURO_EXE" || $ret $?
 
-"$PURO_ROOT/bin/puro.new" install-puro --promote
+"$PURO_EXE" install-puro --promote

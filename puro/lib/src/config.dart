@@ -388,7 +388,8 @@ class EnvConfig {
 
   late final String name = envDir.basename;
   late final Directory recipeDir = envDir.childDirectory('recipe');
-  late final Directory engineDir = envDir.childDirectory('engine');
+  late final Directory engineRootDir = envDir.childDirectory('engine');
+  late final EngineConfig engine = EngineConfig(engineRootDir);
   late final Directory flutterDir = envDir.childDirectory('flutter');
   late final FlutterConfig flutter = FlutterConfig(flutterDir);
   late final File prefsJsonFile = envDir.childFile('prefs.json');
@@ -522,6 +523,16 @@ class DartSdkConfig {
       .childDirectory('sdk_library_metadata')
       .childDirectory('lib')
       .childFile('libraries.dart');
+}
+
+class EngineConfig {
+  EngineConfig(this.rootDir);
+
+  final Directory rootDir;
+
+  late final File gclientFile = rootDir.childFile('.gclient');
+  late final Directory srcDir = rootDir.childDirectory('src');
+  late final Directory engineSrcDir = srcDir.childDirectory('flutter');
 }
 
 final _nameRegex = RegExp(r'^[_\-a-z][_\-a-z0-9]*$');

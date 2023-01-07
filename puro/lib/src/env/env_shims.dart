@@ -126,14 +126,14 @@ Future<void> installEnvShims({
     projectDir: environment.flutterDir,
     attributes: {
       for (final name in _binFiles.followedBy(_sharedScripts))
-        name: 'merge==ours',
+        name: 'merge=ours',
     },
   );
 
   await git.config(
     repository: environment.flutterDir,
     name: 'merge.ours.driver',
-    value: 'true',
+    value: Platform.isWindows ? 'rem' : 'true',
   );
 }
 

@@ -1,5 +1,7 @@
 import '../command.dart';
 import '../command_result.dart';
+import '../config.dart';
+import '../engine/prepare.dart';
 
 class EngineCommand extends PuroCommand {
   EngineCommand() {
@@ -17,6 +19,20 @@ class EngineCommand extends PuroCommand {
 }
 
 class EnginePrepareCommand extends PuroCommand {
+  EnginePrepareCommand() {
+    argParser.addOption(
+      'fork',
+      help:
+          'The origin to use when cloning the engine, puro will set the upstream automatically.',
+      valueHelp: 'url',
+    );
+    argParser.addFlag(
+      'force',
+      help: 'Forcefully upgrade the engine, erasing any unstaged changes',
+      negatable: false,
+    );
+  }
+
   @override
   final name = 'prepare';
 
@@ -24,10 +40,31 @@ class EnginePrepareCommand extends PuroCommand {
   final description = 'Prepares an environment for building the engine';
 
   @override
-  String? get argumentUsage => '<env>';
+  String? get argumentUsage => '<env> [ref]';
 
   @override
   Future<CommandResult> run() async {
-    return BasicMessageResult('Ready to build');
+    final force = argResults!['force'] as bool;
+    final fork = argResults!['fork'] as String?;
+    final ref = unwrapSingleOptionalArgument();
+
+    final config = PuroConfig.of(scope);
+    final env = config.getEnv(name);
+    env.ensureExists();
+    if (ref != null && ref != env.flutter.engineVersion) {
+      runner.addMessage(
+          'Preparing a different version of the engine than what this environment expects, '
+          '');
+    }
+    await prepareEngine(
+      scope: scope,
+      environment: env,
+      ref: ref,
+      forkRemoteUrl: fork,
+      force: force,
+    );
+    return BasicMessageResult(
+      'Engine at `${env.engine.engineSrcDir.path}` ready to build',
+    );
   }
 }

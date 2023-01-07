@@ -15,7 +15,7 @@ class EnvUpgradeCommand extends PuroCommand {
     );
     argParser.addFlag(
       'force',
-      help: 'Forcefully upgrade the instance, erasing any unstaged changes',
+      help: 'Forcefully upgrade the framework, erasing any unstaged changes',
       negatable: false,
     );
   }
