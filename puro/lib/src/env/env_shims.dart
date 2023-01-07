@@ -161,15 +161,18 @@ Future<void> uninstallEnvShims({
     }
   }
 
-  await git.assumeUnchanged(
-    repository: flutterConfig.sdkDir,
-    files: _binFiles.followedBy(_sharedScripts),
-    value: false,
-  );
+  if (await git.tryGetCurrentCommitHash(repository: flutterConfig.sdkDir) !=
+      null) {
+    await git.assumeUnchanged(
+      repository: flutterConfig.sdkDir,
+      files: _binFiles.followedBy(_sharedScripts),
+      value: false,
+    );
 
-  await updateGitAttributes(
-    scope: scope,
-    projectDir: environment.flutterDir,
-    attributes: {},
-  );
+    await updateGitAttributes(
+      scope: scope,
+      projectDir: flutterConfig.sdkDir,
+      attributes: {},
+    );
+  }
 }

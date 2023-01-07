@@ -46,10 +46,12 @@ class EnginePrepareCommand extends PuroCommand {
   Future<CommandResult> run() async {
     final force = argResults!['force'] as bool;
     final fork = argResults!['fork'] as String?;
-    final ref = unwrapSingleOptionalArgument();
+    final args = unwrapArguments(atLeast: 1, atMost: 2);
+    final envName = args.first;
+    final ref = args.length > 1 ? args[1] : null;
 
     final config = PuroConfig.of(scope);
-    final env = config.getEnv(name);
+    final env = config.getEnv(envName);
     env.ensureExists();
     if (ref != null && ref != env.flutter.engineVersion) {
       runner.addMessage(
