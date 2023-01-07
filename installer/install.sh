@@ -53,10 +53,10 @@ command -v curl > /dev/null 2>&1 || {
 }
 
 mkdir -p "$PURO_BIN"
-curl -f --retry 3 --output "$PURO_EXE" "$DOWNLOAD_URL" || {
+curl -f --retry 3 --output "$PURO_EXE.new" "$DOWNLOAD_URL" || {
   >&2 echo "Error downloading $DOWNLOAD_URL"
   $ret $?
 }
-chmod +x "$PURO_EXE" || $ret $?
+chmod +x "$PURO_EXE.new" || $ret $?
 
-"$PURO_ROOT/bin/puro" install-puro
+"$PURO_ROOT/bin/puro.new" install-puro --promote
