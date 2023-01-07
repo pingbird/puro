@@ -41,18 +41,25 @@ class EnvCreateCommand extends PuroCommand {
 
     await ensurePuroInstalled(scope: scope);
 
-    return createEnvironment(
-      scope: scope,
-      envName: envName,
-      flutterVersion: await FlutterVersion.query(
+    if (fork != null) {
+      return createEnvironment(
         scope: scope,
-        version: version,
-        channel: channel,
-        defaultChannel: fork == null
-            ? (pseudoEnvironmentNames.contains(envName) ? envName : 'stable')
-            : 'master',
-      ),
-      forkRemoteUrl: fork,
-    );
+        envName: envName,
+        forkRemoteUrl: fork,
+        forkRef: version,
+      );
+    } else {
+      return createEnvironment(
+        scope: scope,
+        envName: envName,
+        flutterVersion: await FlutterVersion.query(
+          scope: scope,
+          version: version,
+          channel: channel,
+          defaultChannel:
+              pseudoEnvironmentNames.contains(envName) ? envName : 'stable',
+        ),
+      );
+    }
   }
 }

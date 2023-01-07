@@ -11,7 +11,9 @@ import 'config.dart';
 import 'extensions.dart';
 import 'logger.dart';
 import 'process.dart';
+import 'progress.dart';
 import 'provider.dart';
+import 'terminal.dart';
 
 enum GitCloneStep {
   // We used to have 'remote: Counting objects' / 'remote: Compressing objects'
@@ -30,9 +32,10 @@ class GitClient {
   });
 
   final Scope scope;
-  late final config = PuroConfig.of(scope);
-  late final gitExecutable = config.gitExecutable;
-  late final log = PuroLogger.of(scope);
+  late final _puroConfig = PuroConfig.of(scope);
+  late final _gitExecutable = _puroConfig.gitExecutable;
+  late final _log = PuroLogger.of(scope);
+  late final _terminal = Terminal.of(scope);
 
   Future<ProcessResult> _git(
     List<String> args, {
@@ -52,7 +55,7 @@ class GitClient {
 
     final process = await startProcess(
       scope,
-      gitExecutable.path,
+      _gitExecutable.path,
       args,
       workingDirectory: directory?.path,
     );
@@ -67,7 +70,7 @@ class GitClient {
           .bind(systemEncoding.decoder.bind(process.stdout))
           .map(
         (e) {
-          log.d('git: $e');
+          _log.d('git: $e');
           if (onStdout != null) onStdout(e);
           return e;
         },
@@ -78,7 +81,7 @@ class GitClient {
         .bind(systemEncoding.decoder.bind(process.stderr))
         .map(
       (e) {
-        log.d('git: $e');
+        _log.d('git: $e');
         if (onStderr != null) onStderr(e);
         return e;
       },
@@ -87,7 +90,7 @@ class GitClient {
     final exitCode = await process.exitCode;
 
     if (exitCode != 0) {
-      log.v('git failed with exit code $exitCode');
+      _log.v('git failed with exit code $exitCode');
     }
 
     return ProcessResult(
@@ -100,8 +103,8 @@ class GitClient {
 
   void _ensureSuccess(ProcessResult result) {
     if (result.exitCode != 0) {
-      if (log.level == null || log.level! < LogLevel.debug) {
-        log.e('git: ${result.stderr}');
+      if (_log.level == null || _log.level! < LogLevel.debug) {
+        _log.e('git: ${result.stderr}');
       }
       throw StateError(
         'git subprocess failed with exit code ${result.exitCode}',
@@ -162,6 +165,29 @@ class GitClient {
       },
     );
     _ensureSuccess(cloneResult);
+  }
+
+  Future<void> cloneWithProgress({
+    required String remote,
+    required Directory repository,
+    bool shared = false,
+    String? branch,
+    Directory? reference,
+    bool checkout = true,
+    String? description,
+  }) async {
+    await ProgressNode.of(scope).wrap((scope, node) async {
+      node.description = description ?? 'Cloning $remote';
+      await clone(
+        remote: remote,
+        repository: repository,
+        shared: shared,
+        branch: branch,
+        reference: reference,
+        checkout: checkout,
+        onProgress: _terminal.enableStatus ? node.onCloneProgress : null,
+      );
+    });
   }
 
   /// https://git-scm.com/docs/git-checkout
@@ -425,6 +451,18 @@ class GitClient {
     _ensureSuccess(result);
   }
 
+  Future<bool> checkCommitExists({
+    required Directory repository,
+    required String commit,
+  }) async {
+    if (!repository.existsSync()) return false;
+    final result = await tryRevParseSingle(
+      repository: repository,
+      arg: commit,
+    );
+    return result == commit;
+  }
+
   /// Returns true if the provided branch name exists.
   Future<bool> checkBranchExists({
     required Directory repository,
@@ -605,7 +643,7 @@ class GitClient {
       if (line.isEmpty) continue;
       final match = _remoteRegex.matchAsPrefix(line);
       if (match == null) {
-        log.w('Failed to parse remote: ${jsonEncode(line)}');
+        _log.w('Failed to parse remote: ${jsonEncode(line)}');
         continue;
       }
       final name = match.group(1)!;
@@ -748,6 +786,41 @@ class GitClient {
         if (value) '--assume-unchanged' else '--no-assume-unchanged',
         '--',
         ...files,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+  }
+
+  /// https://git-scm.com/docs/git-config
+  Future<String?> configGet({
+    required Directory repository,
+    required String name,
+  }) async {
+    final result = await _git(
+      [
+        'config',
+        '--get',
+        name,
+      ],
+      directory: repository,
+    );
+    if (result.exitCode == 1) return null;
+    _ensureSuccess(result);
+    return (result.stdout as String).trim();
+  }
+
+  /// https://git-scm.com/docs/git-config
+  Future<void> config({
+    required Directory repository,
+    required String name,
+    required String value,
+  }) async {
+    final result = await _git(
+      [
+        'config',
+        name,
+        value,
       ],
       directory: repository,
     );

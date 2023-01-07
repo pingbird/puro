@@ -1113,12 +1113,19 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
             ? ''
             : 'forkRemoteUrl',
         protoName: 'forkRemoteUrl')
+    ..aOS(
+        3,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'engineForkRemoteUrl',
+        protoName: 'engineForkRemoteUrl')
     ..hasRequiredFields = false;
 
   PuroEnvPrefsModel._() : super();
   factory PuroEnvPrefsModel({
     FlutterVersionModel? desiredVersion,
     $core.String? forkRemoteUrl,
+    $core.String? engineForkRemoteUrl,
   }) {
     final _result = create();
     if (desiredVersion != null) {
@@ -1126,6 +1133,9 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
     }
     if (forkRemoteUrl != null) {
       _result.forkRemoteUrl = forkRemoteUrl;
+    }
+    if (engineForkRemoteUrl != null) {
+      _result.engineForkRemoteUrl = engineForkRemoteUrl;
     }
     return _result;
   }
@@ -1181,6 +1191,18 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   $core.bool hasForkRemoteUrl() => $_has(1);
   @$pb.TagNumber(2)
   void clearForkRemoteUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get engineForkRemoteUrl => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set engineForkRemoteUrl($core.String v) {
+    $_setString(2, v);
+  }
+
+  @$pb.TagNumber(3)
+  $core.bool hasEngineForkRemoteUrl() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEngineForkRemoteUrl() => clearField(3);
 }
 
 class PuroDotfileModel extends $pb.GeneratedMessage {

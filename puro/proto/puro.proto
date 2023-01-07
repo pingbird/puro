@@ -63,6 +63,7 @@ message PuroGlobalPrefsModel {
 message PuroEnvPrefsModel {
   optional FlutterVersionModel desiredVersion = 1;
   optional string forkRemoteUrl = 2;
+  optional string engineForkRemoteUrl = 3;
 }
 
 message PuroDotfileModel {

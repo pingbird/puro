@@ -332,16 +332,26 @@ const PuroEnvPrefsModel$json = const {
       '10': 'forkRemoteUrl',
       '17': true
     },
+    const {
+      '1': 'engineForkRemoteUrl',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 2,
+      '10': 'engineForkRemoteUrl',
+      '17': true
+    },
   ],
   '8': const [
     const {'1': '_desiredVersion'},
     const {'1': '_forkRemoteUrl'},
+    const {'1': '_engineForkRemoteUrl'},
   ],
 };
 
 /// Descriptor for `PuroEnvPrefsModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List puroEnvPrefsModelDescriptor = $convert.base64Decode(
-    'ChFQdXJvRW52UHJlZnNNb2RlbBJBCg5kZXNpcmVkVmVyc2lvbhgBIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIOZGVzaXJlZFZlcnNpb26IAQESKQoNZm9ya1JlbW90ZVVybBgCIAEoCUgBUg1mb3JrUmVtb3RlVXJsiAEBQhEKD19kZXNpcmVkVmVyc2lvbkIQCg5fZm9ya1JlbW90ZVVybA==');
+    'ChFQdXJvRW52UHJlZnNNb2RlbBJBCg5kZXNpcmVkVmVyc2lvbhgBIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIOZGVzaXJlZFZlcnNpb26IAQESKQoNZm9ya1JlbW90ZVVybBgCIAEoCUgBUg1mb3JrUmVtb3RlVXJsiAEBEjUKE2VuZ2luZUZvcmtSZW1vdGVVcmwYAyABKAlIAlITZW5naW5lRm9ya1JlbW90ZVVybIgBAUIRCg9fZGVzaXJlZFZlcnNpb25CEAoOX2ZvcmtSZW1vdGVVcmxCFgoUX2VuZ2luZUZvcmtSZW1vdGVVcmw=');
 @$core.Deprecated('Use puroDotfileModelDescriptor instead')
 const PuroDotfileModel$json = const {
   '1': 'PuroDotfileModel',

@@ -7,7 +7,47 @@ import '../logger.dart';
 import '../provider.dart';
 
 const gitIgnoredFilesForWorkspace = {PuroConfig.dotfileName};
-const gitIgnoreComment = '# Managed by puro';
+const gitConfigComment = '# Managed by puro';
+
+Future<void> updateConfigLines({
+  required Scope scope,
+  required File file,
+  required Set<String> lines,
+}) async {
+  file.createSync(recursive: true);
+  final log = PuroLogger.of(scope);
+  final result = const LineSplitter().convert(file.readAsStringSync());
+  final existingLines = <String>{};
+  for (var i = 0; i < result.length;) {
+    if (result[i] == gitConfigComment && i + 1 < result.length) {
+      existingLines.add(result[i + 1]);
+      result.removeAt(i);
+      result.removeAt(i);
+    } else {
+      i++;
+    }
+  }
+  while (result.isNotEmpty && result.last.isEmpty) result.removeLast();
+  if (!existingLines.containsAll(lines) ||
+      existingLines.length != lines.length) {
+    log.v('Updating config at ${file.path}');
+    file.writeAsStringSync(<String>[
+      ...result,
+      '',
+      for (final name in lines) ...[gitConfigComment, name],
+    ].join('\n'));
+    for (final line in lines) {
+      if (!existingLines.contains(line)) {
+        log.v('Added "$line"');
+      }
+    }
+    for (final line in existingLines) {
+      if (!lines.contains(line)) {
+        log.v('Removed "$line"');
+      }
+    }
+  }
+}
 
 /// Adds the dotfile to .git/info/exclude which is a handy way to ignore it
 /// without touching the working tree or global git configuration.
@@ -16,38 +56,33 @@ Future<void> updateGitignore({
   required Directory projectDir,
   required Set<String> ignores,
 }) async {
-  final log = PuroLogger.of(scope);
   final gitTree = findProjectDir(projectDir, '.git');
   if (gitTree == null) return;
-  final excludeFile = gitTree
-      .childDirectory('.git')
-      .childDirectory('info')
-      .childFile('exclude');
-  excludeFile.createSync(recursive: true);
-  final lines = const LineSplitter().convert(excludeFile.readAsStringSync());
-  final existingIgnores = <String>{};
-  for (var i = 0; i < lines.length;) {
-    if (lines[i] == gitIgnoreComment && i + 1 < lines.length) {
-      existingIgnores.add(lines[i + 1]);
-      lines.removeAt(i);
-      lines.removeAt(i);
-    } else {
-      i++;
-    }
-  }
-  while (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
-  if (!existingIgnores.containsAll(ignores) ||
-      existingIgnores.length != ignores.length) {
-    log.v('Updating gitignore of ${gitTree.path}');
-    excludeFile.writeAsStringSync([
-      ...lines,
-      '',
-      for (final name in ignores) ...[gitIgnoreComment, name],
-    ].join('\n'));
-    if (ignores.isEmpty) {
-      log.v('Removed ${PuroConfig.dotfileName} from .git/info/exclude');
-    } else {
-      log.v('Added ${PuroConfig.dotfileName} to .git/info/exclude');
-    }
-  }
+  await updateConfigLines(
+    scope: scope,
+    file: gitTree
+        .childDirectory('.git')
+        .childDirectory('info')
+        .childFile('exclude'),
+    lines: ignores,
+  );
+}
+
+Future<void> updateGitAttributes({
+  required Scope scope,
+  required Directory projectDir,
+  required Map<String, String> attributes,
+}) async {
+  final gitTree = findProjectDir(projectDir, '.git');
+  if (gitTree == null) return;
+  await updateConfigLines(
+    scope: scope,
+    file: gitTree
+        .childDirectory('.git')
+        .childDirectory('info')
+        .childFile('attributes'),
+    lines: {
+      for (final entry in attributes.entries) '${entry.key} ${entry.value}',
+    },
+  );
 }

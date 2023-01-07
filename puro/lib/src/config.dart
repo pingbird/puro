@@ -204,6 +204,7 @@ class PuroConfig {
   late final Directory binDir = puroRoot.childDirectory('bin');
   late final Directory sharedDir = puroRoot.childDirectory('shared');
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
+  late final Directory sharedEngineDir = sharedDir.childDirectory('engine');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
   late final Directory pubCacheDir = sharedDir.childDirectory('pub_cache');
   late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
@@ -225,11 +226,13 @@ class PuroConfig {
   late final Uri puroLatestVersionUrl = puroBuildsUrl.append(path: 'latest');
   late final File globalPrefsJsonFile = puroRoot.childFile('prefs.json');
   late final File puroLatestVersionFile = puroRoot.childFile('latest_version');
+  late final Directory depotToolsDir = puroRoot.childDirectory('depot_tools');
 
   late List<String> desiredEnvPaths = [
     binDir.path,
     pubCacheBinDir.path,
     getEnv('default', resolve: false).flutter.binDir.path,
+    depotToolsDir.path,
   ];
 
   Directory ensureParentProjectDir() {

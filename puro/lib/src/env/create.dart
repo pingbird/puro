@@ -65,9 +65,16 @@ Future<String?> getEngineVersionOfCommit({
 Future<EnvCreateResult> createEnvironment({
   required Scope scope,
   required String envName,
-  required FlutterVersion flutterVersion,
+  FlutterVersion? flutterVersion,
   String? forkRemoteUrl,
+  String? forkRef,
 }) async {
+  if ((flutterVersion == null) == (forkRemoteUrl == null)) {
+    throw AssertionError(
+      'Exactly one of flutterVersion and forkRemoteUrl should be provided',
+    );
+  }
+
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
   final git = GitClient.of(scope);
@@ -96,7 +103,9 @@ Future<EnvCreateResult> createEnvironment({
       scope: scope,
       fn: (prefs) {
         prefs.clear();
-        prefs.desiredVersion = flutterVersion.toModel();
+        if (flutterVersion != null) {
+          prefs.desiredVersion = flutterVersion.toModel();
+        }
       },
     );
 
@@ -109,7 +118,7 @@ Future<EnvCreateResult> createEnvironment({
       () async {
         final engineVersion = await getEngineVersionOfCommit(
           scope: scope,
-          commit: flutterVersion.commit,
+          commit: flutterVersion!.commit,
         );
         log.d('Pre-caching engine $engineVersion');
         if (engineVersion == null) {
@@ -121,6 +130,9 @@ Future<EnvCreateResult> createEnvironment({
         );
         cacheEngineTime = clock.now();
       },
+      // The user probably already has flutter cached so cloning forks will be
+      // fast, no point in optimizing this.
+      skip: forkRemoteUrl != null,
     );
 
     // Clone flutter
@@ -130,6 +142,7 @@ Future<EnvCreateResult> createEnvironment({
       environment: environment,
       flutterVersion: flutterVersion,
       forkRemoteUrl: forkRemoteUrl,
+      forkRef: forkRef,
     );
 
     // Replace flutter/dart with shims
@@ -173,48 +186,30 @@ Future<void> fetchOrCloneShared({
   required Directory repository,
   required String remoteUrl,
 }) async {
-  await ProgressNode.of(scope).wrap((scope, node) async {
-    final git = GitClient.of(scope);
-    final terminal = Terminal.of(scope);
-    if (repository.existsSync()) {
+  final git = GitClient.of(scope);
+  if (repository.existsSync()) {
+    await ProgressNode.of(scope).wrap((scope, node) async {
       node.description = 'Fetching $remoteUrl';
       await git.fetch(repository: repository);
-    } else {
-      node.description = 'Cloning $remoteUrl';
-      await git.clone(
-        remote: remoteUrl,
-        repository: repository,
-        shared: true,
-        checkout: false,
-        onProgress: terminal.enableStatus ? node.onCloneProgress : null,
-      );
-    }
-  });
+    });
+  } else {
+    await git.cloneWithProgress(
+      remote: remoteUrl,
+      repository: repository,
+      shared: true,
+      checkout: false,
+    );
+  }
 }
 
-/// Checks if the specified commit exists in the shared cache.
-Future<bool> isSharedFlutterCommitCached({
-  required Scope scope,
-  required String commit,
-}) async {
-  final git = GitClient.of(scope);
-  final config = PuroConfig.of(scope);
-  final sharedRepository = config.sharedFlutterDir;
-  if (!sharedRepository.existsSync()) return false;
-  final result = await git.tryRevParseSingle(
-    repository: sharedRepository,
-    arg: commit,
-  );
-  return result == commit;
-}
-
-/// Clone Flutter using git objects from a shared repository.
+/// Checks out Flutter using git objects from a shared repository.
 Future<void> cloneFlutterWithSharedRefs({
   required Scope scope,
   required Directory repository,
   required EnvConfig environment,
-  required FlutterVersion flutterVersion,
+  FlutterVersion? flutterVersion,
   String? forkRemoteUrl,
+  String? forkRef,
   bool force = false,
 }) async {
   final git = GitClient.of(scope);
@@ -224,22 +219,19 @@ Future<void> cloneFlutterWithSharedRefs({
   log.v('Cloning flutter with shared refs');
   log.d('repository: ${repository.path}');
   log.d('flutterVersion: $flutterVersion');
+  log.d('forkRemoteUrl: $flutterVersion');
+  log.d('forkRef: $forkRef');
 
-  final sharedRepository = config.sharedFlutterDir;
-  if (!await isSharedFlutterCommitCached(
-    scope: scope,
-    commit: flutterVersion.commit,
-  )) {
-    await fetchOrCloneShared(
-      scope: scope,
-      repository: sharedRepository,
-      remoteUrl: config.flutterGitUrl,
+  if ((flutterVersion == null) == (forkRemoteUrl == null)) {
+    throw AssertionError(
+      'Exactly one of flutterVersion and forkRemoteUrl should be provided',
     );
   }
 
-  await ProgressNode.of(scope).wrap((scope, node) async {
-    node.description = 'Initializing repository';
+  final sharedRepository = config.sharedFlutterDir;
 
+  // Set the remotes, git alternates, and unlink the cache.
+  Future<void> initialize() async {
     final origin = forkRemoteUrl ?? config.flutterGitUrl;
     final upstream = forkRemoteUrl == null ? null : config.flutterGitUrl;
 
@@ -262,13 +254,79 @@ Future<void> cloneFlutterWithSharedRefs({
     alternatesFile.writeAsStringSync('${sharedObjects.path}\n');
     await git.syncRemotes(repository: repository, remotes: remotes);
 
+    // Delete the cache symlink when we switch versions so the new version
+    // doesn't accidentally corrupt the shared engine.
     final cacheDir = repository.childDirectory('bin').childDirectory('cache');
-    // Delete the cache when we switch versions so that the new version doesn't
-    // accidentally corrupt the shared engine.
     if (cacheDir.existsSync()) {
-      // Not recursive because cacheDir is a symlink.
+      // Not recursive because cacheDir is a symlink, if the flutter tool
+      // created one for whatever reason, this will throw.
       cacheDir.deleteSync();
     }
+  }
+
+  Future<void> guardCheckout(Future<void> Function() fn) async {
+    // Uninstall shims so they don't interfere with merges (this technically
+    // shouldn't happen with our attribute merge strategies, but w/e)
+    await uninstallEnvShims(scope: scope, environment: environment);
+    try {
+      await fn();
+    } catch (exception, stackTrace) {
+      throw CommandError.list([
+        CommandMessage(
+          'To overwrite local changes, try passing --force',
+          type: CompletionType.info,
+        ),
+        CommandMessage('$exception\n$stackTrace'),
+      ]);
+    } finally {
+      await installEnvShims(scope: scope, environment: environment);
+    }
+  }
+
+  // Cloning a fork is a little simpler, we don't need to reset the branch to
+  // fit a specific flutter version
+  if (forkRemoteUrl != null) {
+    await fetchOrCloneShared(
+      scope: scope,
+      repository: sharedRepository,
+      remoteUrl: config.flutterGitUrl,
+    );
+
+    await ProgressNode.of(scope).wrap((scope, node) async {
+      node.description = 'Initializing repository';
+
+      await initialize();
+
+      forkRef ??= 'master';
+      node.description = 'Checking out $forkRef';
+
+      await guardCheckout(() async {
+        await git.checkout(
+          repository: repository,
+          ref: forkRef,
+          force: force,
+        );
+      });
+    });
+
+    return;
+  }
+
+  if (!await git.checkCommitExists(
+    repository: config.sharedFlutterDir,
+    commit: flutterVersion!.commit,
+  )) {
+    await fetchOrCloneShared(
+      scope: scope,
+      repository: sharedRepository,
+      remoteUrl: config.flutterGitUrl,
+    );
+  }
+
+  await ProgressNode.of(scope).wrap((scope, node) async {
+    node.description = 'Initializing repository';
+
+    await initialize();
 
     node.description = 'Checking out $flutterVersion';
 
@@ -276,24 +334,6 @@ Future<void> cloneFlutterWithSharedRefs({
       repository: repository,
       all: true,
     );
-
-    Future<void> guardCheckout(Future<void> Function() fn) async {
-      // Uninstall shims so they don't interfere with merges
-      await uninstallEnvShims(scope: scope, environment: environment);
-      try {
-        await fn();
-      } catch (exception, stackTrace) {
-        throw CommandError.list([
-          CommandMessage(
-            'To overwrite local changes, try passing --force',
-            type: CompletionType.info,
-          ),
-          CommandMessage('$exception\n$stackTrace'),
-        ]);
-      } finally {
-        await installEnvShims(scope: scope, environment: environment);
-      }
-    }
 
     final branch = flutterVersion.branch;
     if (branch != null) {
@@ -311,7 +351,7 @@ Future<void> cloneFlutterWithSharedRefs({
             ref: flutterVersion.commit,
             merge: true,
           )) {
-            // We are forcefully upgrading, ditch uncomitted changes.
+            // We are forcefully upgrading, ditch uncommitted changes.
             await git.reset(
               repository: repository,
               ref: flutterVersion.commit,
@@ -360,6 +400,7 @@ Future<void> cloneFlutterWithSharedRefs({
       await git.checkout(
         repository: repository,
         ref: flutterVersion.commit,
+        force: force,
       );
     }
   });

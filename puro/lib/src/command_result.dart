@@ -206,6 +206,5 @@ class CommandError implements Exception {
 }
 
 class UnsupportedOSError extends CommandError {
-  UnsupportedOSError()
-      : super('Unrecognized operating system: `${Platform.operatingSystem}`');
+  UnsupportedOSError() : super('Unsupported OS: `${Platform.operatingSystem}`');
 }

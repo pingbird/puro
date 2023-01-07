@@ -12,21 +12,21 @@ import '../provider.dart';
 import '../workspace/gitignore.dart';
 
 // Delete these because running them can corrupt our cache
-final _sharedScripts = {
+const _sharedScripts = {
   'bin/internal/shared.bat',
   'bin/internal/shared.sh',
   'bin/internal/update_dart_sdk.ps1',
   'bin/internal/update_dart_sdk.sh',
 };
 
-final _binFiles = {
+const _binFiles = {
   'bin/dart',
   'bin/dart.bat',
   'bin/flutter',
   'bin/flutter.bat',
 };
 
-final _ignores = {
+final _ignoredFiles = {
   'bin/cache',
   ..._binFiles,
   for (final name in _binFiles) '$name.bak',
@@ -61,7 +61,7 @@ Future<void> installEnvShims({
   await updateGitignore(
     scope: scope,
     projectDir: environment.flutterDir,
-    ignores: _ignores,
+    ignores: _ignoredFiles,
   );
 
   for (var name in _sharedScripts) {
@@ -120,6 +120,21 @@ Future<void> installEnvShims({
     repository: flutterConfig.sdkDir,
     files: _binFiles.followedBy(_sharedScripts),
   );
+
+  await updateGitAttributes(
+    scope: scope,
+    projectDir: environment.flutterDir,
+    attributes: {
+      for (final name in _binFiles.followedBy(_sharedScripts))
+        name: 'merge==ours',
+    },
+  );
+
+  await git.config(
+    repository: environment.flutterDir,
+    name: 'merge.ours.driver',
+    value: 'true',
+  );
 }
 
 Future<void> uninstallEnvShims({
@@ -128,7 +143,10 @@ Future<void> uninstallEnvShims({
 }) async {
   final log = PuroLogger.of(scope);
   final flutterConfig = environment.flutter;
+  final git = GitClient.of(scope);
+
   log.d('uninstallEnvShims');
+
   for (var name in _binFiles) {
     name = name.replaceAll('/', path.context.separator);
     final file = flutterConfig.sdkDir.childFile(name);
@@ -142,4 +160,16 @@ Future<void> uninstallEnvShims({
       file.renameSync(bakFile.path);
     }
   }
+
+  await git.assumeUnchanged(
+    repository: flutterConfig.sdkDir,
+    files: _binFiles.followedBy(_sharedScripts),
+    value: false,
+  );
+
+  await updateGitAttributes(
+    scope: scope,
+    projectDir: environment.flutterDir,
+    attributes: {},
+  );
 }

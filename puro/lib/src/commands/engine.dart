@@ -3,7 +3,7 @@ import '../command_result.dart';
 
 class EngineCommand extends PuroCommand {
   EngineCommand() {
-    addSubcommand(EngineInitCommand());
+    addSubcommand(EnginePrepareCommand());
   }
 
   @override
@@ -16,7 +16,7 @@ class EngineCommand extends PuroCommand {
   bool get hidden => true;
 }
 
-class EngineInitCommand extends PuroCommand {
+class EnginePrepareCommand extends PuroCommand {
   @override
   final name = 'prepare';
 
