@@ -48,6 +48,7 @@ class PuroConfig {
     required this.puroBuildsUrl,
     required this.buildTarget,
     required this.enableShims,
+    required this.shouldInstall,
   }) : puroRoot = puroRoot.absolute;
 
   factory PuroConfig.fromCommandLine({
@@ -62,6 +63,7 @@ class PuroConfig {
     required String? releasesJsonUrl,
     required String? flutterStorageBaseUrl,
     required String? environmentOverride,
+    required bool? shouldInstall,
   }) {
     final log = PuroLogger.of(scope);
 
@@ -177,6 +179,7 @@ class PuroConfig {
       puroBuildsUrl: Uri.parse('https://puro.dev/builds'),
       buildTarget: PuroBuildTarget.query(),
       enableShims: false,
+      shouldInstall: shouldInstall ?? true,
     );
   }
 
@@ -194,6 +197,7 @@ class PuroConfig {
   final Uri puroBuildsUrl;
   final PuroBuildTarget buildTarget;
   final bool enableShims;
+  final bool shouldInstall;
 
   static const dotfileName = '.puro.json';
 
@@ -206,6 +210,7 @@ class PuroConfig {
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedEngineDir = sharedDir.childDirectory('engine');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
+  late final Directory sharedGClientDir = sharedDir.childDirectory('gclient');
   late final Directory pubCacheDir = sharedDir.childDirectory('pub_cache');
   late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
   late final Directory sharedFlutterToolsDir =

@@ -33,6 +33,7 @@ Future<void> ensurePuroInstalled({
   bool promote = false,
 }) async {
   final config = PuroConfig.of(scope);
+  if (!config.shouldInstall) return;
   if (!config.globalPrefsJsonFile.existsSync()) {
     await updateGlobalPrefs(scope: scope, fn: (prefs) async {});
   }
@@ -143,7 +144,8 @@ Future<void> _installTrampoline({
     } else if (!force) {
       throw CommandError(
         'A different version of puro is installed in `${config.puroRoot.path}`, '
-        'run `puro install-puro --force` to overwrite it',
+        'run `puro install-puro --force` to overwrite it or --no-install to '
+        'ignore this error.',
       );
     }
   }

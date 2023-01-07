@@ -146,6 +146,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   String? versionsJsonUrlOverride;
   String? flutterStorageBaseUrlOverride;
   String? environmentOverride;
+  bool? shouldInstallOverride;
 
   late List<String> args;
   ArgResults? results;
@@ -156,6 +157,8 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   final backgroundTasks = <Future<void>, String>{};
   bool initialized = false;
 
+  // Silly workaround to allow us to keep argument results even with invalid
+  // arguments that throw when parsed.
   void Function(T) wrapCallback<T>(void Function(T) fn) {
     return (str) {
       callbackQueue.add(() {
@@ -300,6 +303,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         releasesJsonUrl: versionsJsonUrlOverride,
         flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
         environmentOverride: environmentOverride,
+        shouldInstall: shouldInstallOverride,
       );
       scope.add(
         PuroConfig.provider,

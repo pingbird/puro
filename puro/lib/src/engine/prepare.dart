@@ -95,7 +95,9 @@ Future<void> prepareEngine({
     "deps_file": "DEPS",
     "safesync_url": "",
   }
-]''');
+]
+cache_dir = ${jsonEncode(config.sharedGClientDir)}
+''');
 
   await ProgressNode.of(scope).wrap((scope, node) async {
     node.description = 'Running gclient sync (this may take awhile)';

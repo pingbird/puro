@@ -189,6 +189,15 @@ void main(List<String> args) async {
       negatable: false,
     )
     ..addFlag(
+      'install',
+      help: 'Whether to attempt to install puro',
+      callback: runner.wrapCallback((flag) {
+        if (runner.results!.wasParsed('install')) {
+          runner.shouldInstallOverride = runner.results!['install'] as bool;
+        }
+      }),
+    )
+    ..addFlag(
       'version',
       help: 'Prints version information, same as the `version` command',
       negatable: false,
