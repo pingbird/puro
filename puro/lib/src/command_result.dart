@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../models.dart';
+import 'provider.dart';
 import 'terminal.dart';
 
 extension CommandResultModelExtensions on CommandResultModel {
@@ -161,6 +162,12 @@ class CommandMessage {
             ))
         .join('\n');
   }
+
+  static final provider = Provider<void Function(CommandMessage)>(
+    (scope) => (message) {},
+  );
+
+  void queue(Scope scope) => scope.read(provider)(this);
 }
 
 /// Like [CommandResult] but thrown as an exception.

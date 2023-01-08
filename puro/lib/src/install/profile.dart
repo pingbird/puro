@@ -88,7 +88,8 @@ Future<File?> tryUpdateProfile({
   final export = [
     for (final path in config.desiredEnvPaths)
       'export PATH="\$PATH:${path.replaceAll(home, '\$HOME')}"',
-    'export PURO_ROOT="${config.puroRoot.path}"'
+    'export PURO_ROOT="${config.puroRoot.path}"',
+    'export PUB_CACHE="${config.pubCacheDir.path}"'
   ].map((e) => '$e $_kProfileComment').join('\n');
   return await lockFile(
     scope,
@@ -244,6 +245,12 @@ Future<bool> tryUpdateWindowsPath({
     key: 'HKEY_CURRENT_USER\\Environment',
     valueName: 'PURO_ROOT',
     value: config.puroRoot.path,
+  );
+  await writeWindowsRegistryValue(
+    scope: scope,
+    key: 'HKEY_CURRENT_USER\\Environment',
+    valueName: 'PUB_CACHE',
+    value: config.pubCacheDir.path,
   );
   return true;
 }

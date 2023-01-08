@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:neoansi/neoansi.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../../models.dart';
@@ -7,6 +8,7 @@ import '../config.dart';
 import '../git.dart';
 import '../logger.dart';
 import '../provider.dart';
+import '../terminal.dart';
 import 'command.dart';
 import 'create.dart';
 import 'releases.dart';
@@ -43,18 +45,31 @@ class FlutterVersion {
   final String? tag;
 
   @override
-  String toString() {
+  String toString([OutputFormatter? format]) {
+    format ??= const OutputFormatter();
     final commitStr = commit.substring(0, 10);
+    String colorize(List<String> result) {
+      return result
+          .map(
+            (e) => format!.color(
+              e,
+              bold: true,
+              foregroundColor: Ansi8BitColor.green,
+            ),
+          )
+          .join(' / ');
+    }
+
     if (tag != null && tag != '$version' && tag != 'v$version') {
-      return 'tags / $tag / $commitStr';
+      return colorize(['tags/$tag', '$commitStr']);
     } else if (version != null) {
       if (branch != null) {
-        return '$branch / $version / $commitStr';
+        return colorize(['$branch', '$version', '$commitStr']);
       } else {
-        return '$version / $commitStr';
+        return colorize(['$version', '$commitStr']);
       }
     } else {
-      return commitStr;
+      return colorize([commitStr]);
     }
   }
 

@@ -35,7 +35,8 @@ class EnvUpgradeResult extends CommandResult {
             ? toolInfo.didUpdateTool || toolInfo.didUpdateEngine
                 ? 'Finished installation of $to in environment `${environment.name}`'
                 : 'Environment `${environment.name}` is already up to date'
-            : 'Upgraded environment `${environment.name}` from $from to $to',
+            : 'Upgraded environment `${environment.name}`\n'
+                '${from.toString(format)} => ${to.toString(format)}',
       );
 
   @override

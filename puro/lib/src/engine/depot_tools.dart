@@ -1,3 +1,6 @@
+import 'package:process/process.dart';
+
+import '../command_result.dart';
 import '../config.dart';
 import '../git.dart';
 import '../logger.dart';
@@ -13,10 +16,17 @@ Future<void> installDepotTools({
   if (depotToolsDir.existsSync() &&
       depotToolsDir.childFile('gclient').existsSync()) {
     log.v('depot_tools already installed');
-    return;
+  } else {
+    await git.cloneWithProgress(
+      remote:
+          'https://chromium.googlesource.com/chromium/tools/depot_tools.git',
+      repository: depotToolsDir,
+    );
   }
-  await git.cloneWithProgress(
-    remote: 'https://chromium.googlesource.com/chromium/tools/depot_tools.git',
-    repository: depotToolsDir,
-  );
+  const pm = LocalProcessManager();
+  if (!pm.canRun('gclient')) {
+    throw CommandError(
+      "Can't find gclient, is `${depotToolsDir.path}` in your PATH?",
+    );
+  }
 }

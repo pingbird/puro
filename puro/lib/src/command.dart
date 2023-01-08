@@ -309,6 +309,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         PuroConfig.provider,
         config,
       );
+      scope.add(CommandMessage.provider, messages.add);
 
       log.d('Config: $config');
 

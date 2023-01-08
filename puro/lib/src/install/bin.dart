@@ -144,7 +144,7 @@ Future<void> _installTrampoline({
     } else if (!force) {
       throw CommandError(
         'A different version of puro is installed in `${config.puroRoot.path}`, '
-        'run `puro install-puro --force` to overwrite it or --no-install to '
+        'run `puro install-puro --force` to overwrite it or `--no-install` to '
         'ignore this error.',
       );
     }

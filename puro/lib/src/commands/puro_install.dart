@@ -106,9 +106,13 @@ class PuroInstallCommand extends PuroCommand {
     return BasicMessageResult.list([
       if (externalMessage != null) externalMessage,
       if (updateMessage != null) updateMessage,
-      if (profilePath != null) CommandMessage('Updated PATH in $profilePath'),
+      if (profilePath != null)
+        CommandMessage(
+            'Updated PATH in $profilePath, reopen your terminal or `source $profilePath` for it to take effect'),
       if (updatedWindowsRegistry)
-        CommandMessage('Updated PATH in the Windows registry'),
+        CommandMessage(
+          'Updated PATH in the Windows registry, reopen your terminal for it to take effect',
+        ),
       CommandMessage(
         'Successfully installed Puro ${puroVersion.semver} to `${config.puroRoot.path}`',
       ),

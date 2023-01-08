@@ -8,7 +8,8 @@ import '../git.dart';
 import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
-import 'linux_worker.dart';
+import 'depot_tools.dart';
+import 'worker.dart';
 
 /// Checks out and prepares the engine for building.
 Future<void> prepareEngine({
@@ -21,11 +22,15 @@ Future<void> prepareEngine({
   final git = GitClient.of(scope);
   final config = PuroConfig.of(scope);
 
-  if (!Platform.isLinux) {
+  await installDepotTools(scope: scope);
+
+  if (Platform.isLinux) {
+    await installLinuxWorkerPackages(scope: scope);
+  } else if (Platform.isWindows) {
+    await installWindowsWorkerPackages(scope: scope);
+  } else {
     throw UnsupportedOSError();
   }
-
-  await installLinuxWorkerPackages(scope: scope);
 
   ref ??= environment.flutter.engineVersion;
   ref ??= await getEngineVersionOfCommit(
@@ -96,7 +101,7 @@ Future<void> prepareEngine({
     "safesync_url": "",
   }
 ]
-cache_dir = ${jsonEncode(config.sharedGClientDir)}
+cache_dir = ${jsonEncode(config.sharedGClientDir.path)}
 ''');
 
   await ProgressNode.of(scope).wrap((scope, node) async {
@@ -107,6 +112,7 @@ cache_dir = ${jsonEncode(config.sharedGClientDir)}
       ['sync'],
       workingDirectory: environment.engineRootDir.path,
       throwOnFailure: true,
+      runInShell: true,
     );
   });
 }

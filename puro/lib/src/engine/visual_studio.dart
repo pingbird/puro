@@ -139,7 +139,7 @@ class VisualStudio {
   /// a supported version is present, the descriptions used will be for that
   /// version.
   List<String> necessaryComponentDescriptions() {
-    return _requiredComponents().values.toList();
+    return requiredComponents().values.toList();
   }
 
   /// The consumer-facing version name of the minimum supported version.
@@ -223,7 +223,7 @@ class VisualStudio {
   ///
   /// Maps from component IDs to description in the installer UI.
   /// See https://docs.microsoft.com/en-us/visualstudio/install/workload-and-component-ids
-  Map<String, String> _requiredComponents([int? majorVersion]) {
+  Map<String, String> requiredComponents([int? majorVersion]) {
     // The description of the C++ toolchain required by the template. The
     // component name is significantly different in different versions.
     // When a new major version of VS is supported, its toolchain description
@@ -287,7 +287,7 @@ class VisualStudio {
               '-requires',
               requiredWorkload,
             ],
-            ..._requiredComponents(_minimumSupportedVersion).keys,
+            ...requiredComponents(_minimumSupportedVersion).keys,
           ]
         : <String>[];
     try {
@@ -503,10 +503,7 @@ class VswhereDetails {
   static String? _validateString(String? value) {
     if (value != null && value.contains('\u{FFFD}')) {
       throw AssertionError(
-        'Bad UTF-8 encoding (U+FFFD; REPLACEMENT CHARACTER) found in string: $value. '
-        'The Flutter team would greatly appreciate if you could file a bug explaining '
-        'exactly what you were doing when this happened:\n'
-        'https://github.com/flutter/flutter/issues/new/choose\n',
+        'Bad UTF-8 encoding (U+FFFD; REPLACEMENT CHARACTER) found in string: $value.',
       );
     }
 
