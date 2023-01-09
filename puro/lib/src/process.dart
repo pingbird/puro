@@ -57,6 +57,7 @@ Future<ProcessResult> runProcess(
   bool throwOnFailure = false,
   Encoding? stdoutEncoding = systemEncoding,
   Encoding? stderrEncoding = systemEncoding,
+  bool debugLogging = true,
 }) async {
   final start = clock.now();
   final executableName = path.basename(executable);
@@ -89,7 +90,7 @@ Future<ProcessResult> runProcess(
       if (resultStderr.isNotEmpty) log.v('$executableName: $resultStderr');
       log.v(message);
     }
-  } else {
+  } else if (debugLogging) {
     if (resultStdout.isNotEmpty) log.d('$executableName: $resultStdout');
     if (resultStderr.isNotEmpty) log.v('$executableName: $resultStderr');
   }
@@ -235,6 +236,9 @@ class PsInfo {
   final String name;
 
   Map<String, Object> toJson() => {'id': id, 'name': name};
+
+  @override
+  String toString() => '$id: $name';
 }
 
 Future<List<PsInfo>> getParentProcesses({
@@ -243,10 +247,15 @@ Future<List<PsInfo>> getParentProcesses({
   final log = PuroLogger.of(scope);
   final stack = <PsInfo>[];
   if (Platform.isWindows) {
-    final result = await runProcess(scope, 'powershell', [
-      '-command',
-      'Get-WmiObject -Query "select Name,ParentProcessId,ProcessId from Win32_Process" | ConvertTo-Json',
-    ]);
+    final result = await runProcess(
+      scope,
+      'powershell',
+      [
+        '-command',
+        'Get-WmiObject -Query "select Name,ParentProcessId,ProcessId from Win32_Process" | ConvertTo-Json',
+      ],
+      debugLogging: false,
+    );
     if (result.exitCode != 0 || (result.stdout as String).isEmpty) {
       if (result.stdout != '') log.w(result.stdout as String);
       if (result.stderr != '') log.w(result.stderr as String);

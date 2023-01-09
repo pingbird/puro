@@ -27,7 +27,7 @@ Future<void> prepareEngine({
   if (Platform.isLinux) {
     await installLinuxWorkerPackages(scope: scope);
   } else if (Platform.isWindows) {
-    await installWindowsWorkerPackages(scope: scope);
+    await ensureWindowsPythonInstalled(scope: scope);
   } else {
     throw UnsupportedOSError();
   }
@@ -106,6 +106,12 @@ cache_dir = ${jsonEncode(config.sharedGClientDir.path)}
 
   await ProgressNode.of(scope).wrap((scope, node) async {
     node.description = 'Running gclient sync (this may take awhile)';
+
+    final envVars = await getEngineBuildEnvVars(
+      scope: scope,
+      environment: environment,
+    );
+
     await runProcess(
       scope,
       'gclient',
@@ -113,6 +119,7 @@ cache_dir = ${jsonEncode(config.sharedGClientDir.path)}
       workingDirectory: environment.engineRootDir.path,
       throwOnFailure: true,
       runInShell: true,
+      environment: envVars,
     );
   });
 }

@@ -182,39 +182,65 @@ Future<String?> readWindowsRegistryValue({
     return null;
   }
   final line = lines[1];
-  const typeStr = 'REG_EXPAND_SZ    ';
-  final valueIndex = line.indexOf(typeStr);
-  if (valueIndex < 0) {
+  final match = RegExp('REG_(\\S+)    ').firstMatch(line);
+  if (match == null) {
     return null;
   }
-  return line.substring(valueIndex + typeStr.length);
+  return line.substring(match.end);
 }
 
-Future<void> writeWindowsRegistryValue({
+String escapePowershellString(String str) => str
+    .replaceAll('`', '``')
+    .replaceAll('"', '`"')
+    .replaceAll('\$', '`\$')
+    .replaceAll('\x00', '`0')
+    .replaceAll('\x07', '`a')
+    .replaceAll('\b', '`b')
+    .replaceAll('\x1b', '`e')
+    .replaceAll('\f', '`f')
+    .replaceAll('\n', '`n')
+    .replaceAll('\r', '`r')
+    .replaceAll('\t', '`t')
+    .replaceAll('\v', '`v');
+
+Future<bool> writeWindowsRegistryValue({
   required Scope scope,
   required String key,
   required String valueName,
   required String value,
+  bool elevated = false,
 }) async {
+  final args = [
+    'add',
+    key,
+    '/v',
+    valueName,
+    '/t',
+    'REG_EXPAND_SZ',
+    '/d',
+    value,
+    '/f',
+  ];
+
   final log = PuroLogger.of(scope);
-  final result = await runProcess(
-    scope,
-    'reg',
-    [
-      'add',
-      key,
-      '/v',
-      valueName,
-      '/t',
-      'REG_EXPAND_SZ',
-      '/d',
-      value,
-      '/f',
-    ],
-  );
+  final ProcessResult result;
+  if (elevated) {
+    result = await runProcess(
+      scope,
+      'powershell',
+      [
+        '-command',
+        ('Start-Process reg -Wait -Verb runAs -ArgumentList '
+            '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}'),
+      ],
+    );
+  } else {
+    result = await runProcess(scope, 'reg', args);
+  }
   if (result.exitCode != 0) {
     log.w('reg add failed with exit code ${result.exitCode}\n${result.stderr}');
   }
+  return result.exitCode == 0;
 }
 
 Future<bool> tryUpdateWindowsPath({

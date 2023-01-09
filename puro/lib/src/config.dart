@@ -538,6 +538,18 @@ class EngineConfig {
   late final File gclientFile = rootDir.childFile('.gclient');
   late final Directory srcDir = rootDir.childDirectory('src');
   late final Directory engineSrcDir = srcDir.childDirectory('flutter');
+
+  bool get exists => rootDir.existsSync();
+
+  void ensureExists([String? message]) {
+    if (!exists) {
+      throw CommandError(
+        message ??
+            'Environment `${rootDir.parent.basename}` does not have a custom engine, '
+                'use `puro engine prepare ${rootDir.parent.basename}` to create one',
+      );
+    }
+  }
 }
 
 final _nameRegex = RegExp(r'^[_\-a-z][_\-a-z0-9]*$');

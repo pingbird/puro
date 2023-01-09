@@ -10,6 +10,7 @@ analyzer:
 
 linter:
   rules:
+    - unnecessary_string_escapes
     - always_declare_return_types
     - always_require_non_null_named_parameters
     - annotate_overrides

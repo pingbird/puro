@@ -103,7 +103,7 @@ class VisualStudio {
   ///
   /// For instance: 10.0.18362.0.
   String? getWindows10SDKVersion() {
-    final String? sdkLocation = _getWindows10SdkLocation();
+    final String? sdkLocation = getWindows10SdkLocation();
     if (sdkLocation == null) {
       return null;
     }
@@ -401,7 +401,7 @@ class VisualStudio {
 
   /// Returns the installation location of the Windows 10 SDKs, or null if the
   /// registry doesn't contain that information.
-  String? _getWindows10SdkLocation() {
+  String? getWindows10SdkLocation() {
     try {
       final ProcessResult result = runProcessSync(scope, 'reg', <String>[
         'query',
