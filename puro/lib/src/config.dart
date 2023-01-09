@@ -159,6 +159,15 @@ class PuroConfig {
       }
     }
 
+    flutterStorageBaseUrl ??= 'https://storage.googleapis.com';
+
+    if (releasesJsonUrl == null) {
+      final override = Platform.environment['FLUTTER_STORAGE_BASE_URL'];
+      if (override != null && override.isNotEmpty) {
+        releasesJsonUrl = override;
+      }
+    }
+
     return PuroConfig(
       fileSystem: fileSystem,
       gitExecutable: fileSystem.file(gitExecutable),
@@ -170,11 +179,9 @@ class PuroConfig {
       engineGitUrl: engineGitUrl ?? 'https://github.com/flutter/engine.git',
       releasesJsonUrl: Uri.parse(
         releasesJsonUrl ??
-            'https://storage.googleapis.com/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
+            '$flutterStorageBaseUrl/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
       ),
-      flutterStorageBaseUrl: Uri.parse(
-        flutterStorageBaseUrl ?? 'https://storage.googleapis.com',
-      ),
+      flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl),
       environmentOverride: environmentOverride,
       puroBuildsUrl: Uri.parse('https://puro.dev/builds'),
       buildTarget: PuroBuildTarget.query(),
