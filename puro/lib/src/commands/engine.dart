@@ -21,9 +21,6 @@ class EngineCommand extends PuroCommand {
 
   @override
   final description = 'Manages Flutter engine builds';
-
-  @override
-  bool get hidden => true;
 }
 
 class EnginePrepareCommand extends PuroCommand {

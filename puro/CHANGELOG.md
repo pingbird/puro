@@ -1,3 +1,10 @@
+## 1.1.11
+
+* Bug fixes
+* Added support for Google storage mirrors with FLUTTER_STORAGE_BASE_URL
+* Added the `puro engine prepare` command
+* Added the `puro engine build-env` command
+
 ## 1.1.10
 
 * Bug fixes
