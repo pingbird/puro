@@ -64,6 +64,7 @@ Future<void> _promoteStandalone({required Scope scope}) async {
     trampolineFile.deleteSync();
   }
   executableFile.deleteOrRenameSync();
+  version.puroExecutable!.parent.createSync(recursive: true);
   version.puroExecutable!.renameSync(executableFile.path);
 }
 
