@@ -60,8 +60,9 @@ class EnginePrepareCommand extends PuroCommand {
     env.ensureExists();
     if (ref != null && ref != env.flutter.engineVersion) {
       runner.addMessage(
-          'Preparing a different version of the engine than what this environment expects, '
-          '');
+        'Preparing a different version of the engine than what the framework expects\n'
+        'Here be dragons', // rrerr
+      );
     }
     await prepareEngine(
       scope: scope,

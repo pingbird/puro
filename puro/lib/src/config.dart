@@ -159,14 +159,14 @@ class PuroConfig {
       }
     }
 
-    flutterStorageBaseUrl ??= 'https://storage.googleapis.com';
-
-    if (releasesJsonUrl == null) {
+    if (flutterStorageBaseUrl == null) {
       final override = Platform.environment['FLUTTER_STORAGE_BASE_URL'];
       if (override != null && override.isNotEmpty) {
-        releasesJsonUrl = override;
+        flutterStorageBaseUrl = override;
       }
     }
+
+    flutterStorageBaseUrl ??= 'https://storage.googleapis.com';
 
     return PuroConfig(
       fileSystem: fileSystem,

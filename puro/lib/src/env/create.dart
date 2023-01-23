@@ -395,13 +395,15 @@ Future<void> cloneFlutterWithSharedRefs({
         branch: branch,
       );
     } else {
-      // Check out in a detached state, flutter will be unable to detect its
-      // version.
-      await git.checkout(
-        repository: repository,
-        ref: flutterVersion.commit,
-        force: force,
-      );
+      await guardCheckout(() async {
+        // Check out in a detached state, flutter will be unable to detect its
+        // version.
+        await git.checkout(
+          repository: repository,
+          ref: flutterVersion.commit,
+          force: force,
+        );
+      });
     }
   });
 }
