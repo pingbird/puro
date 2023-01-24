@@ -68,7 +68,7 @@ class VSCodeConfig extends IdeConfig {
       flutterSdkDir = null;
     }
     if (dotfile.hasPreviousDartSdk()) {
-      dartSdkDir = config.fileSystem.directory(dotfile.previousFlutterSdk);
+      dartSdkDir = config.fileSystem.directory(dotfile.previousDartSdk);
       dotfile.clearPreviousDartSdk();
       changedDotfile = true;
     } else {

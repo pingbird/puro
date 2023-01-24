@@ -19,8 +19,8 @@ Future<void> installIdeConfigs({
   bool? intellij,
 }) async {
   final log = PuroLogger.of(scope);
-  log.v('vscode override: $vscode');
-  log.v('intellij override: $vscode');
+  log.d('vscode override: $vscode');
+  log.d('intellij override: $vscode');
   await runOptional(
     scope,
     'installing IntelliJ config',
@@ -29,7 +29,7 @@ Future<void> installIdeConfigs({
         scope: scope,
         projectDir: projectDir,
       );
-      log.v('intellij exists: ${ideConfig.exists}');
+      log.d('intellij exists: ${ideConfig.exists}');
       if (ideConfig.exists || intellij == true) {
         await installIdeConfig(
           scope: scope,
@@ -49,7 +49,7 @@ Future<void> installIdeConfigs({
         scope: scope,
         projectDir: projectDir,
       );
-      log.v('vscode exists: ${ideConfig.exists}');
+      log.d('vscode exists: ${ideConfig.exists}');
       if (ideConfig.exists || vscode == true) {
         await installIdeConfig(
           scope: scope,
@@ -75,9 +75,9 @@ Future<void> installIdeConfig({
       (ideConfig.dartSdkDir != null &&
           ideConfig.dartSdkDir?.path != dartSdkPath)) {
     log.v('Configuring ${ideConfig.name}...');
+    await ideConfig.backup(scope: scope);
     ideConfig.dartSdkDir = environment.flutter.cache.dartSdkDir;
     ideConfig.flutterSdkDir = environment.flutterDir;
-    await ideConfig.backup(scope: scope);
     await ideConfig.save(scope: scope);
   } else {
     log.v('${environment.name} already configured');

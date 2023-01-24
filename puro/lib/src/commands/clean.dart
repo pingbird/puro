@@ -16,6 +16,6 @@ class CleanCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     await cleanWorkspace(scope: scope);
-    return BasicMessageResult('Cleaned up current project');
+    return BasicMessageResult('Removed puro from current project');
   }
 }

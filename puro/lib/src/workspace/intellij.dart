@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:collection/collection.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
@@ -20,6 +23,7 @@ class IntelliJConfig extends IdeConfig {
   late final dartSdkFile = librariesDir.childFile('Dart_SDK.xml');
   late final dartSdkBakFile = librariesDir.childFile('Dart_SDK.xml.bak');
   late final dartPackagesFile = librariesDir.childFile('Dart_Packages.xml');
+  late final modulesXmlFile = configDir.childFile('modules.xml');
   late final dartPackagesBakFile =
       librariesDir.childFile('Dart_Packages.xml.bak');
 
@@ -146,6 +150,112 @@ class IntelliJConfig extends IdeConfig {
     if (dartPackagesFile.existsSync()) {
       dartPackagesFile.deleteSync();
     }
+
+    await enableDartSupport(scope: scope);
+  }
+
+  Future<void> enableDartSupport({required Scope scope}) async {
+    final log = PuroLogger.of(scope);
+    if (!modulesXmlFile.existsSync()) {
+      log.d('enableDartSupport - no modules.xml');
+      return;
+    }
+
+    var document = XmlDocument.parse(modulesXmlFile.readAsStringSync());
+    final project = document.getElement('project');
+    if (project == null) {
+      log.d('enableDartSupport - no project');
+      return;
+    }
+
+    var component = project.childElements.firstWhereOrNull((e) =>
+        e.name.toString() == 'component' &&
+        e.getAttribute('name') == 'ProjectModuleManager');
+    if (component == null) {
+      log.d('enableDartSupport - no component');
+      return;
+    }
+
+    final modules = component.getElement('modules');
+    if (modules == null) {
+      log.d('enableDartSupport - no modules');
+      return;
+    }
+
+    const projectDirStr = r'$PROJECT_DIR$/';
+    const dotIdeaStr = r'.idea/';
+    final rootModule = modules.childElements.firstWhereOrNull((e) {
+      var filepath = e.getAttribute('filepath');
+      if (filepath == null ||
+          !filepath.startsWith(projectDirStr) ||
+          !filepath.endsWith('.iml')) return false;
+      filepath = filepath.substring(projectDirStr.length);
+      if (filepath.startsWith(dotIdeaStr)) {
+        filepath = filepath.substring(dotIdeaStr.length);
+      }
+      return !filepath.contains('/');
+    });
+    if (rootModule == null) {
+      log.d('enableDartSupport - no root module');
+      return;
+    }
+
+    var rootModulePath =
+        rootModule.getAttribute('filepath')!.substring(projectDirStr.length);
+    if (Platform.isWindows) {
+      rootModulePath = rootModulePath.replaceAll('/', '\\');
+    }
+
+    final imlFile = workspaceDir.childFile(rootModulePath);
+    log.d('imlFile: $imlFile');
+    if (!imlFile.existsSync()) {
+      log.d('enableDartSupport - no iml file');
+      return;
+    }
+
+    document = XmlDocument.parse(imlFile.readAsStringSync());
+    final module = document.getElement('module');
+    if (module == null) {
+      log.d('enableDartSupport - no module in iml');
+      return;
+    }
+
+    component = module.childElements.firstWhereOrNull((e) =>
+        e.name.toString() == 'component' &&
+        e.getAttribute('name') == 'NewModuleRootManager');
+    if (component == null) {
+      log.d('enableDartSupport - no component in iml');
+      return;
+    }
+
+    final needsLibraries = {'Dart SDK', 'Dart Packages', 'Flutter Plugins'};
+
+    for (final child in component.childElements) {
+      if (child.name.toString() == 'orderEntry' &&
+          child.getAttribute('type') == 'library' &&
+          child.getAttribute('level') == 'project') {
+        needsLibraries.remove(child.getAttribute('name')!);
+      }
+    }
+
+    if (needsLibraries.isEmpty) {
+      log.d('enableDartSupport - libraries satisfied');
+      return;
+    }
+
+    for (final library in needsLibraries) {
+      component.children.add(
+        XmlElement(XmlName('orderEntry'), [
+          XmlAttribute(XmlName('type'), 'library'),
+          XmlAttribute(XmlName('name'), library),
+          XmlAttribute(XmlName('level'), 'project'),
+        ]),
+      );
+    }
+
+    imlFile.writeAsStringSync(document.toXmlString(pretty: true));
+
+    log.v('Enabled dart support in IntelliJ project');
   }
 
   static Future<IntelliJConfig> load({
