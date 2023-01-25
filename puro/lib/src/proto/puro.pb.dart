@@ -1119,6 +1119,12 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
             ? ''
             : 'engineForkRemoteUrl',
         protoName: 'engineForkRemoteUrl')
+    ..aOB(
+        4,
+        const $core.bool.fromEnvironment('protobuf.omit_field_names')
+            ? ''
+            : 'precompileTool',
+        protoName: 'precompileTool')
     ..hasRequiredFields = false;
 
   PuroEnvPrefsModel._() : super();
@@ -1126,6 +1132,7 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
     FlutterVersionModel? desiredVersion,
     $core.String? forkRemoteUrl,
     $core.String? engineForkRemoteUrl,
+    $core.bool? precompileTool,
   }) {
     final _result = create();
     if (desiredVersion != null) {
@@ -1136,6 +1143,9 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
     }
     if (engineForkRemoteUrl != null) {
       _result.engineForkRemoteUrl = engineForkRemoteUrl;
+    }
+    if (precompileTool != null) {
+      _result.precompileTool = precompileTool;
     }
     return _result;
   }
@@ -1203,6 +1213,18 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   $core.bool hasEngineForkRemoteUrl() => $_has(2);
   @$pb.TagNumber(3)
   void clearEngineForkRemoteUrl() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get precompileTool => $_getBF(3);
+  @$pb.TagNumber(4)
+  set precompileTool($core.bool v) {
+    $_setBool(3, v);
+  }
+
+  @$pb.TagNumber(4)
+  $core.bool hasPrecompileTool() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPrecompileTool() => clearField(4);
 }
 
 class PuroDotfileModel extends $pb.GeneratedMessage {

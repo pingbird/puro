@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import '../../models.dart';
 import '../config.dart';
 import '../file_lock.dart';
 import '../git.dart';
@@ -29,6 +30,7 @@ class FlutterToolInfo {
 Future<FlutterToolInfo> setUpFlutterTool({
   required Scope scope,
   required EnvConfig environment,
+  PuroEnvPrefsModel? environmentPrefs,
 }) async {
   final config = PuroConfig.of(scope);
   final git = GitClient.of(scope);
@@ -97,14 +99,34 @@ Future<FlutterToolInfo> setUpFlutterTool({
       .childDirectory(commit)
       .childFile('flutter_tools.snapshot.tmp');
 
+  final pubspecLockFile = environment.flutter.flutterToolsPubspecLockFile;
+  final pubspecYamlFile = environment.flutter.flutterToolsPubspecYamlFile;
+
   var didUpdateTool = false;
+
+  environmentPrefs ??= await environment.readPrefs(scope: scope);
+  final shouldPrecompile =
+      !environmentPrefs.hasPrecompileTool() || environmentPrefs.precompileTool;
 
   await checkAtomic(
     scope: scope,
     file: environment.updateLockFile,
-    condition: () async => snapshotFile.existsSync(),
+    // Recompile flutter tool if any:
+    // * Tool snapshot does not exist
+    // * Tool pubspec lock does not exist
+    // * Pubspec is out of date
+    condition: () async =>
+        (!shouldPrecompile || snapshotFile.existsSync()) &&
+        pubspecLockFile.existsSync() &&
+        pubspecLockFile
+            .lastModifiedSync()
+            .isAfter(pubspecYamlFile.lastModifiedSync()),
     onFail: () async {
       log.v('Flutter tool out of date');
+
+      if (!shouldPrecompile && snapshotFile.existsSync()) {
+        snapshotFile.deleteSync();
+      }
 
       final pubEnvironment =
           '${Platform.environment['PUB_ENVIRONMENT'] ?? ''}:flutter_install:puro';
@@ -166,7 +188,6 @@ Future<FlutterToolInfo> setUpFlutterTool({
           [
             '--disable-dart-dev',
             '--verbosity=error',
-            '--disable-dart-dev',
             '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
             if (environment.flutterToolArgs.isNotEmpty)
               ...environment.flutterToolArgs.split(RegExp(r'\S+')),

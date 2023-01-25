@@ -36,7 +36,7 @@ void main(List<String> args) async {
 
   final runner = PuroCommandRunner(
     'puro',
-    'An experimental tool for managing Flutter versions',
+    'A powerful tool for installing and upgrading Flutter versions',
     scope: scope,
     isJson: isJson,
   );

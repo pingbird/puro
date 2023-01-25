@@ -25,15 +25,19 @@ Future<int> runFlutterCommand({
   final flutterConfig = environment.flutter;
   final log = PuroLogger.of(scope);
   final start = clock.now();
+  final environmentPrefs = await environment.readPrefs(scope: scope);
   final toolInfo = await setUpFlutterTool(
     scope: scope,
     environment: environment,
+    environmentPrefs: environmentPrefs,
   );
   log.v(
     'Setting up flutter took ${clock.now().difference(start).inMilliseconds}ms',
   );
   Terminal.of(scope).flushStatus();
   final dartPath = flutterConfig.cache.dartSdk.dartExecutable.path;
+  final shouldPrecompile =
+      !environmentPrefs.hasPrecompileTool() || environmentPrefs.precompileTool;
   final flutterProcess = await startProcess(
     scope,
     dartPath,
@@ -42,7 +46,10 @@ Future<int> runFlutterCommand({
       '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
       if (environment.flutterToolArgs.isNotEmpty)
         ...environment.flutterToolArgs.split(RegExp(r'\S+')),
-      toolInfo.snapshotFile.path,
+      if (shouldPrecompile)
+        toolInfo.snapshotFile.path
+      else
+        flutterConfig.flutterToolsScriptFile.path,
       ...args,
     ],
     environment: {
@@ -81,9 +88,11 @@ Future<int> runDartCommand({
   final flutterConfig = environment.flutter;
   final log = PuroLogger.of(scope);
   final start = clock.now();
+  final environmentPrefs = await environment.readPrefs(scope: scope);
   await setUpFlutterTool(
     scope: scope,
     environment: environment,
+    environmentPrefs: environmentPrefs,
   );
   log.v(
     'Setting up dart took ${clock.now().difference(start).inMilliseconds}ms',

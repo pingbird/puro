@@ -1,6 +1,6 @@
 # About
 
-Puro is an experimental tool for installing and managing Flutter versions.
+Puro is a powerful tool for installing and upgrading Flutter versions.
 
 With Puro you can:
 
