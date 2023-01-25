@@ -17,6 +17,7 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
   required Scope scope,
 }) async {
   final config = PuroConfig.of(scope);
+  final path = config.fileSystem.path;
   final log = PuroLogger.of(scope);
 
   final puroVersion = await PuroVersion.of(scope);
@@ -50,6 +51,9 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
   offending.remove(config.puroDartShimFile.path);
   offending.remove(config.puroFlutterShimFile.path);
   offending.remove(config.puroExecutableFile.path);
+
+  final defaultEnvBinDir = config.getEnv('default').flutter.binDir.path;
+  offending.removeWhere((e) => path.basename(e) == defaultEnvBinDir);
 
   log.d('PATH: ${Platform.environment['PATH']}');
   log.d('puroDartShimFile: ${config.puroDartShimFile.path}');
