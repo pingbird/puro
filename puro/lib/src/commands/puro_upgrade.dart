@@ -5,9 +5,8 @@ import 'package:pub_semver/pub_semver.dart';
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
-import '../downloader.dart';
-import '../extensions.dart';
 import '../http.dart';
+import '../install/upgrade.dart';
 import '../process.dart';
 import '../terminal.dart';
 import '../version.dart';
@@ -49,6 +48,7 @@ class PuroUpgradeCommand extends PuroCommand {
     final config = PuroConfig.of(scope);
     final puroVersion = await PuroVersion.of(scope);
     final currentVersion = puroVersion.semver;
+    var targetVersionString = unwrapSingleOptionalArgument();
 
     if (puroVersion.type == PuroInstallationType.pub) {
       final result = await runProcess(
@@ -82,7 +82,16 @@ class PuroUpgradeCommand extends PuroCommand {
       );
     }
 
-    var targetVersionString = unwrapSingleOptionalArgument();
+    if (targetVersionString == 'master') {
+      final exitCode = await upgradePuro(
+        scope: scope,
+        targetVersion: 'master',
+        path:
+            argResults!.wasParsed('path') ? argResults!['path'] as bool : null,
+      );
+      await runner.exitPuro(exitCode);
+    }
+
     final Version targetVersion;
     if (targetVersionString == null) {
       final latestVersionResponse =
@@ -106,42 +115,13 @@ class PuroUpgradeCommand extends PuroCommand {
         );
       }
     }
-    final buildTarget = config.buildTarget;
-    final tempFile = config.puroExecutableTempFile;
-    tempFile.parent.createSync(recursive: true);
-    await downloadFile(
-      scope: scope,
-      url: config.puroBuildsUrl.append(
-        path: '$targetVersion/'
-            '${buildTarget.name}/'
-            '${buildTarget.executableName}',
-      ),
-      file: tempFile,
-      description: 'Downloading puro $targetVersion',
-    );
-    if (!Platform.isWindows) {
-      await runProcess(scope, 'chmod', ['+x', '--', tempFile.path]);
-    }
-    config.puroExecutableFile.deleteOrRenameSync();
-    tempFile.renameSync(config.puroExecutableFile.path);
 
-    final terminal = Terminal.of(scope);
-    terminal.flushStatus();
-    final installProcess = await startProcess(
-      scope,
-      config.puroExecutableFile.path,
-      [
-        if (terminal.enableColor) '--color',
-        if (terminal.enableStatus) '--progress',
-        'install-puro',
-        if (argResults!.wasParsed('path'))
-          if (argResults!['path'] as bool) '--path' else '--no-path',
-      ],
+    final exitCode = await upgradePuro(
+      scope: scope,
+      targetVersion: '$targetVersion',
+      path: argResults!.wasParsed('path') ? argResults!['path'] as bool : null,
     );
-    final stdoutFuture =
-        installProcess.stdout.listen(stdout.add).asFuture<void>();
-    await installProcess.stderr.listen(stderr.add).asFuture<void>();
-    await stdoutFuture;
-    await runner.exitPuro(await installProcess.exitCode);
+
+    await runner.exitPuro(exitCode);
   }
 }
