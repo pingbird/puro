@@ -75,13 +75,14 @@ enum EngineBuildTarget {
         ['-n', 'hw.optional.arm64'],
         runInShell: true,
       );
-      if (sysctlResult.exitCode != 0 || sysctlResult.stdout == '0') {
+      final stdout = (sysctlResult.stdout as String).trim();
+      if (sysctlResult.exitCode != 0 || stdout == '0') {
         arch = EngineArch.x64;
-      } else if (sysctlResult.stdout == '1') {
+      } else if (stdout == '1') {
         arch = EngineArch.arm64;
       } else {
         throw AssertionError(
-          'Unexpected result from sysctl: `${sysctlResult.stdout}`',
+          'Unexpected result from sysctl: `$stdout`',
         );
       }
     } else if (Platform.isLinux) {
