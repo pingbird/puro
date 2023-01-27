@@ -406,6 +406,7 @@ class EnvConfig {
   late final FlutterConfig flutter = FlutterConfig(flutterDir);
   late final File prefsJsonFile = envDir.childFile('prefs.json');
   late final File updateLockFile = envDir.childFile('update.lock');
+  late final Directory evalDir = envDir.childDirectory('eval');
 
   bool get exists => envDir.existsSync();
 

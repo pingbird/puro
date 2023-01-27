@@ -270,6 +270,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
           success: model.success,
         ),
       );
+      messages.clear();
     }
     await exitPuro(model.success ? 0 : 1);
   }

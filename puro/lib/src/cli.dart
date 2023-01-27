@@ -12,6 +12,7 @@ import 'commands/env_ls.dart';
 import 'commands/env_rm.dart';
 import 'commands/env_upgrade.dart';
 import 'commands/env_use.dart';
+import 'commands/eval.dart';
 import 'commands/flutter.dart';
 import 'commands/gc.dart';
 import 'commands/generate_docs.dart';
@@ -219,7 +220,8 @@ void main(List<String> args) async {
     ..addCommand(GcCommand())
     ..addCommand(LsVersionsCommand())
     ..addCommand(EngineCommand())
-    ..addCommand(PrefsCommand());
+    ..addCommand(PrefsCommand())
+    ..addCommand(EvalCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {
