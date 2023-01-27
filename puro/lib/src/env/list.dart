@@ -69,7 +69,7 @@ class ListEnvironmentResult extends CommandResult {
         return [
           'Environments:',
           for (var i = 0; i < lines.length; i++)
-            lines[i].padRight(linePadding) +
+            padRightColored(lines[i], linePadding) +
                 format.color(
                   ' (${results[i].environment.exists ? results[i].version ?? 'unknown' : 'not installed'})',
                   foregroundColor: Ansi8BitColor.grey,
