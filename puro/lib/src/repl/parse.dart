@@ -21,6 +21,7 @@ class SimpleParseResult<T extends AstNode> {
     this.scanException,
     this.parseErrors = const [],
     this.parseException,
+    this.exhaustive = false,
   });
 
   final T? node;
@@ -29,6 +30,7 @@ class SimpleParseResult<T extends AstNode> {
   final CaughtException? parseException;
   final List<AnalysisError> scanErrors;
   final List<AnalysisError> parseErrors;
+  final bool exhaustive;
 
   bool get hasError =>
       scanException != null ||
@@ -36,7 +38,19 @@ class SimpleParseResult<T extends AstNode> {
       scanErrors.isNotEmpty ||
       parseErrors.isNotEmpty;
 
-  bool get hasEOF => !hasError && token!.last.type == TokenType.EOF;
+  @override
+  String toString() {
+    return 'SimpleParseResult<$T>('
+        'node: $node, '
+        'token: $token, '
+        'scanException: $scanException, '
+        'parseException: $parseException, '
+        'scanErrors: $scanErrors, '
+        'parseErrors: $parseErrors, '
+        'hasError: $hasError, '
+        'exhaustive: $exhaustive'
+        ')';
+  }
 }
 
 extension TokenExtension on Token {
@@ -83,6 +97,7 @@ SimpleParseResult<T> parseDart<T extends AstNode>(
     token: token,
     scanErrors: scanErrors.errors,
     parseErrors: parseErrors.errors,
+    exhaustive: parser.currentToken.isEof,
   );
 }
 

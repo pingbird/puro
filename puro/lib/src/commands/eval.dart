@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import '../command.dart';
 import '../command_result.dart';
 import '../repl/worker.dart';
@@ -20,16 +23,18 @@ class EvalCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
-    final code = argResults!.rest.join(' ');
+    var code = argResults!.rest.join(' ');
+    if (code.isEmpty) {
+      code = await utf8.decodeStream(stdin);
+    }
     final worker = await EvalWorker.spawn(scope: scope);
     try {
       final result = await worker.evaluate(code);
       worker.dispose();
       if (result != null) {
-        return BasicMessageResult(result);
-      } else {
-        await runner.exitPuro(0);
+        stdout.writeln(result);
       }
+      await runner.exitPuro(0);
     } on EvalError catch (e) {
       throw CommandError('$e');
     }

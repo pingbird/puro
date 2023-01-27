@@ -154,7 +154,7 @@ class EvalWorker {
 
     final expressionParseResult = parseDartExpression(code);
 
-    if (!expressionParseResult.hasError && expressionParseResult.hasEOF) {
+    if (!expressionParseResult.hasError && expressionParseResult.exhaustive) {
       return expressionParseResult;
     }
 
@@ -171,7 +171,6 @@ class EvalWorker {
     } else {
       return _evaluate('void main() { $code }');
     }
-    // await vmService.resume(isolateId, step: StepOption.kInto);
   }
 
   Future<String?> _evaluate(String code, {bool hasReturnValue = false}) async {
@@ -187,7 +186,6 @@ class EvalWorker {
     }
 
     final isolateInfo = await vmService.getIsolate(isolateId);
-    // print('isolate: ${isolateInfo.toJson()}');
 
     final response = await vmService.evaluate(
       isolateId,
