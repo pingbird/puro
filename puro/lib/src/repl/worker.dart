@@ -140,15 +140,17 @@ class EvalWorker {
 
   SimpleParseResult<AstNode> parse(String code) {
     final unitParseResult = parseDartCompilationUnit(code);
+    final unitNode = unitParseResult.node;
 
-    // Always use unit if it contains top-level declarations
-    if (unitParseResult.node?.declarations.any((e) =>
-            e is ClassDeclaration ||
-            e is MixinDeclaration ||
-            e is ExtensionDeclaration ||
-            e is EnumDeclaration ||
-            e is TypeAlias) ??
-        false) {
+    // Always use unit if it contains top-level declarations or imports
+    if (unitNode != null &&
+        (unitNode.directives.isNotEmpty ||
+            unitNode.declarations.any((e) =>
+                e is ClassDeclaration ||
+                e is MixinDeclaration ||
+                e is ExtensionDeclaration ||
+                e is EnumDeclaration ||
+                e is TypeAlias))) {
       return unitParseResult;
     }
 
@@ -165,11 +167,11 @@ class EvalWorker {
     final parseResult = parse(code);
     final node = parseResult.node;
     if (node is Expression) {
-      return _evaluate('dynamic main() => $code;', hasReturnValue: true);
+      return _evaluate('dynamic main() =>\n$code;', hasReturnValue: true);
     } else if (node is CompilationUnit) {
       return _evaluate(code);
     } else {
-      return _evaluate('void main() { $code }');
+      return _evaluate('void main() {\n$code\n}');
     }
   }
 
