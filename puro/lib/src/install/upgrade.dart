@@ -4,6 +4,7 @@ import '../config.dart';
 import '../downloader.dart';
 import '../extensions.dart';
 import '../http.dart';
+import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 import '../terminal.dart';
@@ -15,6 +16,7 @@ Future<int> upgradePuro({
 }) async {
   final config = PuroConfig.of(scope);
   final terminal = Terminal.of(scope);
+  final log = PuroLogger.of(scope);
   final buildTarget = config.buildTarget;
   final tempFile = config.puroExecutableTempFile;
 
@@ -42,6 +44,7 @@ Future<int> upgradePuro({
     [
       if (terminal.enableColor) '--color',
       if (terminal.enableStatus) '--progress',
+      '--log-level=${log.level?.index ?? 0}',
       'install-puro',
       if (path != null)
         if (path) '--path' else '--no-path',

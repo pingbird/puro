@@ -145,12 +145,7 @@ void main(List<String> args) async {
             'Argument `log-level` must be a number between 0 and 4, inclusive',
           );
         }
-        log.level = {
-          1: LogLevel.error,
-          2: LogLevel.warning,
-          3: LogLevel.verbose,
-          4: LogLevel.debug,
-        }[logLevel];
+        log.level = LogLevel.values[logLevel];
       }),
     )
     ..addFlag(

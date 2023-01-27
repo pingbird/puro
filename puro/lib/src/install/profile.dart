@@ -55,6 +55,7 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
   final defaultEnvBinDir = config.getEnv('default').flutter.binDir.path;
   offending.removeWhere((e) => path.basename(e) == defaultEnvBinDir);
 
+  log.d('defaultEnvBinDir: $defaultEnvBinDir');
   log.d('PATH: ${Platform.environment['PATH']}');
   log.d('puroDartShimFile: ${config.puroDartShimFile.path}');
   log.d('puroFlutterShimFile: ${config.puroFlutterShimFile.path}');

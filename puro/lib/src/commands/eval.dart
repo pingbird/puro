@@ -16,7 +16,7 @@ class EvalCommand extends PuroCommand {
   bool get hidden => true;
 
   @override
-  String? get argumentUsage => '<code>';
+  String? get argumentUsage => '[code]';
 
   @override
   bool get allowUpdateCheck => false;
