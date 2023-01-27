@@ -34,7 +34,8 @@ class CommandErrorResult extends CommandResult {
     return [
       CommandMessage('$exception\n$stackTrace'),
       CommandMessage(
-        'Puro crashed! Please file an issue at https://github.com/PixelToast/puro',
+        'Puro crashed! Please file an issue at https://github.com/PixelToast/puro\n'
+        'Consider running the command with a higher log level: `--log-level=4`',
       ),
     ];
   }

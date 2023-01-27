@@ -48,7 +48,7 @@ You can also configure the global default with `--global` or `-g`:
 puro use -g my_env
 ```
 
-See the [Command Reference](https://puro.dev/reference/commands/) for more information.
+See the [Manual](https://puro.dev/reference/manual/) for more information.
 
 ## Performance
 

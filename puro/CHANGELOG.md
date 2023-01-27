@@ -1,3 +1,8 @@
+## 1.2.0
+
+* Bug fixes
+* Added the `eval` command
+
 ## 1.1.13
 
 * Bug fixes

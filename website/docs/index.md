@@ -110,7 +110,7 @@ You can also configure the global default with `--global` or `-g`:
 puro use -g my_env
 ```
 
-See the [Command Reference](/reference/commands/) for more information.
+See the [Manual](/reference/manual/) for more information.
 
 ## Performance
 

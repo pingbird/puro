@@ -88,6 +88,37 @@ $> puro ls
       stable (stable / 3.7.0 / b06b8b2710)
     * beta   (beta / 3.7.0-1.5.pre / 099b3f4bf1)
       master (not installed)
+``` 
+
+### Switching specific projects
+
+The `puro use` command switches the environment of the current project:
+
+```
+$> puro use beta
+[✓] Switched to environment `beta`
+```
+
+You may notice this command creates a `.puro.json`, this file tells Puro which environment to use, and is automatically
+gitignored:
+
+```json
+{
+  "env": "beta"
+}
+```
+
+Puro will detect VSCode and Android Studio (IntelliJ) configuration files and adjust them to use the right version of
+Dart and Flutter, you can manually control this behavior with `--intellij --vscode` or `--no-intellij --no-vscode`.
+
+To ignore the global and project defaults, you can pass `-e <name>` to most commands:
+
+```
+$> puro -e stable flutter --version
+Flutter 3.7.0 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision b06b8b2710 (4 days ago) • 2023-01-23 16:55:55 -0800
+Engine • revision b24591ed32
+Tools • Dart 2.19.0 • DevTools 2.20.1
 ```
 
 ### Finding versions
@@ -121,24 +152,27 @@ $> puro releases
     Flutter 2.13.0-0.4.pre | 9mo | 25caf1461b | Dart 2.17.0
 ```
 
+By default, this command shows the absolute latest 5 releases followed by the latest of the previous 5 major versions.
+Pass it `--all` to show all releases unfiltered.
+
 ### Creation
 
 The `puro create` command is used to create new environments.
 
-The most common version to use is a release channel, puro will query the latest version on that channel and download it:
+If you add a release channel, puro will query the latest version on that channel and download it:
 
 ```
 $> puro create my_env stable       
-[✓] Created new environment at `C:\Users\ping\.puro\envs\my_env\flutter`
+[✓] Created new environment at `/home/ping/.puro/envs/my_env/flutter`
 ```
 
 You can also create one from a version, commit, or branch like `3.3.6`, `d9111f6` or `Hixie-patch-3`.
 
-Forks are also supported with the `--fork` option:
+Forks are supported with the `--fork` option:
 
 ```
 $> puro create my_env --fork git@github.com:PixelToast/flutter.git
-[✓] Created new environment at `C:\Users\ping\.puro\envs\my_env\flutter`
+[✓] Created new environment at `/home/ping/.puro/envs/my_env/flutter`
 ```
 
 ### Deletion
@@ -150,8 +184,8 @@ $> puro rm my_env
 [✓] Deleted environment `my_env`
 ```
 
-Note that this does not delete any cached data that this environment depends on, re-creating them usually takes less
-than a second.
+Note that this does not delete any cached data that this environment depends on, this is why re-creating environments
+after deletion usually takes less than a second.
 
 We can manually delete unused caches with the `puro gc` command:
 

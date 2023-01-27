@@ -52,7 +52,8 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
   offending.remove(config.puroFlutterShimFile.path);
   offending.remove(config.puroExecutableFile.path);
 
-  final defaultEnvBinDir = config.getEnv('default').flutter.binDir.path;
+  final defaultEnvBinDir =
+      config.getEnv('default', resolve: false).flutter.binDir.path;
   offending.removeWhere((e) => path.equals(path.basename(e), defaultEnvBinDir));
 
   log.d('defaultEnvBinDir: $defaultEnvBinDir');
