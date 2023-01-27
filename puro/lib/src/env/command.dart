@@ -47,7 +47,7 @@ Future<int> runFlutterCommand({
       if (environment.flutterToolArgs.isNotEmpty)
         ...environment.flutterToolArgs.split(RegExp(r'\S+')),
       if (shouldPrecompile)
-        toolInfo.snapshotFile.path
+        toolInfo.snapshotFile!.path
       else
         flutterConfig.flutterToolsScriptFile.path,
       ...args,

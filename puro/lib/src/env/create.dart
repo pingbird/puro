@@ -297,6 +297,10 @@ Future<void> cloneFlutterWithSharedRefs({
 
       await initialize();
 
+      node.description = 'Fetching $forkRef';
+
+      await git.fetch(repository: repository);
+
       forkRef ??= 'master';
       node.description = 'Checking out $forkRef';
 

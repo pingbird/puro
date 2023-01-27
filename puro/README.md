@@ -1,17 +1,19 @@
 # About
 
-Puro is a powerful tool for installing and upgrading Flutter versions.
+Puro is a powerful tool for installing and upgrading [Flutter](https://flutter.dev/) versions, it is an essential tool
+for developers that work on multiple projects or have slower internet.
 
 With Puro you can:
 
-* Use multiple versions of Flutter at the same time
-* Download new versions twice as fast
-* Configure globally or per-project
-* Switch with a single command, no more manually editing IDE settings!
+* Use different versions of Flutter at the same time
+* Download new versions twice as fast with significantly less disk space and internet bandwidth
+* Use versions globally or per-project
+* Automatically configure IDE settings with a single command
 
 ## Installation
 
-Puro is distributed as a precompiled executable, see the quick installation instructions at https://puro.dev/
+Puro is distributed as a precompiled executable (you do not need Dart installed), see the quick installation
+instructions at https://puro.dev/
 
 ## Quick start
 

@@ -13,9 +13,6 @@ class EvalCommand extends PuroCommand {
   final description = 'Evaluates ephemeral Dart code';
 
   @override
-  bool get hidden => true;
-
-  @override
   String? get argumentUsage => '[code]';
 
   @override

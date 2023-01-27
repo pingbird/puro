@@ -4,6 +4,7 @@ nav:
     - Home:
       - index.md
     - Reference:
+      - reference/manual.md
       - reference/commands.md
       - reference/changelog.md
     - 'pub.dev': https://pub.dev/packages/puro

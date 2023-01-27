@@ -2,6 +2,7 @@ import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
 import '../env/default.dart';
+import '../env/releases.dart';
 import '../logger.dart';
 import '../terminal.dart';
 import '../workspace/install.dart';
@@ -50,7 +51,7 @@ class EnvUseCommand extends PuroCommand {
         );
       }
       final env = config.getEnv(envName);
-      if (!env.exists) {
+      if (!env.exists && !pseudoEnvironmentNames.contains(env.name)) {
         log.w('Environment `${env.name}` does not exist');
       }
       await setDefaultEnvName(
