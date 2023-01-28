@@ -235,6 +235,7 @@ class EvalWorker {
   Future<void> pullPackages({
     Map<String, VersionConstraint?> packages = const {},
   }) async {
+    if (packages.isEmpty) return;
     log.d(() => 'pullPackages: $packages');
     // Initialize packages file, this takes about 1 second on the first run with
     // a good internet connection.

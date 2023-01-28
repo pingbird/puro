@@ -149,6 +149,13 @@ void main(List<String> args) async {
       }),
     )
     ..addFlag(
+      'log-profile',
+      help: 'Enable profiling information in logs',
+      callback: runner.wrapCallback((flag) {
+        log.profile = flag;
+      }),
+    )
+    ..addFlag(
       'verbose',
       abbr: 'v',
       help: 'Verbose logging, alias for --log-level=3',

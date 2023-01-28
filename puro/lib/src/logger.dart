@@ -44,13 +44,13 @@ class PuroLogger {
     this.level,
     this.terminal,
     this.onAdd,
-    this.timestamps = true,
+    this.profile = false,
   });
 
   LogLevel? level;
   Terminal? terminal;
   void Function(LogEntry event)? onAdd;
-  bool timestamps;
+  bool profile;
 
   late final stopwatch = Stopwatch();
 
@@ -72,10 +72,15 @@ class PuroLogger {
     if (terminal != null) {
       final buf = StringBuffer();
 
-      if (timestamps) {
+      if (profile) {
+        final elapsed = stopwatch.elapsedMilliseconds;
         buf.write(format.color(
-          '${stopwatch.elapsedMilliseconds.pretty().padLeft(4)} ',
-          foregroundColor: Ansi8BitColor.green,
+          '${elapsed.pretty().padLeft(4)} ',
+          foregroundColor: elapsed > 1000
+              ? Ansi8BitColor.red
+              : elapsed > 100
+                  ? Ansi8BitColor.orange1
+                  : Ansi8BitColor.green,
           bold: true,
         ));
         if (!stopwatch.isRunning) {
