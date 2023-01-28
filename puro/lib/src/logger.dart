@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:neoansi/neoansi.dart';
 
+import 'extensions.dart';
 import 'provider.dart';
 import 'terminal.dart';
 
@@ -43,11 +44,15 @@ class PuroLogger {
     this.level,
     this.terminal,
     this.onAdd,
+    this.timestamps = true,
   });
 
   LogLevel? level;
   Terminal? terminal;
   void Function(LogEntry event)? onAdd;
+  bool timestamps;
+
+  late final stopwatch = Stopwatch();
 
   OutputFormatter get format => terminal?.format ?? plainFormatter;
 
@@ -65,38 +70,62 @@ class PuroLogger {
       onAdd!(event);
     }
     if (terminal != null) {
-      final label = format.color(
+      final buf = StringBuffer();
+
+      if (timestamps) {
+        buf.write(format.color(
+          '${stopwatch.elapsedMilliseconds.pretty().padLeft(4)} ',
+          foregroundColor: Ansi8BitColor.green,
+          bold: true,
+        ));
+        if (!stopwatch.isRunning) {
+          stopwatch.start();
+        } else {
+          stopwatch.reset();
+        }
+      }
+
+      buf.write(format.color(
         levelPrefixes[event.level]!,
         foregroundColor: levelColors[event.level]!,
         bold: true,
-      );
-      terminal!.writeln(format.prefix('$label ', event.message));
+      ));
+
+      terminal!.writeln(format.prefix('$buf ', event.message));
     }
   }
 
-  void d(String message) {
+  String _interpolate(Object? message) {
+    if (message is Function) {
+      return '${message()}';
+    } else {
+      return '$message';
+    }
+  }
+
+  void d(Object? message) {
     if (level == null || level! < LogLevel.debug) return;
-    _add(LogEntry(DateTime.now(), LogLevel.debug, message));
+    _add(LogEntry(DateTime.now(), LogLevel.debug, _interpolate(message)));
   }
 
-  void v(String message) {
+  void v(Object? message) {
     if (level == null || level! < LogLevel.verbose) return;
-    _add(LogEntry(DateTime.now(), LogLevel.verbose, message));
+    _add(LogEntry(DateTime.now(), LogLevel.verbose, _interpolate(message)));
   }
 
-  void w(String message) {
+  void w(Object? message) {
     if (level == null || level! < LogLevel.warning) return;
-    _add(LogEntry(DateTime.now(), LogLevel.warning, message));
+    _add(LogEntry(DateTime.now(), LogLevel.warning, _interpolate(message)));
   }
 
-  void e(String message) {
+  void e(Object? message) {
     if (level == null || level! < LogLevel.error) return;
-    _add(LogEntry(DateTime.now(), LogLevel.error, message));
+    _add(LogEntry(DateTime.now(), LogLevel.error, _interpolate(message)));
   }
 
-  void wtf(String message) {
+  void wtf(Object? message) {
     if (level == null || level! < LogLevel.wtf) return;
-    _add(LogEntry(DateTime.now(), LogLevel.wtf, message));
+    _add(LogEntry(DateTime.now(), LogLevel.wtf, _interpolate(message)));
   }
 
   static const levelPrefixes = {

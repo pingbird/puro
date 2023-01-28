@@ -5,6 +5,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import '../command.dart';
 import '../command_result.dart';
+import '../env/default.dart';
 import '../eval/worker.dart';
 import '../logger.dart';
 
@@ -63,7 +64,11 @@ class EvalCommand extends PuroCommand {
     if (code.isEmpty) {
       code = await utf8.decodeStream(stdin);
     }
-    final worker = await EvalWorker.spawn(scope: scope);
+    final environment = await getProjectEnvOrDefault(scope: scope);
+    final worker = await EvalWorker.spawn(
+      scope: scope,
+      environment: environment,
+    );
     final packageVersions = <String, VersionConstraint?>{
       for (final import in imports)
         if (import.scheme == 'package') import.pathSegments.first: null,

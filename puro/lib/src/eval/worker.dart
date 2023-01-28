@@ -9,7 +9,6 @@ import 'package:vm_service/vm_service.dart';
 import 'package:vm_service/vm_service_io.dart';
 
 import '../config.dart';
-import '../env/default.dart';
 import '../extensions.dart';
 import '../logger.dart';
 import '../process.dart';
@@ -113,8 +112,12 @@ class EvalWorker {
   late final log = PuroLogger.of(scope);
   late final evalFile = projectDir.childFile('eval.dart');
 
-  static Future<EvalWorker> spawn({required Scope scope}) async {
-    final environment = await getProjectEnvOrDefault(scope: scope);
+  var didUpdatePackages = false;
+
+  static Future<EvalWorker> spawn({
+    required Scope scope,
+    required EnvConfig environment,
+  }) async {
     final log = PuroLogger.of(scope);
 
     // Clean up old projects.
@@ -145,6 +148,8 @@ class EvalWorker {
     final port = socket.port;
     await socket.close();
 
+    // Create an empty package config, reloadSources doesn't reload packages
+    // unless we start with one :/
     final packagesFile = environment.evalBootstrapPackagesFile;
     if (!packagesFile.existsSync()) {
       packagesFile.parent.createSync(recursive: true);
@@ -187,7 +192,13 @@ class EvalWorker {
     final serverUri = await serverUriCompleter.future;
     log.d('serverUri: $serverUri');
     final vmService = await vmServiceConnectUri(serverUri);
-    await vmService.streamListen(EventStreams.kIsolate);
+
+    final streamListenFuture = Future.wait([
+      vmService.streamListen(EventStreams.kIsolate),
+      vmService.streamListen(EventStreams.kStderr),
+      vmService.streamListen(EventStreams.kStdout),
+    ]);
+
     final isolateIdCompleter = Completer<String>();
     vmService.onIsolateEvent.listen((e) {
       if (!isolateIdCompleter.isCompleted && e.kind == 'IsolateRunnable') {
@@ -195,15 +206,18 @@ class EvalWorker {
       }
     });
 
+    final isolateId = await isolateIdCompleter.future;
+    await streamListenFuture;
+
     // Forward stdout / stderr.
-    await vmService.streamListen(EventStreams.kStdout);
     vmService.onStdoutEvent.listen((e) => stdout.add(base64.decode(e.bytes!)));
-    await vmService.streamListen(EventStreams.kStderr);
     vmService.onStderrEvent.listen((e) => stderr.add(base64.decode(e.bytes!)));
 
     // To debug what is being sent/received by the vm service:
     // vmService.onReceive.listen((e) => print('--> $e'));
     // vmService.onSend.listen((e) => print('<-- $e'));
+
+    log.d('EvalWorker.spawn done');
 
     return EvalWorker(
       scope: scope,
@@ -213,7 +227,7 @@ class EvalWorker {
       projectDir: projectDir,
       mainFileHandle: mainFileHandle,
       vmService: vmService,
-      isolateId: await isolateIdCompleter.future,
+      isolateId: isolateId,
       stderrFuture: stderrFuture,
     );
   }
@@ -221,17 +235,18 @@ class EvalWorker {
   Future<void> pullPackages({
     Map<String, VersionConstraint?> packages = const {},
   }) async {
-    log.d('pullPackages: $packages');
+    log.d(() => 'pullPackages: $packages');
     // Initialize packages file, this takes about 1 second on the first run with
     // a good internet connection.
     final vmInfo = await vmService.getVM();
-    log.d('vmInfo: ${prettyJsonEncoder.convert(vmInfo.json)}');
-    await initEvalBootstrapProject(
-      scope: scope,
-      environment: environment,
-      sdkVersion: vmInfo.version!.split(' ').first,
-      packages: packages,
-    );
+    log.d(() => 'vmInfo: ${prettyJsonEncoder.convert(vmInfo.json)}');
+    didUpdatePackages = didUpdatePackages ||
+        await initEvalBootstrapProject(
+          scope: scope,
+          environment: environment,
+          sdkVersion: vmInfo.version!.split(' ').first,
+          packages: packages,
+        );
   }
 
   SimpleParseResult<AstNode> parse(String code) {
@@ -286,14 +301,17 @@ class EvalWorker {
   }
 
   Future<String?> _evaluate(String code, {bool hasReturnValue = false}) async {
-    log.d('_evaluate: ${jsonEncode(code)}');
+    log.d(() => '_evaluate: ${jsonEncode(code)}');
     evalFile.writeAsStringSync(code);
 
     final reloadResult = await vmService.reloadSources(
       isolateId,
-      packagesUri:
-          Uri.file(environment.evalBootstrapPackagesFile.path).toString(),
+      packagesUri: didUpdatePackages
+          ? Uri.file(environment.evalBootstrapPackagesFile.path).toString()
+          : null,
     );
+
+    didUpdatePackages = false;
 
     if (reloadResult.success == false) {
       final notices = reloadResult.json!['notices'] as List<dynamic>;
@@ -303,14 +321,14 @@ class EvalWorker {
     }
 
     final isolateInfo = await vmService.getIsolate(isolateId);
-    log.d('isolateInfo: ${prettyJsonEncoder.convert(isolateInfo.json)}');
+    log.d(() => 'isolateInfo: ${prettyJsonEncoder.convert(isolateInfo.json)}');
 
     final response = await vmService.callServiceExtension(
       'ext.eval.run',
       isolateId: isolateId,
     );
 
-    log.d('response: ${prettyJsonEncoder.convert(response.json)}');
+    log.d(() => 'response: ${prettyJsonEncoder.convert(response.json)}');
 
     final jsonData = response.json!;
     if (jsonData['value'] != null) {

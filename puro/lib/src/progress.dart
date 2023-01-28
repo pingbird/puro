@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:http/http.dart';
 import 'package:neoansi/neoansi.dart';
@@ -11,6 +13,8 @@ abstract class ProgressNode {
   ProgressNode({required this.scope});
 
   final Scope scope;
+
+  final stackTrace = StackTrace.current;
 
   late final terminal = Terminal.of(scope);
 
@@ -46,7 +50,9 @@ abstract class ProgressNode {
       scope: OverrideScope(parent: scope),
     );
     node.scope.add(ProgressNode.provider, node);
-    addNode(node);
+    scheduleMicrotask(() {
+      addNode(node);
+    });
     try {
       if (optional) {
         try {
@@ -169,6 +175,8 @@ class ActiveProgressNode extends ProgressNode {
     );
     if (_description != null) {
       text = '$text $description';
+    } else {
+      throw Exception('a ${stackTrace}');
     }
     if (children.isNotEmpty) {
       text = '$text\n${_indentString(

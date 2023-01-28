@@ -11,7 +11,7 @@ import '../env/command.dart';
 import '../file_lock.dart';
 import '../provider.dart';
 
-Future<void> initEvalBootstrapProject({
+Future<bool> initEvalBootstrapProject({
   required Scope scope,
   required EnvConfig environment,
   required String sdkVersion,
@@ -62,7 +62,7 @@ Future<void> initEvalBootstrapProject({
       pubspecLockFile
           .lastModifiedSync()
           .isAfter(pubspecYamlFile.lastModifiedSync())) {
-    return;
+    return false;
   }
 
   final stdoutBuffer = Uint8Buffer();
@@ -81,4 +81,6 @@ Future<void> initEvalBootstrapProject({
       '${utf8.decode(stdoutBuffer)}${utf8.decode(stderrBuffer)}',
     );
   }
+
+  return true;
 }
