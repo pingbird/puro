@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:vm_service/vm_service.dart';
 import 'package:vm_service/vm_service_io.dart';
 
@@ -13,137 +11,7 @@ import '../extensions.dart';
 import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
-import 'bootstrap.dart';
-import 'parse.dart';
-
-final _identifierRegex = RegExp(r'[a-zA-Z_$][a-zA-Z_$0-9]*');
-final _identifierOrUriRegex = RegExp(r'[a-zA-Z_$:/\\.][a-zA-Z_$0-9:/\\.]*');
-
-class EvalImport {
-  EvalImport(
-    this.uri, {
-    this.as,
-    this.show = const {},
-    this.hide = const {},
-  });
-
-  final Uri uri;
-  final String? as;
-  final Set<String> show;
-  final Set<String> hide;
-
-  factory EvalImport.parse(String import) {
-    final uriMatch = _identifierOrUriRegex.matchAsPrefix(import);
-    if (uriMatch == null) {
-      throw ArgumentError.value(import, 'import', 'name or uri expected');
-    }
-
-    var e = uriMatch.group(0)!;
-    if (!e.contains(':')) e = 'package:$e';
-    var uri = Uri.parse(e);
-    if (uri.scheme == 'package') {
-      if (uri.pathSegments.length == 1) {
-        uri = Uri.parse('$e/${uri.pathSegments.first}.dart');
-      } else if (!uri.pathSegments.last.contains('.')) {
-        uri = Uri.parse('$e.dart');
-      }
-    }
-
-    String? as;
-    final show = <String>{};
-    final hide = <String>{};
-    import = import.substring(uriMatch.end);
-    String? lastModifier;
-    while (import.isNotEmpty) {
-      var modifier = import.substring(0, 1);
-      if (modifier == ',') {
-        if (lastModifier == null) break;
-        modifier = lastModifier;
-      }
-      if (modifier == '=') {
-        final identifierMatch = _identifierRegex.matchAsPrefix(import, 1);
-        as = identifierMatch?.group(0) ?? uri.pathSegments.first;
-        import = import.substring(identifierMatch?.end ?? 1);
-      } else if (modifier == '+') {
-        final identifierMatch = _identifierRegex.matchAsPrefix(import, 1);
-        if (identifierMatch == null) {
-          throw ArgumentError.value(
-            import,
-            'import',
-            'name expected after `+`',
-          );
-        }
-        show.add(identifierMatch.group(0)!);
-        import = import.substring(identifierMatch.end);
-      } else if (modifier == '-') {
-        final identifierMatch = _identifierRegex.matchAsPrefix(import, 1);
-        if (identifierMatch == null) {
-          throw ArgumentError.value(
-            import,
-            'import',
-            'name expected after `-`',
-          );
-        }
-        hide.add(identifierMatch.group(0)!);
-        import = import.substring(identifierMatch.end);
-      } else {
-        break;
-      }
-      lastModifier = modifier;
-    }
-
-    if (import.isNotEmpty) {
-      throw ArgumentError.value(
-        import,
-        'import',
-        'unexpected character `${import.substring(0, 1)}`',
-      );
-    }
-
-    return EvalImport(uri, as: as, show: show, hide: hide);
-  }
-
-  @override
-  String toString() {
-    return "import ${[
-      "'$uri'",
-      if (as != null) 'as $as',
-      if (show.isNotEmpty) 'show ${show.join(', ')}',
-      if (hide.isNotEmpty) 'hide ${hide.join(', ')}',
-    ].join(' ')};";
-  }
-}
-
-MapEntry<String, VersionConstraint?> parseEvalPackage(String package) {
-  final packageNameMatch = _identifierRegex.matchAsPrefix(package);
-  if (packageNameMatch == null) {
-    throw ArgumentError.value(package, 'package', 'package name expected');
-  }
-
-  final packageName = packageNameMatch.group(0)!;
-  package = package.substring(packageNameMatch.end);
-
-  if (package.isEmpty) {
-    return MapEntry(packageName, null);
-  } else if (package.startsWith('=')) {
-    package = package.substring(1);
-  }
-
-  if (package.isEmpty || package == 'none') {
-    return MapEntry(packageName, VersionConstraint.empty);
-  } else {
-    return MapEntry(packageName, VersionConstraint.parse(package));
-  }
-}
-
-class EvalError implements Exception {
-  EvalError({required this.message});
-
-  final String message;
-
-  @override
-  String toString() => 'Eval error:\n$message';
-}
+import 'context.dart';
 
 const _hostCode = r'''import 'dart:io';
 import 'dart:developer';
@@ -170,18 +38,6 @@ void main() {
   stdin.drain().then((_) => exit(0));
 }''';
 
-const _coreLibraryNames = {
-  'async',
-  'collection',
-  'convert',
-  'math',
-  'typed_data',
-  'ffi',
-  'io',
-  'isolate',
-  'mirrors',
-};
-
 class EvalWorker {
   EvalWorker({
     required this.scope,
@@ -193,6 +49,8 @@ class EvalWorker {
     required this.vmService,
     required this.isolateId,
     required this.stderrFuture,
+    required this.context,
+    required this.currentCode,
   });
 
   final Scope scope;
@@ -204,17 +62,24 @@ class EvalWorker {
   final VmService vmService;
   final String isolateId;
   final Future<void> stderrFuture;
+  final EvalContext context;
+  EvalCode currentCode;
 
   late final log = PuroLogger.of(scope);
   late final evalFile = projectDir.childFile('eval.dart');
 
-  var didUpdatePackages = false;
-
   static Future<EvalWorker> spawn({
     required Scope scope,
-    required EnvConfig environment,
+    required EvalContext context,
+    String? code,
   }) async {
     final log = PuroLogger.of(scope);
+    final environment = context.environment;
+
+    var initialCode = const EvalCode('void main() {}');
+    if (code != null) {
+      initialCode = context.transformCode(code);
+    }
 
     // Clean up old projects.
     environment.evalDir.createSync(recursive: true);
@@ -237,7 +102,7 @@ class EvalWorker {
     final mainFile = projectDir.childFile('main.dart');
     final mainFileHandle = mainFile.openSync(mode: FileMode.write);
     mainFileHandle.writeAllStringSync(_hostCode);
-    projectDir.childFile('eval.dart').writeAsStringSync('void main() {}');
+    projectDir.childFile('eval.dart').writeAsStringSync(initialCode.contents);
 
     // Find an unused port: https://github.com/dart-lang/test/blob/9c6ddedfe44300fe4d63ac5eeb95a1f359bbccc9/pkgs/test_core/lib/src/util/io.dart#L169
     final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
@@ -325,110 +190,23 @@ class EvalWorker {
       vmService: vmService,
       isolateId: isolateId,
       stderrFuture: stderrFuture,
+      context: context,
+      currentCode: initialCode,
     );
   }
 
-  Future<void> pullPackages({
-    Map<String, VersionConstraint?> packages = const {},
-    bool reset = false,
-  }) async {
-    if (packages.isEmpty) return;
-    log.d(() => 'pullPackages: $packages');
-    // Initialize packages file, this takes about 1 second on the first run with
-    // a good internet connection.
-    final vmInfo = await vmService.getVM();
-    log.d(() => 'vmInfo: ${prettyJsonEncoder.convert(vmInfo.json)}');
-    didUpdatePackages = didUpdatePackages ||
-        await updateEvalBootstrapProject(
-          scope: scope,
-          environment: environment,
-          sdkVersion: vmInfo.version!.split(' ').first,
-          packages: packages,
-          reset: reset,
-        );
-  }
-
-  SimpleParseResult<AstNode> parse(String code) {
-    final unitParseResult = parseDartCompilationUnit(code);
-    final unitNode = unitParseResult.node;
-
-    log.d('unitNode: ${unitNode.runtimeType}');
-    log.d(() => 'unitNode.directives: ${unitNode?.directives}');
-    log.d(() => 'unitNode.declarations: '
-        '${unitNode?.declarations.map((e) => e.runtimeType).join(', ')}');
-
-    // Always use unit if it contains top-level declarations or imports.
-    if (unitNode != null &&
-        (unitNode.directives.isNotEmpty ||
-            unitNode.declarations.any((e) =>
-                e is ClassDeclaration ||
-                e is MixinDeclaration ||
-                e is ExtensionDeclaration ||
-                e is EnumDeclaration ||
-                e is TypeAlias))) {
-      return unitParseResult;
-    }
-
-    final expressionParseResult = parseDartExpression(code, async: true);
-
-    final expressionNode = expressionParseResult.node;
-    log.d('expressionNode: ${expressionNode.runtimeType}');
-    log.d('expressionParseResult.parseErrors: '
-        '${expressionParseResult.parseErrors}');
-    log.d('expressionParseResult.scanErrors: '
-        '${expressionParseResult.scanErrors}');
-    log.d('expressionParseResult.parseException: '
-        '${expressionParseResult.parseException}');
-    log.d('expressionParseResult.scanException: '
-        '${expressionParseResult.scanException}');
-    log.d('expressionParseResult.exhaustive: '
-        '${expressionParseResult.exhaustive}');
-
-    if (!expressionParseResult.hasError && expressionParseResult.exhaustive) {
-      return expressionParseResult;
-    }
-
-    return parseDartBlock('{$code}');
-  }
-
-  Future<String?> evaluate(
-    String code, {
-    List<EvalImport> imports = const [],
-    bool importCore = false,
-  }) async {
-    if (importCore) {
-      imports = [
-        ..._coreLibraryNames.map((e) => EvalImport(Uri.parse('dart:$e'))),
-        ...imports,
-      ];
-    }
-    final importStr = imports.map((e) => '$e\n').join();
-    final parseResult = parse(code);
-    final node = parseResult.node;
-    if (node is Expression) {
-      return _evaluate(
-        '${importStr}Future<dynamic> main() async =>\n$code\n;',
-        hasReturnValue: true,
-      );
-    } else if (node is CompilationUnit) {
-      return _evaluate('$importStr$code');
-    } else {
-      return _evaluate('${importStr}Future<void> main() async {\n$code\n}');
-    }
-  }
-
-  Future<String?> _evaluate(String code, {bool hasReturnValue = false}) async {
+  Future<void> reload(EvalCode code) async {
     log.d(() => '_evaluate: ${jsonEncode(code)}');
-    evalFile.writeAsStringSync(code);
+    if (code == currentCode && !context.needsPackageReload) return;
+    evalFile.writeAsStringSync(code.contents);
+    currentCode = code;
 
     final reloadResult = await vmService.reloadSources(
       isolateId,
-      packagesUri: didUpdatePackages
+      packagesUri: context.needsPackageReload
           ? Uri.file(environment.evalBootstrapPackagesFile.path).toString()
           : null,
     );
-
-    didUpdatePackages = false;
 
     if (reloadResult.success == false) {
       final notices = reloadResult.json!['notices'] as List<dynamic>;
@@ -437,6 +215,10 @@ class EvalWorker {
       throw EvalError(message: reason['message'] as String);
     }
 
+    context.needsPackageReload = false;
+  }
+
+  Future<String?> run() async {
     final response = await vmService.callServiceExtension(
       'ext.eval.run',
       isolateId: isolateId,
@@ -446,7 +228,7 @@ class EvalWorker {
 
     final jsonData = response.json!;
     if (jsonData['value'] != null) {
-      if (hasReturnValue) {
+      if (currentCode.hasReturn) {
         return jsonData['value'] as String;
       } else {
         return null;

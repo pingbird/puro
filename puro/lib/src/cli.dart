@@ -21,6 +21,7 @@ import 'commands/prefs.dart';
 import 'commands/pub.dart';
 import 'commands/puro_install.dart';
 import 'commands/puro_upgrade.dart';
+import 'commands/run.dart';
 import 'commands/version.dart';
 import 'logger.dart';
 import 'provider.dart';
@@ -216,6 +217,7 @@ void main(List<String> args) async {
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand())
     ..addCommand(PubCommand())
+    ..addCommand(RunCommand())
     ..addCommand(GenerateDocsCommand())
     ..addCommand(PuroUpgradeCommand())
     ..addCommand(PuroInstallCommand())

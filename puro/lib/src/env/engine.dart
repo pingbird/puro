@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:pub_semver/pub_semver.dart';
+
 import '../command_result.dart';
 import '../config.dart';
 import '../downloader.dart';
@@ -229,4 +231,23 @@ Future<bool> downloadSharedEngine({
   }
 
   return didDownloadEngine;
+}
+
+final _dartSdkRegex = RegExp(r'Dart SDK version: (\S+)');
+
+Future<Version> getDartSDKVersion({
+  required Scope scope,
+  required DartSdkConfig dartSdk,
+}) async {
+  final result = await runProcess(
+    scope,
+    dartSdk.dartExecutable.path,
+    ['--version'],
+    throwOnFailure: true,
+  );
+  final match = _dartSdkRegex.firstMatch(result.stdout as String);
+  if (match == null) {
+    throw AssertionError('Failed to parse `${result.stdout}`');
+  }
+  return Version.parse(match.group(1)!);
 }

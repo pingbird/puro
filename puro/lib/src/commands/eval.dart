@@ -6,7 +6,8 @@ import 'package:pub_semver/pub_semver.dart';
 import '../command.dart';
 import '../command_result.dart';
 import '../env/default.dart';
-import '../eval/bootstrap.dart';
+import '../eval/context.dart';
+import '../eval/packages.dart';
 import '../eval/worker.dart';
 import '../logger.dart';
 import '../terminal.dart';
@@ -43,7 +44,7 @@ class EvalCommand extends PuroCommand {
       'package',
       aliases: ['packages'],
       abbr: 'p',
-      help: 'A package to depend on, this option accepts the package name'
+      help: 'A package to depend on, this option accepts the package name '
           'optionally followed by a version constraint:\n'
           '  name[`=`][constraint]\n'
           'The package is removed from the pubspec if constraint is "none"',
@@ -71,6 +72,8 @@ class EvalCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final log = PuroLogger.of(scope);
+    final environment = await getProjectEnvOrDefault(scope: scope);
+
     final noCoreImports = argResults!['no-core'] as bool;
     final reset = argResults!['reset'] as bool;
     final imports =
@@ -80,24 +83,27 @@ class EvalCommand extends PuroCommand {
     if (code.isEmpty) {
       code = await utf8.decodeStream(stdin);
     }
-    final environment = await getProjectEnvOrDefault(scope: scope);
-    final worker = await EvalWorker.spawn(
-      scope: scope,
-      environment: environment,
-    );
+
+    final context = EvalContext(scope: scope, environment: environment);
+    if (!noCoreImports) context.importCore();
+    context.imports.addAll(imports);
     final packageVersions = <String, VersionConstraint?>{
       for (final import in imports)
         if (import.uri.scheme == 'package') import.uri.pathSegments.first: null,
     };
     packageVersions.addEntries(packages.map(parseEvalPackage));
     log.d('packageVersions: $packageVersions');
+
     try {
-      await worker.pullPackages(packages: packageVersions, reset: reset);
-      final result = await worker.evaluate(
-        code,
-        importCore: !noCoreImports,
-        imports: imports,
+      await context.pullPackages(packages: packageVersions, reset: reset);
+
+      final worker = await EvalWorker.spawn(
+        scope: scope,
+        context: context,
+        code: code,
       );
+
+      final result = await worker.run();
       if (result != null) {
         stdout.writeln(result);
       }

@@ -16,7 +16,7 @@ class EvalPubError extends CommandError {
   EvalPubError(String message) : super(message);
 }
 
-Future<bool> updateEvalBootstrapProject({
+Future<bool> updateBootstrapPackages({
   required Scope scope,
   required EnvConfig environment,
   required String sdkVersion,
