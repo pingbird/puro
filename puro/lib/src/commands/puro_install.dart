@@ -1,11 +1,15 @@
 import 'dart:io';
 
+import 'package:file/file.dart';
+
 import '../../models.dart';
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
+import '../env/env_shims.dart';
 import '../install/bin.dart';
 import '../install/profile.dart';
+import '../logger.dart';
 import '../version.dart';
 
 class PuroInstallCommand extends PuroCommand {
@@ -92,6 +96,20 @@ class PuroInstallCommand extends PuroCommand {
           scope: scope,
         );
       }
+    }
+
+    // Environment shims may have changed, update all environments to be safe
+    for (final envDir in config.envsDir.listSync().whereType<Directory>()) {
+      if (envDir.basename == 'default') continue;
+      final environment = config.getEnv(envDir.basename);
+      if (!environment.flutterDir.childDirectory('.git').existsSync()) continue;
+      await runOptional(
+        scope,
+        '`${environment.name}` post-upgrade',
+        () async {
+          await installEnvShims(scope: scope, environment: environment);
+        },
+      );
     }
 
     final externalMessage =

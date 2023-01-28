@@ -170,6 +170,7 @@ Future<void> _installShims({
         scope: scope,
         file: config.puroDartShimFile,
         content: '@echo off\n'
+            'SETLOCAL ENABLEDELAYEDEXPANSION\n'
             'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
             '"%PURO_BIN%\\puro.exe" dart %* & exit /B !ERRORLEVEL!',
       );
@@ -177,6 +178,7 @@ Future<void> _installShims({
         scope: scope,
         file: config.puroFlutterShimFile,
         content: '@echo off\n'
+            'SETLOCAL ENABLEDELAYEDEXPANSION\n'
             'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
             '"%PURO_BIN%\\puro.exe" flutter %* & exit /B !ERRORLEVEL!',
       );

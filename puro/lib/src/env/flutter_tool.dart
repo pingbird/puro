@@ -163,10 +163,6 @@ Future<FlutterToolInfo> setUpFlutterTool({
     await checkAtomic(
       scope: scope,
       file: environment.updateLockFile,
-      // Recompile flutter tool if any:
-      // * Tool snapshot does not exist
-      // * Tool pubspec lock does not exist
-      // * Pubspec is out of date
       condition: () async => snapshotFile.existsSync(),
       onFail: () async {
         log.v('Flutter tool out of date');

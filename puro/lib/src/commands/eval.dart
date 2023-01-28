@@ -3,7 +3,7 @@ import 'dart:io';
 
 import '../command.dart';
 import '../command_result.dart';
-import '../repl/worker.dart';
+import '../eval/worker.dart';
 
 class EvalCommand extends PuroCommand {
   @override
@@ -27,10 +27,10 @@ class EvalCommand extends PuroCommand {
     final worker = await EvalWorker.spawn(scope: scope);
     try {
       final result = await worker.evaluate(code);
-      worker.dispose();
       if (result != null) {
         stdout.writeln(result);
       }
+      await worker.dispose();
       await runner.exitPuro(0);
     } on EvalError catch (e) {
       throw CommandError('$e');

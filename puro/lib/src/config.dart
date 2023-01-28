@@ -244,7 +244,6 @@ class PuroConfig {
     binDir.path,
     pubCacheBinDir.path,
     getEnv('default', resolve: false).flutter.binDir.path,
-    depotToolsDir.path,
   ];
 
   Directory ensureParentProjectDir() {
@@ -407,6 +406,7 @@ class EnvConfig {
   late final File prefsJsonFile = envDir.childFile('prefs.json');
   late final File updateLockFile = envDir.childFile('update.lock');
   late final Directory evalDir = envDir.childDirectory('eval');
+  late final Directory evalBootstrapDir = evalDir.childDirectory('bootstrap');
 
   bool get exists => envDir.existsSync();
 

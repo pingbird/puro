@@ -118,6 +118,7 @@ Future<int> runDartCommand({
     environment: {
       'PUB_CACHE': config.pubCacheDir.path,
     },
+    workingDirectory: workingDirectory,
     mode: mode,
   );
   if (stdin != null) {

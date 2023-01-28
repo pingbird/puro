@@ -103,6 +103,7 @@ Future<void> installEnvShims({
     scope: scope,
     file: flutterConfig.binDir.childFile('dart.bat'),
     content: '@echo off\n'
+        'SETLOCAL ENABLEDELAYEDEXPANSION\n'
         'FOR %%i IN ("%~dp0.") DO SET FLUTTER_BIN=%%~fi\n'
         'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
         '"%PURO_BIN%\\puro" dart %* & exit /B !ERRORLEVEL!\n',
@@ -111,6 +112,7 @@ Future<void> installEnvShims({
     scope: scope,
     file: flutterConfig.binDir.childFile('flutter.bat'),
     content: '@echo off\n'
+        'SETLOCAL ENABLEDELAYEDEXPANSION\n'
         'FOR %%i IN ("%~dp0.") DO SET FLUTTER_BIN=%%~fi\n'
         'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
         '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!\n',
