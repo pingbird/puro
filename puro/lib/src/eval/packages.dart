@@ -33,30 +33,31 @@ Future<bool> updateBootstrapPackages({
   return await lockFile(scope, updateLockFile, (handle) async {
     if (!reset) {
       var satisfied = true;
+      log.d('pubspecLockFile exists');
+      final existingPackages = <String, Version>{};
       if (pubspecLockFile.existsSync()) {
-        log.d('pubspecLockFile exists');
-        final yamlData =
-            loadYaml(pubspecLockFile.readAsStringSync()) as YamlMap;
-        final existingPackages = <String, Version>{};
+        final yamlData = loadYaml(pubspecLockFile.existsSync()
+            ? pubspecLockFile.readAsStringSync()
+            : '{}') as YamlMap;
         for (final package in (yamlData['packages'] as YamlMap).entries) {
           final name = package.key as String;
           final version = Version.parse(package.value['version'] as String);
           existingPackages[name] = version;
         }
-        log.d('existingPackages: $existingPackages');
-        for (final entry in packages.entries) {
-          final hasPackage = existingPackages.containsKey(entry.key);
-          if ((hasPackage == (entry.value == VersionConstraint.empty)) ||
-              (hasPackage &&
-                  !(entry.value ?? VersionConstraint.any)
-                      .allows(existingPackages[entry.key]!))) {
-            log.d(
-              'not satisfied: ${entry.key} must be ${entry.value} '
-              'but is ${existingPackages[entry.key]}',
-            );
-            satisfied = false;
-            break;
-          }
+      }
+      log.d('existingPackages: $existingPackages');
+      for (final entry in packages.entries) {
+        final hasPackage = existingPackages.containsKey(entry.key);
+        if ((hasPackage == (entry.value == VersionConstraint.empty)) ||
+            (hasPackage &&
+                !(entry.value ?? VersionConstraint.any)
+                    .allows(existingPackages[entry.key]!))) {
+          log.d(
+            'not satisfied: ${entry.key} must be ${entry.value} '
+            'but is ${existingPackages[entry.key]}',
+          );
+          satisfied = false;
+          break;
         }
       }
       if (satisfied) return false;

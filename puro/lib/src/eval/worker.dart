@@ -134,6 +134,7 @@ class EvalWorker {
       ],
       workingDirectory: projectDir.path,
     );
+    context.needsPackageReload = false;
 
     // Connecting to the observatory requires a token which we can only get from
     // scanning stdout.
