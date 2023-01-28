@@ -77,6 +77,7 @@ Future<bool> updateEvalBootstrapProject({
       }
     }
 
+    final original = pubspecYamlFile.readAsStringSync();
     pubspecYamlFile.writeAsStringSync('$yaml');
 
     final stdoutBuffer = Uint8Buffer();
@@ -90,6 +91,7 @@ Future<bool> updateEvalBootstrapProject({
       onStderr: stderrBuffer.addAll,
     );
     if (result != 0 || !pubspecLockFile.existsSync()) {
+      pubspecYamlFile.writeAsStringSync(original);
       throw CommandError(
         'pub get failed in `${bootstrapDir.path}`\n'
         '${utf8.decode(stdoutBuffer)}${utf8.decode(stderrBuffer)}',

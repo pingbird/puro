@@ -254,6 +254,11 @@ class EvalWorker {
     final unitParseResult = parseDartCompilationUnit(code);
     final unitNode = unitParseResult.node;
 
+    log.d('unitNode: ${unitNode.runtimeType}');
+    log.d(() => 'unitNode.directives: ${unitNode?.directives}');
+    log.d(() => 'unitNode.declarations: '
+        '${unitNode?.declarations.map((e) => e.runtimeType).join(', ')}');
+
     // Always use unit if it contains top-level declarations or imports.
     if (unitNode != null &&
         (unitNode.directives.isNotEmpty ||
@@ -266,7 +271,20 @@ class EvalWorker {
       return unitParseResult;
     }
 
-    final expressionParseResult = parseDartExpression(code);
+    final expressionParseResult = parseDartExpression(code, async: true);
+
+    final expressionNode = expressionParseResult.node;
+    log.d('expressionNode: ${expressionNode.runtimeType}');
+    log.d('expressionParseResult.parseErrors: '
+        '${expressionParseResult.parseErrors}');
+    log.d('expressionParseResult.scanErrors: '
+        '${expressionParseResult.scanErrors}');
+    log.d('expressionParseResult.parseException: '
+        '${expressionParseResult.parseException}');
+    log.d('expressionParseResult.scanException: '
+        '${expressionParseResult.scanException}');
+    log.d('expressionParseResult.exhaustive: '
+        '${expressionParseResult.exhaustive}');
 
     if (!expressionParseResult.hasError && expressionParseResult.exhaustive) {
       return expressionParseResult;
@@ -291,13 +309,13 @@ class EvalWorker {
     final node = parseResult.node;
     if (node is Expression) {
       return _evaluate(
-        '${importStr}Future<dynamic> main() async =>\n$code;',
+        '${importStr}Future<dynamic> main() async =>\n$code\n;',
         hasReturnValue: true,
       );
     } else if (node is CompilationUnit) {
       return _evaluate('$importStr$code');
     } else {
-      return _evaluate('${importStr}Future<void> main() {\n$code\n}');
+      return _evaluate('${importStr}Future<void> main() async {\n$code\n}');
     }
   }
 

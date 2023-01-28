@@ -101,9 +101,19 @@ SimpleParseResult<T> parseDart<T extends AstNode>(
   );
 }
 
-SimpleParseResult<Expression> parseDartExpression(String code) => parseDart(
-      code,
-      (parser) => parser.parseExpression2(),
+SimpleParseResult<Expression> parseDartExpression(
+  String code, {
+  bool async = false,
+}) =>
+    parseDart(
+      async ? '() async => $code' : code,
+      (parser) {
+        final expr = parser.parseExpression2();
+        if (async && expr is FunctionExpression) {
+          return (expr.body as ExpressionFunctionBody).expression;
+        }
+        return expr;
+      },
     );
 
 SimpleParseResult<CompilationUnit> parseDartCompilationUnit(String code) =>
