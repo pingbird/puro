@@ -8,10 +8,11 @@ import 'package:yaml_edit/yaml_edit.dart';
 import '../command_result.dart';
 import '../config.dart';
 import '../env/command.dart';
+import '../extensions.dart';
 import '../file_lock.dart';
 import '../provider.dart';
 
-Future<bool> initEvalBootstrapProject({
+Future<bool> updateEvalBootstrapProject({
   required Scope scope,
   required EnvConfig environment,
   required String sdkVersion,
@@ -22,65 +23,79 @@ Future<bool> initEvalBootstrapProject({
   final pubspecYamlFile = bootstrapDir.childFile('pubspec.yaml');
   bootstrapDir.createSync();
 
-  final yaml = YamlEditor(
-    pubspecYamlFile.existsSync()
-        ? await readAtomic(scope: scope, file: pubspecYamlFile)
-        : '{}',
-  );
-
-  bool exists(Iterable<Object?> path) =>
-      yaml.parseAt(path, orElse: () => YamlScalar.wrap(null)).value != null;
-
-  yaml.update(['name'], 'bootstrap');
-  yaml.update(['version'], '0.0.1');
-  yaml.update(['environment'], {'sdk': sdkVersion});
-
-  if (!exists(['dependencies'])) {
-    yaml.update(['dependencies'], YamlMap());
-  }
-
-  for (final entry in packages.entries) {
-    final key = ['dependencies', entry.key];
-    if (entry.value == null) {
-      if (!exists(key)) {
-        yaml.update(key, 'any');
+  return await lockFile(scope, pubspecYamlFile, (handle) async {
+    var satisfied = false;
+    if (pubspecLockFile.existsSync()) {
+      final yamlData = loadYaml(pubspecLockFile.readAsStringSync()) as YamlMap;
+      final existingPackages = <String, Version>{};
+      for (final package in (yamlData['packages'] as YamlMap).entries) {
+        final name = package.key as String;
+        final version = Version.parse(package.value['version'] as String);
+        existingPackages[name] = version;
       }
-    } else if (entry.value == VersionConstraint.empty) {
-      yaml.remove(key);
-    } else {
-      yaml.update(key, '${entry.value}');
+      for (final entry in packages.entries) {
+        final hasPackage = existingPackages.containsKey(entry.key);
+        if ((hasPackage == (entry.value == VersionConstraint.empty)) ||
+            (hasPackage &&
+                !(entry.value ?? VersionConstraint.any)
+                    .allows(existingPackages[entry.key]!))) {
+          satisfied = false;
+          break;
+        }
+      }
     }
-  }
 
-  await writePassiveAtomic(
-    scope: scope,
-    file: pubspecYamlFile,
-    content: '$yaml',
-  );
+    if (satisfied) return false;
 
-  if (pubspecLockFile.existsSync() &&
-      pubspecLockFile
-          .lastModifiedSync()
-          .isAfter(pubspecYamlFile.lastModifiedSync())) {
-    return false;
-  }
-
-  final stdoutBuffer = Uint8Buffer();
-  final stderrBuffer = Uint8Buffer();
-  final result = await runDartCommand(
-    scope: scope,
-    environment: environment,
-    args: ['pub', 'get'],
-    workingDirectory: bootstrapDir.path,
-    onStdout: stdoutBuffer.addAll,
-    onStderr: stderrBuffer.addAll,
-  );
-  if (result != 0 || !pubspecLockFile.existsSync()) {
-    throw CommandError(
-      'pub get failed in `${bootstrapDir.path}`\n'
-      '${utf8.decode(stdoutBuffer)}${utf8.decode(stderrBuffer)}',
+    final yaml = YamlEditor(
+      pubspecYamlFile.existsSync()
+          ? await readAtomic(scope: scope, file: pubspecYamlFile)
+          : '{}',
     );
-  }
 
-  return true;
+    bool exists(Iterable<Object?> path) =>
+        yaml.parseAt(path, orElse: () => YamlScalar.wrap(null)).value != null;
+
+    yaml.update(['name'], 'bootstrap');
+    yaml.update(['version'], '0.0.1');
+    yaml.update(['environment'], {'sdk': sdkVersion});
+
+    if (!exists(['dependencies'])) {
+      yaml.update(['dependencies'], YamlMap());
+    }
+
+    for (final entry in packages.entries) {
+      final key = ['dependencies', entry.key];
+      if (entry.value == null) {
+        if (!exists(key)) {
+          yaml.update(key, 'any');
+        }
+      } else if (entry.value == VersionConstraint.empty) {
+        yaml.remove(key);
+      } else {
+        yaml.update(key, '${entry.value}');
+      }
+    }
+
+    handle.writeAllStringSync('$yaml');
+
+    final stdoutBuffer = Uint8Buffer();
+    final stderrBuffer = Uint8Buffer();
+    final result = await runDartCommand(
+      scope: scope,
+      environment: environment,
+      args: ['pub', 'get'],
+      workingDirectory: bootstrapDir.path,
+      onStdout: stdoutBuffer.addAll,
+      onStderr: stderrBuffer.addAll,
+    );
+    if (result != 0 || !pubspecLockFile.existsSync()) {
+      throw CommandError(
+        'pub get failed in `${bootstrapDir.path}`\n'
+        '${utf8.decode(stdoutBuffer)}${utf8.decode(stderrBuffer)}',
+      );
+    }
+
+    return true;
+  });
 }

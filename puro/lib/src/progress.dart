@@ -87,6 +87,7 @@ abstract class ProgressNode {
 class ActiveProgressNode extends ProgressNode {
   ActiveProgressNode({required super.scope});
 
+  Timer? _delayTimer;
   String? _description;
   String? get description => _description;
   set description(String? description) {
@@ -124,6 +125,18 @@ class ActiveProgressNode extends ProgressNode {
     _complete = complete;
     if (_onChanged != null) _onChanged!();
   }
+
+  void delay(Duration duration) {
+    _delayed = true;
+    _delayTimer?.cancel();
+    _delayTimer = Timer(duration, () {
+      _delayed = false;
+      if (_onChanged != null) _onChanged!();
+    });
+  }
+
+  var _delayed = false;
+  bool get delayed => _delayed;
 
   Stream<List<int>> wrapHttpResponse(StreamedResponse response) {
     progressTotal = response.contentLength;
@@ -175,12 +188,10 @@ class ActiveProgressNode extends ProgressNode {
     );
     if (_description != null) {
       text = '$text $description';
-    } else {
-      throw Exception('a ${stackTrace}');
     }
     if (children.isNotEmpty) {
       text = '$text\n${_indentString(
-        '${children.map((e) => e.render()).join('\n')}',
+        '${children.where((e) => !e.delayed).map((e) => e.render()).join('\n')}',
         '  ',
       )}';
     }

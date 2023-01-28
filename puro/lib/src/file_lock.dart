@@ -54,6 +54,7 @@ Future<T> lockFile<T>(
       await handle.lock(fileLock);
     } else {
       await ProgressNode.of(scope).wrap((scope, node) async {
+        node.delay(const Duration(seconds: 1));
         node.description = 'Waiting for lock on ${file.path}';
         await handle.lock(fileLock);
       });

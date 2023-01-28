@@ -242,7 +242,7 @@ class EvalWorker {
     final vmInfo = await vmService.getVM();
     log.d(() => 'vmInfo: ${prettyJsonEncoder.convert(vmInfo.json)}');
     didUpdatePackages = didUpdatePackages ||
-        await initEvalBootstrapProject(
+        await updateEvalBootstrapProject(
           scope: scope,
           environment: environment,
           sdkVersion: vmInfo.version!.split(' ').first,
