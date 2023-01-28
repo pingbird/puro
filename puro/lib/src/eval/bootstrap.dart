@@ -9,14 +9,21 @@ import '../command_result.dart';
 import '../config.dart';
 import '../env/command.dart';
 import '../file_lock.dart';
+import '../logger.dart';
 import '../provider.dart';
+
+class EvalPubError extends CommandError {
+  EvalPubError(String message) : super(message);
+}
 
 Future<bool> updateEvalBootstrapProject({
   required Scope scope,
   required EnvConfig environment,
   required String sdkVersion,
   required Map<String, VersionConstraint?> packages,
+  bool reset = false,
 }) async {
+  final log = PuroLogger.of(scope);
   final bootstrapDir = environment.evalBootstrapDir;
   final pubspecLockFile = bootstrapDir.childFile('pubspec.lock');
   final pubspecYamlFile = bootstrapDir.childFile('pubspec.yaml');
@@ -24,31 +31,39 @@ Future<bool> updateEvalBootstrapProject({
   bootstrapDir.createSync();
 
   return await lockFile(scope, updateLockFile, (handle) async {
-    var satisfied = false;
-    if (pubspecLockFile.existsSync()) {
-      final yamlData = loadYaml(pubspecLockFile.readAsStringSync()) as YamlMap;
-      final existingPackages = <String, Version>{};
-      for (final package in (yamlData['packages'] as YamlMap).entries) {
-        final name = package.key as String;
-        final version = Version.parse(package.value['version'] as String);
-        existingPackages[name] = version;
-      }
-      for (final entry in packages.entries) {
-        final hasPackage = existingPackages.containsKey(entry.key);
-        if ((hasPackage == (entry.value == VersionConstraint.empty)) ||
-            (hasPackage &&
-                !(entry.value ?? VersionConstraint.any)
-                    .allows(existingPackages[entry.key]!))) {
-          satisfied = false;
-          break;
+    if (!reset) {
+      var satisfied = true;
+      if (pubspecLockFile.existsSync()) {
+        log.d('pubspecLockFile exists');
+        final yamlData =
+            loadYaml(pubspecLockFile.readAsStringSync()) as YamlMap;
+        final existingPackages = <String, Version>{};
+        for (final package in (yamlData['packages'] as YamlMap).entries) {
+          final name = package.key as String;
+          final version = Version.parse(package.value['version'] as String);
+          existingPackages[name] = version;
+        }
+        log.d('existingPackages: $existingPackages');
+        for (final entry in packages.entries) {
+          final hasPackage = existingPackages.containsKey(entry.key);
+          if ((hasPackage == (entry.value == VersionConstraint.empty)) ||
+              (hasPackage &&
+                  !(entry.value ?? VersionConstraint.any)
+                      .allows(existingPackages[entry.key]!))) {
+            log.d(
+              'not satisfied: ${entry.key} must be ${entry.value} '
+              'but is ${existingPackages[entry.key]}',
+            );
+            satisfied = false;
+            break;
+          }
         }
       }
+      if (satisfied) return false;
     }
 
-    if (satisfied) return false;
-
     final yaml = YamlEditor(
-      pubspecYamlFile.existsSync()
+      !reset && pubspecYamlFile.existsSync()
           ? await readAtomic(scope: scope, file: pubspecYamlFile)
           : '{}',
     );
@@ -77,7 +92,9 @@ Future<bool> updateEvalBootstrapProject({
       }
     }
 
-    final original = pubspecYamlFile.readAsStringSync();
+    final original = pubspecYamlFile.existsSync()
+        ? pubspecYamlFile.readAsStringSync()
+        : null;
     pubspecYamlFile.writeAsStringSync('$yaml');
 
     final stdoutBuffer = Uint8Buffer();
@@ -91,8 +108,12 @@ Future<bool> updateEvalBootstrapProject({
       onStderr: stderrBuffer.addAll,
     );
     if (result != 0 || !pubspecLockFile.existsSync()) {
-      pubspecYamlFile.writeAsStringSync(original);
-      throw CommandError(
+      if (original != null) {
+        pubspecYamlFile.writeAsStringSync(original);
+      } else {
+        pubspecYamlFile.deleteSync();
+      }
+      throw EvalPubError(
         'pub get failed in `${bootstrapDir.path}`\n'
         '${utf8.decode(stdoutBuffer)}${utf8.decode(stderrBuffer)}',
       );

@@ -16,6 +16,9 @@ import '../provider.dart';
 import 'bootstrap.dart';
 import 'parse.dart';
 
+final _identifierRegex = RegExp(r'[a-zA-Z_$][a-zA-Z_$0-9]*');
+final _identifierOrUriRegex = RegExp(r'[a-zA-Z_$:/\\.][a-zA-Z_$0-9:/\\.]*');
+
 class EvalImport {
   EvalImport(
     this.uri, {
@@ -29,14 +32,107 @@ class EvalImport {
   final Set<String> show;
   final Set<String> hide;
 
+  factory EvalImport.parse(String import) {
+    final uriMatch = _identifierOrUriRegex.matchAsPrefix(import);
+    if (uriMatch == null) {
+      throw ArgumentError.value(import, 'import', 'name or uri expected');
+    }
+
+    var e = uriMatch.group(0)!;
+    if (!e.contains(':')) e = 'package:$e';
+    var uri = Uri.parse(e);
+    if (uri.scheme == 'package') {
+      if (uri.pathSegments.length == 1) {
+        uri = Uri.parse('$e/${uri.pathSegments.first}.dart');
+      } else if (!uri.pathSegments.last.contains('.')) {
+        uri = Uri.parse('$e.dart');
+      }
+    }
+
+    String? as;
+    final show = <String>{};
+    final hide = <String>{};
+    import = import.substring(uriMatch.end);
+    String? lastModifier;
+    while (import.isNotEmpty) {
+      var modifier = import.substring(0, 1);
+      if (modifier == ',') {
+        if (lastModifier == null) break;
+        modifier = lastModifier;
+      }
+      if (modifier == '=') {
+        final identifierMatch = _identifierRegex.matchAsPrefix(import, 1);
+        as = identifierMatch?.group(0) ?? uri.pathSegments.first;
+        import = import.substring(identifierMatch?.end ?? 1);
+      } else if (modifier == '+') {
+        final identifierMatch = _identifierRegex.matchAsPrefix(import, 1);
+        if (identifierMatch == null) {
+          throw ArgumentError.value(
+            import,
+            'import',
+            'name expected after `+`',
+          );
+        }
+        show.add(identifierMatch.group(0)!);
+        import = import.substring(identifierMatch.end);
+      } else if (modifier == '-') {
+        final identifierMatch = _identifierRegex.matchAsPrefix(import, 1);
+        if (identifierMatch == null) {
+          throw ArgumentError.value(
+            import,
+            'import',
+            'name expected after `-`',
+          );
+        }
+        hide.add(identifierMatch.group(0)!);
+        import = import.substring(identifierMatch.end);
+      } else {
+        break;
+      }
+      lastModifier = modifier;
+    }
+
+    if (import.isNotEmpty) {
+      throw ArgumentError.value(
+        import,
+        'import',
+        'unexpected character `${import.substring(0, 1)}`',
+      );
+    }
+
+    return EvalImport(uri, as: as, show: show, hide: hide);
+  }
+
   @override
   String toString() {
     return "import ${[
       "'$uri'",
       if (as != null) 'as $as',
       if (show.isNotEmpty) 'show ${show.join(', ')}',
-      if (hide.isNotEmpty) 'hide ${show.join(', ')}',
+      if (hide.isNotEmpty) 'hide ${hide.join(', ')}',
     ].join(' ')};";
+  }
+}
+
+MapEntry<String, VersionConstraint?> parseEvalPackage(String package) {
+  final packageNameMatch = _identifierRegex.matchAsPrefix(package);
+  if (packageNameMatch == null) {
+    throw ArgumentError.value(package, 'package', 'package name expected');
+  }
+
+  final packageName = packageNameMatch.group(0)!;
+  package = package.substring(packageNameMatch.end);
+
+  if (package.isEmpty) {
+    return MapEntry(packageName, null);
+  } else if (package.startsWith('=')) {
+    package = package.substring(1);
+  }
+
+  if (package.isEmpty || package == 'none') {
+    return MapEntry(packageName, VersionConstraint.empty);
+  } else {
+    return MapEntry(packageName, VersionConstraint.parse(package));
   }
 }
 
@@ -234,6 +330,7 @@ class EvalWorker {
 
   Future<void> pullPackages({
     Map<String, VersionConstraint?> packages = const {},
+    bool reset = false,
   }) async {
     if (packages.isEmpty) return;
     log.d(() => 'pullPackages: $packages');
@@ -247,6 +344,7 @@ class EvalWorker {
           environment: environment,
           sdkVersion: vmInfo.version!.split(' ').first,
           packages: packages,
+          reset: reset,
         );
   }
 
@@ -338,9 +436,6 @@ class EvalWorker {
           notices.firstWhere((dynamic e) => e['type'] == 'ReasonForCancelling');
       throw EvalError(message: reason['message'] as String);
     }
-
-    final isolateInfo = await vmService.getIsolate(isolateId);
-    log.d(() => 'isolateInfo: ${prettyJsonEncoder.convert(isolateInfo.json)}');
 
     final response = await vmService.callServiceExtension(
       'ext.eval.run',

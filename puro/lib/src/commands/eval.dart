@@ -6,25 +6,50 @@ import 'package:pub_semver/pub_semver.dart';
 import '../command.dart';
 import '../command_result.dart';
 import '../env/default.dart';
+import '../eval/bootstrap.dart';
 import '../eval/worker.dart';
 import '../logger.dart';
+import '../terminal.dart';
 
 class EvalCommand extends PuroCommand {
   EvalCommand() {
+    argParser.addFlag(
+      'reset',
+      abbr: 'r',
+      help: 'Resets the pubspec file',
+      negatable: false,
+    );
     argParser.addMultiOption(
       'import',
       aliases: ['imports'],
       abbr: 'i',
-      help: 'One or more package URIs to import',
+      help: 'A package to import, this option accepts a shortened package '
+          'URI followed by one or more optional modifiers\n\n'
+          'Shortened names expand as follows:\n'
+          "  foo     => import 'package:foo/foo.dart'\n"
+          "  foo/bar => import 'package:foo/bar.dart'\n\n"
+          'The `=` modifier adds `as` to the import:\n'
+          "  foo=     => import 'package:foo/foo.dart' as foo\n"
+          "  foo=bar  => import 'package:foo/foo.dart' as bar\n\n"
+          "  foo/bar= => import 'package:foo/bar.dart' as foo\n\n"
+          'The `+` and `-` modifier add `show` and `hide` to the import:\n'
+          "  foo+x   => import 'package:foo/foo.dart' show x\n"
+          "  foo+x+y => import 'package:foo/foo.dart' show x, y\n"
+          "  foo-x   => import 'package:foo/foo.dart' hide x\n"
+          "  foo-x-y => import 'package:foo/foo.dart' hide x, y\n\n"
+          'Imports for packages also implicitly add a package dependency',
     );
     argParser.addMultiOption(
       'package',
       aliases: ['packages'],
       abbr: 'p',
-      help: 'One or more packages to depend on',
+      help: 'A package to depend on, this option accepts the package name'
+          'optionally followed by a version constraint:\n'
+          '  name[`=`][constraint]\n'
+          'The package is removed from the pubspec if constraint is "none"',
     );
     argParser.addFlag(
-      'no-import-core',
+      'no-core',
       abbr: 'c',
       help: 'Whether to disable automatic imports of core libraries',
       negatable: false,
@@ -46,19 +71,10 @@ class EvalCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final log = PuroLogger.of(scope);
-    final noCoreImports = argResults!['no-import-core'] as bool;
-    final imports = (argResults!['import'] as List<String>).map((e) {
-      if (!e.contains(':')) e = 'package:$e';
-      final uri = Uri.parse(e);
-      if (uri.pathSegments.length == 1) {
-        return Uri.parse('$e/${uri.pathSegments.first}.dart');
-      }
-      if (uri.pathSegments.last.contains('.')) {
-        return uri;
-      } else {
-        return Uri.parse('$e.dart');
-      }
-    }).toList();
+    final noCoreImports = argResults!['no-core'] as bool;
+    final reset = argResults!['reset'] as bool;
+    final imports =
+        (argResults!['import'] as List<String>).map(EvalImport.parse).toList();
     final packages = argResults!['package'] as List<String>;
     var code = argResults!.rest.join(' ');
     if (code.isEmpty) {
@@ -71,30 +87,28 @@ class EvalCommand extends PuroCommand {
     );
     final packageVersions = <String, VersionConstraint?>{
       for (final import in imports)
-        if (import.scheme == 'package') import.pathSegments.first: null,
+        if (import.uri.scheme == 'package') import.uri.pathSegments.first: null,
     };
+    packageVersions.addEntries(packages.map(parseEvalPackage));
     log.d('packageVersions: $packageVersions');
-    for (final package in packages) {
-      final index = package.indexOf('=');
-      if (index < 0) {
-        packageVersions[package] = VersionConstraint.any;
-      } else {
-        packageVersions[package.substring(0, index)] =
-            VersionConstraint.parse(package.substring(index + 1));
-      }
-    }
-    await worker.pullPackages(packages: packageVersions);
     try {
+      await worker.pullPackages(packages: packageVersions, reset: reset);
       final result = await worker.evaluate(
         code,
         importCore: !noCoreImports,
-        imports: imports.map((e) => EvalImport(e)).toList(),
+        imports: imports,
       );
       if (result != null) {
         stdout.writeln(result);
       }
       await worker.dispose();
       await runner.exitPuro(0);
+    } on EvalPubError {
+      CommandMessage(
+        'Pass `-r` or `--reset` to use a fresh pubspec file',
+        type: CompletionType.info,
+      ).queue(scope);
+      rethrow;
     } on EvalError catch (e) {
       throw CommandError('$e');
     }
