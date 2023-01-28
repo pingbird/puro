@@ -6,8 +6,8 @@ hide:
 
 # About
 
-Puro is a powerful tool for installing and upgrading [Flutter](https://flutter.dev/) versions, it is an essential tool
-for developers that work on multiple projects or have slower internet.
+Puro is a powerful tool for installing and upgrading [Flutter](https://flutter.dev/) versions, it is essential for
+developers that work on multiple projects or have slower internet.
 
 With Puro you can:
 

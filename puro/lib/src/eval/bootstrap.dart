@@ -8,7 +8,6 @@ import 'package:yaml_edit/yaml_edit.dart';
 import '../command_result.dart';
 import '../config.dart';
 import '../env/command.dart';
-import '../extensions.dart';
 import '../file_lock.dart';
 import '../provider.dart';
 
@@ -21,9 +20,10 @@ Future<bool> updateEvalBootstrapProject({
   final bootstrapDir = environment.evalBootstrapDir;
   final pubspecLockFile = bootstrapDir.childFile('pubspec.lock');
   final pubspecYamlFile = bootstrapDir.childFile('pubspec.yaml');
+  final updateLockFile = bootstrapDir.childFile('update.lock');
   bootstrapDir.createSync();
 
-  return await lockFile(scope, pubspecYamlFile, (handle) async {
+  return await lockFile(scope, updateLockFile, (handle) async {
     var satisfied = false;
     if (pubspecLockFile.existsSync()) {
       final yamlData = loadYaml(pubspecLockFile.readAsStringSync()) as YamlMap;
@@ -77,7 +77,7 @@ Future<bool> updateEvalBootstrapProject({
       }
     }
 
-    handle.writeAllStringSync('$yaml');
+    pubspecYamlFile.writeAsStringSync('$yaml');
 
     final stdoutBuffer = Uint8Buffer();
     final stderrBuffer = Uint8Buffer();

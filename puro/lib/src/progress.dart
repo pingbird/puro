@@ -138,6 +138,8 @@ class ActiveProgressNode extends ProgressNode {
   var _delayed = false;
   bool get delayed => _delayed;
 
+  bool get visible => !delayed;
+
   Stream<List<int>> wrapHttpResponse(StreamedResponse response) {
     progressTotal = response.contentLength;
     progress = 0;
@@ -172,6 +174,7 @@ class ActiveProgressNode extends ProgressNode {
 
   @override
   String render() {
+    if (!visible) return '';
     const width = 15;
     final progressFraction = this.progressFraction;
     String text;
@@ -191,7 +194,7 @@ class ActiveProgressNode extends ProgressNode {
     }
     if (children.isNotEmpty) {
       text = '$text\n${_indentString(
-        '${children.where((e) => !e.delayed).map((e) => e.render()).join('\n')}',
+        '${children.where((e) => e.visible).map((e) => e.render()).join('\n')}',
         '  ',
       )}';
     }
