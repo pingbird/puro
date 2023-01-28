@@ -407,6 +407,9 @@ class EnvConfig {
   late final File updateLockFile = envDir.childFile('update.lock');
   late final Directory evalDir = envDir.childDirectory('eval');
   late final Directory evalBootstrapDir = evalDir.childDirectory('bootstrap');
+  late final File evalBootstrapPackagesFile = evalBootstrapDir
+      .childDirectory('.dart_tool')
+      .childFile('package_config.json');
 
   bool get exists => envDir.existsSync();
 

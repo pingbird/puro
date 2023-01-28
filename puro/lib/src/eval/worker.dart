@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:file/file.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:vm_service/vm_service.dart';
 import 'package:vm_service/vm_service_io.dart';
 
@@ -15,6 +16,30 @@ import '../process.dart';
 import '../provider.dart';
 import 'bootstrap.dart';
 import 'parse.dart';
+
+class EvalImport {
+  EvalImport(
+    this.uri, {
+    this.as,
+    this.show = const {},
+    this.hide = const {},
+  });
+
+  final Uri uri;
+  final String? as;
+  final Set<String> show;
+  final Set<String> hide;
+
+  @override
+  String toString() {
+    return "import ${[
+      "'$uri'",
+      if (as != null) 'as $as',
+      if (show.isNotEmpty) 'show ${show.join(', ')}',
+      if (hide.isNotEmpty) 'hide ${show.join(', ')}',
+    ].join(' ')};";
+  }
+}
 
 class EvalError implements Exception {
   EvalError({required this.message});
@@ -50,13 +75,25 @@ void main() {
   stdin.drain().then((_) => exit(0));
 }''';
 
+const _coreLibraryNames = {
+  'async',
+  'collection',
+  'convert',
+  'math',
+  'typed_data',
+  'ffi',
+  'io',
+  'isolate',
+  'mirrors',
+};
+
 class EvalWorker {
   EvalWorker({
     required this.scope,
+    required this.environment,
     required this.process,
     required this.port,
     required this.projectDir,
-    required this.bootstrapDir,
     required this.mainFileHandle,
     required this.vmService,
     required this.isolateId,
@@ -64,10 +101,10 @@ class EvalWorker {
   });
 
   final Scope scope;
+  final EnvConfig environment;
   final Process process;
   final int port;
   final Directory projectDir;
-  final Directory bootstrapDir;
   final RandomAccessFile mainFileHandle;
   final VmService vmService;
   final String isolateId;
@@ -76,9 +113,7 @@ class EvalWorker {
   late final log = PuroLogger.of(scope);
   late final evalFile = projectDir.childFile('eval.dart');
 
-  static Future<EvalWorker> spawn({
-    required Scope scope,
-  }) async {
+  static Future<EvalWorker> spawn({required Scope scope}) async {
     final environment = await getProjectEnvOrDefault(scope: scope);
     final log = PuroLogger.of(scope);
 
@@ -110,12 +145,23 @@ class EvalWorker {
     final port = socket.port;
     await socket.close();
 
+    final packagesFile = environment.evalBootstrapPackagesFile;
+    if (!packagesFile.existsSync()) {
+      packagesFile.parent.createSync(recursive: true);
+      packagesFile.writeAsStringSync(
+        jsonEncode(<String, dynamic>{
+          'configVersion': 2,
+          'packages': <dynamic>[],
+        }),
+      );
+    }
+
     final process = await startProcess(
       scope,
       environment.flutter.cache.dartSdk.dartExecutable.path,
       [
         '--enable-vm-service=$port',
-        //'--packages=${environment.flutter.flutterToolsPackageConfigJsonFile.path}',
+        '--packages=${packagesFile.path}',
         'run',
         '--no-serve-devtools',
         '${mainFile.path}',
@@ -149,16 +195,6 @@ class EvalWorker {
       }
     });
 
-    // Initialize packages file, this takes about 1 second on the first run with
-    // a good internet connection
-    final vmInfo = await vmService.getVM();
-    log.d('vmInfo: ${prettyJsonEncoder.convert(vmInfo.json)}');
-    await initEvalBootstrapProject(
-      scope: scope,
-      environment: environment,
-      sdkVersion: vmInfo.version!.split(' ').first,
-    );
-
     // Forward stdout / stderr.
     await vmService.streamListen(EventStreams.kStdout);
     vmService.onStdoutEvent.listen((e) => stdout.add(base64.decode(e.bytes!)));
@@ -171,10 +207,10 @@ class EvalWorker {
 
     return EvalWorker(
       scope: scope,
+      environment: environment,
       process: process,
       port: port,
       projectDir: projectDir,
-      bootstrapDir: environment.evalBootstrapDir,
       mainFileHandle: mainFileHandle,
       vmService: vmService,
       isolateId: await isolateIdCompleter.future,
@@ -182,11 +218,27 @@ class EvalWorker {
     );
   }
 
+  Future<void> pullPackages({
+    Map<String, VersionConstraint?> packages = const {},
+  }) async {
+    log.d('pullPackages: $packages');
+    // Initialize packages file, this takes about 1 second on the first run with
+    // a good internet connection.
+    final vmInfo = await vmService.getVM();
+    log.d('vmInfo: ${prettyJsonEncoder.convert(vmInfo.json)}');
+    await initEvalBootstrapProject(
+      scope: scope,
+      environment: environment,
+      sdkVersion: vmInfo.version!.split(' ').first,
+      packages: packages,
+    );
+  }
+
   SimpleParseResult<AstNode> parse(String code) {
     final unitParseResult = parseDartCompilationUnit(code);
     final unitNode = unitParseResult.node;
 
-    // Always use unit if it contains top-level declarations or imports
+    // Always use unit if it contains top-level declarations or imports.
     if (unitNode != null &&
         (unitNode.directives.isNotEmpty ||
             unitNode.declarations.any((e) =>
@@ -207,18 +259,29 @@ class EvalWorker {
     return parseDartBlock('{$code}');
   }
 
-  Future<String?> evaluate(String code) async {
+  Future<String?> evaluate(
+    String code, {
+    List<EvalImport> imports = const [],
+    bool importCore = false,
+  }) async {
+    if (importCore) {
+      imports = [
+        ..._coreLibraryNames.map((e) => EvalImport(Uri.parse('dart:$e'))),
+        ...imports,
+      ];
+    }
+    final importStr = imports.map((e) => '$e\n').join();
     final parseResult = parse(code);
     final node = parseResult.node;
     if (node is Expression) {
       return _evaluate(
-        'Future<dynamic> main() async =>\n$code;',
+        '${importStr}Future<dynamic> main() async =>\n$code;',
         hasReturnValue: true,
       );
     } else if (node is CompilationUnit) {
-      return _evaluate(code);
+      return _evaluate('$importStr$code');
     } else {
-      return _evaluate('Future<void> main() {\n$code\n}');
+      return _evaluate('${importStr}Future<void> main() {\n$code\n}');
     }
   }
 
@@ -228,12 +291,8 @@ class EvalWorker {
 
     final reloadResult = await vmService.reloadSources(
       isolateId,
-      packagesUri: Uri.file(
-        bootstrapDir
-            .childDirectory('.dart_tool')
-            .childFile('package_config.json')
-            .path,
-      ).toString(),
+      packagesUri:
+          Uri.file(environment.evalBootstrapPackagesFile.path).toString(),
     );
 
     if (reloadResult.success == false) {
