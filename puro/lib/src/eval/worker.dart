@@ -34,6 +34,7 @@ void main() {
       }));
     }
   });
+  postEvent('EvalReady', {});
   // exit when stdin closes so it doesn't become a zombie
   stdin.drain().then((_) => exit(0));
 }''';
@@ -156,14 +157,14 @@ class EvalWorker {
     final vmService = await vmServiceConnectUri(serverUri);
 
     final streamListenFuture = Future.wait([
-      vmService.streamListen(EventStreams.kIsolate),
       vmService.streamListen(EventStreams.kStderr),
       vmService.streamListen(EventStreams.kStdout),
+      vmService.streamListen(EventStreams.kExtension),
     ]);
 
     final isolateIdCompleter = Completer<String>();
-    vmService.onIsolateEvent.listen((e) {
-      if (!isolateIdCompleter.isCompleted && e.kind == 'IsolateRunnable') {
+    vmService.onExtensionEvent.listen((e) {
+      if (e.extensionKind == 'EvalReady') {
         isolateIdCompleter.complete(e.isolate!.id);
       }
     });
