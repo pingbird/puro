@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -240,7 +241,8 @@ class EvalContext {
     log.d(() => 'unitNode.declarations: '
         '${unitNode?.declarations.map((e) => e.runtimeType).join(', ')}');
 
-    // Always use unit if it contains top-level declarations or imports.
+    // Always use unit if it contains top-level declarations, contains imports,
+    // or contains a main function.
     if (unitNode != null &&
         (unitNode.directives.isNotEmpty ||
             unitNode.declarations.any((e) =>
@@ -248,7 +250,8 @@ class EvalContext {
                 e is MixinDeclaration ||
                 e is ExtensionDeclaration ||
                 e is EnumDeclaration ||
-                e is TypeAlias))) {
+                e is TypeAlias ||
+                (e is FunctionDeclaration && e.name.lexeme == 'main')))) {
       return unitParseResult;
     }
 
@@ -290,9 +293,48 @@ class EvalContext {
         hasReturn: true,
       );
     } else if (node is CompilationUnit) {
-      return EvalCode('$importStr$code');
+      var hasReturn = true;
+      for (final decl in node.declarations) {
+        if (decl is FunctionDeclaration && decl.name.lexeme == 'main') {
+          final returnType = decl.returnType?.toSource();
+          log.d('main return type: $returnType');
+          if (returnType == 'void' || returnType == 'Future<void>') {
+            hasReturn = false;
+          }
+        }
+      }
+      return EvalCode('$importStr$code', hasReturn: hasReturn);
     } else {
-      return EvalCode('${importStr}Future<void> main() async {\n$code\n}');
+      if (node != null && ReturnCheckVisitor.check(node)) {
+        return EvalCode(
+          '${importStr}Future<dynamic> main() async {\n$code\n}',
+          hasReturn: true,
+        );
+      } else {
+        return EvalCode('${importStr}Future<void> main() async {\n$code\n}');
+      }
     }
+  }
+}
+
+class ReturnCheckVisitor extends GeneralizingAstVisitor<void> {
+  var hasReturn = false;
+
+  @override
+  void visitExpression(Expression node) {}
+
+  @override
+  void visitFunctionBody(FunctionBody node) {}
+
+  @override
+  void visitReturnStatement(ReturnStatement node) {
+    hasReturn = true;
+    return;
+  }
+
+  static bool check(AstNode node) {
+    final visitor = ReturnCheckVisitor();
+    node.accept(visitor);
+    return visitor.hasReturn;
   }
 }
