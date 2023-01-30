@@ -1,3 +1,8 @@
+## 1.2.1
+
+* Bug fixes
+* Added package support to eval
+
 ## 1.2.0
 
 * Bug fixes
