@@ -87,7 +87,7 @@ Future<File?> tryUpdateProfile({
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final file = profileOverride == null
-      ? detectProfile(scope: scope)
+      ? await detectProfile(scope: scope)
       : config.fileSystem.file(profileOverride).absolute;
   log.d('detected profile: ${file?.path}');
   if (file == null) {
@@ -143,6 +143,7 @@ Future<File?> detectProfile({required Scope scope}) async {
     profiles.addAll(zshProfiles);
     profiles.addAll(bashProfiles);
   } else {
+    log.d('Using process tree to detect shell');
     final processes = await getParentProcesses(scope: scope);
     final shell = processes.firstWhereOrNull(
       (e) => e.name == 'bash' || e.name == 'zsh',
