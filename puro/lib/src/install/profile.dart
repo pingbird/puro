@@ -83,10 +83,12 @@ Future<File?> tryUpdateProfile({
   required Scope scope,
   String? profileOverride,
 }) async {
+  final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final file = profileOverride == null
       ? detectProfile(scope: scope)
       : config.fileSystem.file(profileOverride).absolute;
+  log.d('detected profile: ${file?.path}');
   if (file == null) {
     return null;
   }

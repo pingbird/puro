@@ -51,6 +51,7 @@ class PuroInstallCommand extends PuroCommand {
   Future<CommandResult> run() async {
     final puroVersion = await PuroVersion.of(scope);
     final config = PuroConfig.of(scope);
+    final log = PuroLogger.of(scope);
 
     final force = argResults!['force'] as bool;
     final promote = argResults!['promote'] as bool;
@@ -77,13 +78,16 @@ class PuroInstallCommand extends PuroCommand {
       prefs = await readGlobalPrefs(scope: scope);
     }
 
+    log.d(() => 'prefs: ${prettyJsonEncoder.convert(prefs.toProto3Json())}');
+
     // Update the PATH by default if this is a distribution install.
     String? profilePath;
     var updatedWindowsRegistry = false;
     final homeDir = config.homeDir.path;
-    if (puroVersion.type == PuroInstallationType.distribution || promote
-        ? !prefs.hasEnableProfileUpdate() || prefs.enableProfileUpdate
-        : updatePath ?? false) {
+    if ((updatePath ?? false) ||
+        ((puroVersion.type == PuroInstallationType.distribution || promote) &&
+                !prefs.hasEnableProfileUpdate() ||
+            prefs.enableProfileUpdate)) {
       if (Platform.isLinux || Platform.isMacOS) {
         final profile = await tryUpdateProfile(
           scope: scope,
