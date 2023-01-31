@@ -147,6 +147,11 @@ File? detectProfile({required Scope scope}) {
       return file;
     }
   }
+  if (shell.endsWith('/bash')) {
+    return homeDir.childFile('.profile');
+  } else if (shell.endsWith('/zsh')) {
+    return homeDir.childFile('.zprofile');
+  }
   return null;
 }
 
