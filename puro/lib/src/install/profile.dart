@@ -122,6 +122,7 @@ Future<File?> tryUpdateProfile({
 
 File? detectProfile({required Scope scope}) {
   final config = PuroConfig.of(scope);
+  final log = PuroLogger.of(scope);
   final homeDir = config.homeDir;
   const bashProfiles = {
     '.profile',
@@ -141,6 +142,7 @@ File? detectProfile({required Scope scope}) {
     profiles.addAll(zshProfiles);
     profiles.addAll(bashProfiles);
   } else {
+    log.d('unknown shell: $shell');
     return null;
   }
   for (final name in profiles) {
@@ -149,12 +151,7 @@ File? detectProfile({required Scope scope}) {
       return file;
     }
   }
-  if (shell.endsWith('/bash')) {
-    return homeDir.childFile('.profile');
-  } else if (shell.endsWith('/zsh')) {
-    return homeDir.childFile('.zprofile');
-  }
-  return null;
+  return profiles.isEmpty ? null : homeDir.childFile(profiles.first);
 }
 
 Future<List<File>> findProgramInPath({
