@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:file/file.dart';
 import 'package:neoansi/neoansi.dart';
 
@@ -120,7 +121,7 @@ Future<File?> tryUpdateProfile({
   );
 }
 
-File? detectProfile({required Scope scope}) {
+Future<File?> detectProfile({required Scope scope}) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
   final homeDir = config.homeDir;
@@ -142,8 +143,17 @@ File? detectProfile({required Scope scope}) {
     profiles.addAll(zshProfiles);
     profiles.addAll(bashProfiles);
   } else {
-    log.d('unknown shell: $shell');
-    return null;
+    final processes = await getParentProcesses(scope: scope);
+    final shell = processes.firstWhereOrNull(
+      (e) => e.name == 'bash' || e.name == 'zsh',
+    );
+    if (shell?.name == 'bash') {
+      profiles.addAll(bashProfiles);
+      profiles.addAll(zshProfiles);
+    } else if (shell?.name == 'zsh') {
+      profiles.addAll(zshProfiles);
+      profiles.addAll(bashProfiles);
+    }
   }
   for (final name in profiles) {
     final file = homeDir.childFile(name);
