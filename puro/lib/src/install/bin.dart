@@ -51,7 +51,6 @@ Future<void> ensurePuroInstalled({
 }
 
 Future<void> _promoteStandalone({required Scope scope}) async {
-  final log = PuroLogger.of(scope);
   final version = await PuroVersion.of(scope);
   if (version.type == PuroInstallationType.distribution) {
     return;
