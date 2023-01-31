@@ -65,11 +65,15 @@ Future<void> _promoteStandalone({required Scope scope}) async {
     trampolineFile.deleteSync();
   }
   executableFile.deleteOrRenameSync();
-  version.puroExecutable!.parent.createSync(recursive: true);
-  if (!version.puroExecutable!.existsSync()) {
+  final puroExecutable = version.puroExecutable!;
+  puroExecutable.parent.createSync(recursive: true);
+  if (!puroExecutable.parent.existsSync()) {
+    throw AssertionError('Failed to create ${puroExecutable.parent.path}');
+  }
+  if (!puroExecutable.existsSync()) {
     throw CommandError.list([
       CommandMessage(
-        'Failed to install puro because the executable `${version.puroExecutable!.path}` is missing',
+        'Failed to install puro because the executable `${puroExecutable.path}` is missing',
       ),
       if (Platform.isWindows)
         CommandMessage(
