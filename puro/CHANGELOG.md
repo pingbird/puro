@@ -1,3 +1,7 @@
+## 1.2.3
+
+* Bug fixes
+
 ## 1.2.2
 
 * Bug fixes
