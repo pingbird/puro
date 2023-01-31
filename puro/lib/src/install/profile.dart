@@ -125,14 +125,18 @@ Future<File?> detectProfile({required Scope scope}) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
   final homeDir = config.homeDir;
-  const bashProfiles = {
-    '.profile',
-    '.bash_profile',
-    '.bashrc',
+  final home = homeDir.path;
+  final bashEnv = Platform.environment['BASH_ENV'];
+  final path = config.fileSystem.path;
+  final bashProfiles = {
+    if (bashEnv != null && bashEnv.isNotEmpty) bashEnv,
+    path.join(home, '.profile'),
+    path.join(home, '.bash_profile'),
+    path.join(home, '.bashrc'),
   };
-  const zshProfiles = {
-    '.zprofile',
-    '.zshrc',
+  final zshProfiles = {
+    path.join(home, '.zprofile'),
+    path.join(home, '.zshrc'),
   };
   final profiles = <String>{};
   final shell = Platform.environment['SHELL'] ?? '';
@@ -157,7 +161,7 @@ Future<File?> detectProfile({required Scope scope}) async {
     }
   }
   for (final name in profiles) {
-    final file = homeDir.childFile(name);
+    final file = config.fileSystem.file(name);
     if (file.existsSync()) {
       return file;
     }
