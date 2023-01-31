@@ -8,6 +8,7 @@ import '../file_lock.dart';
 import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
+import '../terminal.dart';
 import '../version.dart';
 
 const bashShimHeader = '''#!/usr/bin/env bash
@@ -65,6 +66,20 @@ Future<void> _promoteStandalone({required Scope scope}) async {
   }
   executableFile.deleteOrRenameSync();
   version.puroExecutable!.parent.createSync(recursive: true);
+  if (!version.puroExecutable!.existsSync()) {
+    throw CommandError.list([
+      CommandMessage(
+        'Failed to install puro because the executable `${version.puroExecutable!.path}` is missing',
+      ),
+      if (Platform.isWindows)
+        CommandMessage(
+          'The most likely culprit is Windows Defender, to make an exception, '
+          'go to Windows Security > Protection History > Click the most recent '
+          'item > Check if it says puro.exe > Allow on device',
+          type: CompletionType.info,
+        ),
+    ]);
+  }
   version.puroExecutable!.renameSync(executableFile.path);
 }
 
