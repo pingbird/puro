@@ -99,6 +99,7 @@ class PuroInstallCommand extends PuroCommand {
     }
 
     // Environment shims may have changed, update all of them to be safe
+    config.envsDir.createSync(recursive: true);
     for (final envDir in config.envsDir.listSync().whereType<Directory>()) {
       if (envDir.basename == 'default') continue;
       final environment = config.getEnv(envDir.basename);
