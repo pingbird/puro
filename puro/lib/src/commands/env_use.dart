@@ -1,8 +1,10 @@
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
+import '../env/create.dart';
 import '../env/default.dart';
 import '../env/releases.dart';
+import '../env/version.dart';
 import '../logger.dart';
 import '../terminal.dart';
 import '../workspace/install.dart';
@@ -51,8 +53,19 @@ class EnvUseCommand extends PuroCommand {
         );
       }
       final env = config.getEnv(envName);
-      if (!env.exists && !pseudoEnvironmentNames.contains(env.name)) {
-        log.w('Environment `${env.name}` does not exist');
+      if (!env.exists) {
+        if (pseudoEnvironmentNames.contains(env.name)) {
+          await createEnvironment(
+            scope: scope,
+            envName: env.name,
+            flutterVersion: await FlutterVersion.query(
+              scope: scope,
+              version: env.name,
+            ),
+          );
+        } else {
+          log.w('Environment `${env.name}` does not exist');
+        }
       }
       await setDefaultEnvName(
         scope: scope,
