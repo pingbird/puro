@@ -89,14 +89,6 @@ commands:
             cd puro
             .\build.ps1 << parameters.build_args >>
             cp bin/puro.exe ../builds/windows-x64/puro.exe
-      - run:
-          name: "Build Installer"
-          command: |-
-            mkdir builds\windows-x64
-            choco install innosetup -y
-            cd installer\windows
-            .\build_installer.ps1
-            cp Output\* ..\..\builds\windows-x64
       - persist_to_workspace:
           root: C:\Users\circleci\project
           paths:

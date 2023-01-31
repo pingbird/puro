@@ -51,6 +51,7 @@ Future<void> ensurePuroInstalled({
 }
 
 Future<void> _promoteStandalone({required Scope scope}) async {
+  final log = PuroLogger.of(scope);
   final version = await PuroVersion.of(scope);
   if (version.type == PuroInstallationType.distribution) {
     return;
@@ -66,8 +67,8 @@ Future<void> _promoteStandalone({required Scope scope}) async {
   }
   executableFile.deleteOrRenameSync();
   final puroExecutable = version.puroExecutable!;
-  puroExecutable.parent.createSync(recursive: true);
-  if (!puroExecutable.parent.existsSync()) {
+  executableFile.parent.createSync(recursive: true);
+  if (!executableFile.parent.existsSync()) {
     throw AssertionError('Failed to create ${puroExecutable.parent.path}');
   }
   if (!puroExecutable.existsSync()) {
