@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import '../../models.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../extensions.dart';
 import '../file_lock.dart';
@@ -78,7 +79,17 @@ Future<FlutterToolInfo> setUpFlutterTool({
       log.d('linkNeedsUpdate: $linkNeedsUpdate');
       if (!cacheExists || linkNeedsUpdate) {
         if (link.existsSync()) link.deleteSync();
-        link.createSync(sharedCache.cacheDir.path);
+        try {
+          link.createSync(sharedCache.cacheDir.path);
+        } on FileSystemException catch (e) {
+          if (Platform.isWindows && e.osError?.errorCode == 1314) {
+            throw CommandError(
+              'Failed to create symlink as the current user, please enable '
+              'developer mode in Windows settings and reboot',
+            );
+          }
+          rethrow;
+        }
         didUpdateEngine = true;
       } else if (!isLink) {
         throw AssertionError(
