@@ -1,12 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file/file.dart';
 import 'package:mutex/mutex.dart';
 import 'package:path/path.dart' as path;
 
+import 'config.dart';
+import 'logger.dart';
+import 'process.dart';
 import 'progress.dart';
 import 'provider.dart';
+import 'string_utils.dart';
 
 /// Linux has some quirky behavior when a process has multiple locks on the same
 /// file that we want to avoid.
@@ -229,4 +234,53 @@ Future<bool> checkAtomic({
     await onFail();
     return false;
   });
+}
+
+/// Creates a link, elevating to admin in case the user is on Windows and does
+/// not have developer mode enabled.
+Future<void> createLink({
+  required Scope scope,
+  required Link link,
+  required String path,
+}) async {
+  Future<void> createElevated() async {
+    final log = PuroLogger.of(scope);
+    final config = PuroConfig.of(scope);
+    final isDir = config.fileSystem.isDirectorySync(path);
+    log.w(
+      'Elevating to create a symlink, please enable developer mode in Windows '
+      'settings to avoid this workaround',
+    );
+    final args = [
+      '/c',
+      'mklink',
+      if (isDir) '/d',
+      link.path,
+      path,
+    ];
+    await runProcess(
+      scope,
+      'powershell',
+      [
+        '-command',
+        ('Start-Process cmd -Wait -Verb runAs -ArgumentList '
+            '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}'),
+      ],
+      throwOnFailure: true,
+    );
+    final linkTarget = link.targetSync();
+    if (linkTarget != path) {
+      throw AssertionError('Link is `$linkTarget` but expected `$path`');
+    }
+  }
+
+  try {
+    link.createSync(path);
+  } on FileSystemException catch (e) {
+    if (Platform.isWindows && e.osError?.errorCode == 1314) {
+      await createElevated();
+    } else {
+      rethrow;
+    }
+  }
 }

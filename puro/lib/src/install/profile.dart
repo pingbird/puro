@@ -11,7 +11,9 @@ import '../file_lock.dart';
 import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
+import '../string_utils.dart';
 import '../terminal.dart';
+import '../string_utils.dart';
 import '../version.dart';
 
 Future<CommandMessage?> detectExternalFlutterInstallations({
@@ -213,20 +215,6 @@ Future<String?> readWindowsRegistryValue({
   }
   return line.substring(match.end);
 }
-
-String escapePowershellString(String str) => str
-    .replaceAll('`', '``')
-    .replaceAll('"', '`"')
-    .replaceAll('\$', '`\$')
-    .replaceAll('\x00', '`0')
-    .replaceAll('\x07', '`a')
-    .replaceAll('\b', '`b')
-    .replaceAll('\x1b', '`e')
-    .replaceAll('\f', '`f')
-    .replaceAll('\n', '`n')
-    .replaceAll('\r', '`r')
-    .replaceAll('\t', '`t')
-    .replaceAll('\v', '`v');
 
 Future<bool> writeWindowsRegistryValue({
   required Scope scope,

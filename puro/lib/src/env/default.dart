@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../command_result.dart';
 import '../config.dart';
+import '../file_lock.dart';
 import '../provider.dart';
 import 'create.dart';
 import 'releases.dart';
@@ -113,7 +114,7 @@ Future<void> updateDefaultEnvSymlink({
         link.deleteSync();
       }
       link.parent.createSync(recursive: true);
-      link.createSync(path);
+      await createLink(scope: scope, link: link, path: path);
     } else if (link.targetSync() != path) {
       link.updateSync(path);
     }
