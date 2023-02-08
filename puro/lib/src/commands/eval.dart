@@ -55,6 +55,12 @@ class EvalCommand extends PuroCommand {
       help: 'Whether to disable automatic imports of core libraries',
       negatable: false,
     );
+    argParser.addMultiOption(
+      'extra',
+      abbr: 'e',
+      help: 'Extra VM options to pass to the dart executable',
+      splitCommas: false,
+    );
   }
 
   @override
@@ -79,6 +85,7 @@ class EvalCommand extends PuroCommand {
     final imports =
         (argResults!['import'] as List<String>).map(EvalImport.parse).toList();
     final packages = argResults!['package'] as List<String>;
+    final extra = argResults!['extra'] as List<String>;
     var code = argResults!.rest.join(' ');
     if (code.isEmpty) {
       code = await utf8.decodeStream(stdin);
@@ -101,6 +108,7 @@ class EvalCommand extends PuroCommand {
         scope: scope,
         context: context,
         code: code,
+        extra: extra,
       );
 
       final result = await worker.run();

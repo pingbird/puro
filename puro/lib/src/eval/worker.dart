@@ -72,6 +72,7 @@ class EvalWorker {
   static Future<EvalWorker> spawn({
     required Scope scope,
     required EvalContext context,
+    List<String> extra = const [],
     String? code,
   }) async {
     final log = PuroLogger.of(scope);
@@ -131,6 +132,7 @@ class EvalWorker {
         '--packages=${packagesFile.path}',
         'run',
         '--no-serve-devtools',
+        ...extra,
         '${mainFile.path}',
       ],
       workingDirectory: projectDir.path,

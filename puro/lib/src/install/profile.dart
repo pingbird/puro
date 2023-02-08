@@ -13,7 +13,6 @@ import '../process.dart';
 import '../provider.dart';
 import '../string_utils.dart';
 import '../terminal.dart';
-import '../string_utils.dart';
 import '../version.dart';
 
 Future<CommandMessage?> detectExternalFlutterInstallations({
