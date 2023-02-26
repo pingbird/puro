@@ -1,6 +1,6 @@
 name: puro
 description: A powerful tool for installing and upgrading Flutter versions
-version: 1.2.3
+version: 1.2.4
 repository: https://github.com/PixelToast/puro
 homepage: https://puro.dev
 
@@ -16,6 +16,7 @@ dependencies:
   async: ^2.9.0
   clock: ^1.1.1
   collection: ^1.17.0
+  dart_console: ^1.1.2
   file: ^6.1.4
   freezed_annotation: ^2.1.0
   http: ^0.13.5

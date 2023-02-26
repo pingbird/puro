@@ -12,6 +12,7 @@ import '../logger.dart';
 import '../process.dart';
 import '../provider.dart';
 import 'context.dart';
+import 'parse.dart';
 
 const _hostCode = r'''import 'dart:io';
 import 'dart:developer';
@@ -49,7 +50,7 @@ class EvalWorker {
     required this.mainFileHandle,
     required this.vmService,
     required this.isolateId,
-    required this.stderrFuture,
+    required this.onExit,
     required this.context,
     required this.currentCode,
   });
@@ -62,9 +63,10 @@ class EvalWorker {
   final RandomAccessFile mainFileHandle;
   final VmService vmService;
   final String isolateId;
-  final Future<void> stderrFuture;
+  final Future<int> onExit;
   final EvalContext context;
-  EvalCode currentCode;
+  ParseResult currentCode;
+  var reloadSuccessful = true;
 
   late final log = PuroLogger.of(scope);
   late final evalFile = projectDir.childFile('eval.dart');
@@ -78,9 +80,9 @@ class EvalWorker {
     final log = PuroLogger.of(scope);
     final environment = context.environment;
 
-    var initialCode = const EvalCode('void main() {}');
+    var initialCode = context.parse('void main() {}');
     if (code != null) {
-      initialCode = context.transformCode(code);
+      initialCode = context.transform(code);
     }
 
     // Clean up old projects.
@@ -104,7 +106,7 @@ class EvalWorker {
     final mainFile = projectDir.childFile('main.dart');
     final mainFileHandle = mainFile.openSync(mode: FileMode.write);
     mainFileHandle.writeAllStringSync(_hostCode);
-    projectDir.childFile('eval.dart').writeAsStringSync(initialCode.contents);
+    projectDir.childFile('eval.dart').writeAsStringSync(initialCode.code);
 
     // Find an unused port: https://github.com/dart-lang/test/blob/9c6ddedfe44300fe4d63ac5eeb95a1f359bbccc9/pkgs/test_core/lib/src/util/io.dart#L169
     final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
@@ -144,13 +146,13 @@ class EvalWorker {
     final stdoutLines = const LineSplitter()
         .bind(const Utf8Decoder(allowMalformed: true).bind(process.stdout));
     final serverUriCompleter = Completer<String>();
-    stdoutLines.listen((line) {
+    final stdoutFuture = stdoutLines.listen((line) {
       if (!serverUriCompleter.isCompleted &&
           line.startsWith('The Dart VM service is listening on')) {
         serverUriCompleter
             .complete(line.split(' ').last.replaceAll('http://', 'ws://'));
       }
-    });
+    }).asFuture<void>();
     final stderrFuture = process.stderr.listen(stderr.add).asFuture<void>();
 
     // Wait for the main isolate to become runnable.
@@ -193,17 +195,21 @@ class EvalWorker {
       mainFileHandle: mainFileHandle,
       vmService: vmService,
       isolateId: isolateId,
-      stderrFuture: stderrFuture,
+      onExit:
+          stdoutFuture.then((_) => stderrFuture.then((_) => process.exitCode)),
       context: context,
       currentCode: initialCode,
     );
   }
 
-  Future<void> reload(EvalCode code) async {
-    log.d(() => '_evaluate: ${jsonEncode(code)}');
-    if (code == currentCode && !context.needsPackageReload) return;
-    evalFile.writeAsStringSync(code.contents);
-    currentCode = code;
+  Future<void> reload(ParseResult parseResult) async {
+    log.d(() => '_evaluate: ${jsonEncode(parseResult.code)}');
+    if (parseResult.code == currentCode.code &&
+        !context.needsPackageReload &&
+        reloadSuccessful) return;
+    reloadSuccessful = false;
+    evalFile.writeAsStringSync(parseResult.code);
+    currentCode = parseResult;
 
     final reloadResult = await vmService.reloadSources(
       isolateId,
@@ -220,6 +226,7 @@ class EvalWorker {
     }
 
     context.needsPackageReload = false;
+    reloadSuccessful = true;
   }
 
   Future<String?> run() async {
@@ -248,6 +255,6 @@ class EvalWorker {
     log.d('disposing EvalWorker(${process.pid})');
     mainFileHandle.closeSync();
     process.kill(ProcessSignal.sigkill);
-    await stderrFuture;
+    await onExit;
   }
 }

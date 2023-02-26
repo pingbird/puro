@@ -59,8 +59,8 @@ class LazyProviderNode<T> extends ProviderNode<T> {
 }
 
 class RootScope extends Scope {
-  final nodes = <Provider, ProviderNode>{};
-  final overrides = <Provider, Object?>{};
+  final nodes = <Provider<Object?>, ProviderNode<Object?>>{};
+  final overrides = <Provider<Object?>, Object?>{};
 
   @override
   void add<T>(Provider<T> provider, T value) {
@@ -82,7 +82,7 @@ class OverrideScope extends Scope {
 
   final Scope parent;
 
-  final overrides = <Provider, Object?>{};
+  final overrides = <Provider<Object?>, Object?>{};
 
   @override
   void add<T>(Provider<T> provider, T value) {

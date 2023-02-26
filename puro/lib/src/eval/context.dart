@@ -22,26 +22,6 @@ const _coreLibraryNames = {
   'mirrors',
 };
 
-@immutable
-class EvalCode {
-  const EvalCode(
-    this.contents, {
-    this.hasReturn = false,
-  });
-
-  final String contents;
-  final bool hasReturn;
-
-  @override
-  bool operator ==(Object other) =>
-      other is EvalCode &&
-      contents == other.contents &&
-      hasReturn == other.hasReturn;
-
-  @override
-  int get hashCode => Object.hash(contents, hasReturn);
-}
-
 final _identifierRegex = RegExp(r'[a-zA-Z_$][a-zA-Z_$0-9]*');
 final _identifierOrUriRegex = RegExp(r'[a-zA-Z_$:/\\.][a-zA-Z_$0-9:/\\.]*');
 
@@ -188,7 +168,7 @@ class EvalError implements Exception {
   final String message;
 
   @override
-  String toString() => 'Eval error:\n$message';
+  String toString() => message;
 }
 
 class EvalContext {
@@ -232,7 +212,7 @@ class EvalContext {
     }
   }
 
-  SimpleParseResult<AstNode> parse(String code) {
+  ParseResult parse(String code) {
     final unitParseResult = parseDartCompilationUnit(code);
     final unitNode = unitParseResult.node;
 
@@ -283,35 +263,19 @@ class EvalContext {
     );
   }
 
-  EvalCode transformCode(String code) {
+  ParseResult transform(String code) {
     final importStr = imports.map((e) => '$e\n').join();
     final parseResult = parse(code);
     final node = parseResult.node;
     if (node is Expression) {
-      return EvalCode(
-        '${importStr}Future<dynamic> main() async =>\n$code\n;',
-        hasReturn: true,
-      );
+      return parse('${importStr}Future<dynamic> main() async =>\n$code\n;');
     } else if (node is CompilationUnit) {
-      var hasReturn = true;
-      for (final decl in node.declarations) {
-        if (decl is FunctionDeclaration && decl.name.lexeme == 'main') {
-          final returnType = decl.returnType?.toSource();
-          log.d('main return type: $returnType');
-          if (returnType == 'void' || returnType == 'Future<void>') {
-            hasReturn = false;
-          }
-        }
-      }
-      return EvalCode('$importStr$code', hasReturn: hasReturn);
+      return parse('$importStr$code');
     } else {
       if (node != null && ReturnCheckVisitor.check(node)) {
-        return EvalCode(
-          '${importStr}Future<dynamic> main() async {\n$code\n}',
-          hasReturn: true,
-        );
+        return parse('${importStr}Future<dynamic> main() async {\n$code\n}');
       } else {
-        return EvalCode('${importStr}Future<void> main() async {\n$code\n}');
+        return parse('${importStr}Future<void> main() async {\n$code\n}');
       }
     }
   }

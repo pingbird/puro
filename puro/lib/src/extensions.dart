@@ -101,7 +101,7 @@ extension NumExtensions on num {
       return plusSign ? '+∞' : '∞';
     } else if (this == double.negativeInfinity) {
       return minusSign ? '-∞' : '∞';
-    } else if (this == double.nan) {
+    } else if (identical(this, double.nan)) {
       return 'NaN';
     }
     final nnn = abs().toString();
@@ -173,7 +173,7 @@ extension NumExtensions on num {
       return plusSign ? '+∞' : '∞';
     } else if (this == double.negativeInfinity) {
       return minusSign ? '-∞' : '∞';
-    } else if (this == double.nan) {
+    } else if (identical(this, double.nan)) {
       return 'NaN';
     }
 
@@ -267,7 +267,7 @@ extension DurationExtensions on Duration {
     var s = inMicroseconds / 1000000;
     if (s == double.infinity) return 'never';
     if (s == double.negativeInfinity) return 'forever$before';
-    if (s == double.nan) return 'unknown';
+    if (identical(s, double.nan)) return 'unknown';
 
     var sr = '';
     if (s < 0) {

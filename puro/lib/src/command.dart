@@ -179,7 +179,13 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       puroArgs.contains('-h') ||
       puroArgs.where((e) => !e.startsWith('-')).take(1).contains('help');
 
+  var isExiting = false;
+
   Future<Never> exitPuro(int code) async {
+    if (isExiting) {
+      throw AssertionError('Already exiting');
+    }
+    isExiting = true;
     final results = <ResultFuture<void>, String>{
       for (final entry in backgroundTasks.entries)
         ResultFuture(entry.key): entry.value,

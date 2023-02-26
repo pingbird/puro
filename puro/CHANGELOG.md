@@ -1,3 +1,8 @@
+## 1.2.4
+
+* Added the `--extra` option to to `eval`
+* Added the `repl` command
+
 ## 1.2.3
 
 * Bug fixes

@@ -23,7 +23,7 @@ class PubCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final environment = await getProjectEnvOrDefault(scope: scope);
-    final exitCode = await runDartCommand(
+    final exitCode = await runFlutterCommand(
       scope: scope,
       environment: environment,
       args: ['pub', ...argResults!.arguments],

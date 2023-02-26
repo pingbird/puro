@@ -202,7 +202,7 @@ class Terminal extends StringSink {
   }
 
   @override
-  void writeAll(Iterable objects, [String separator = '']) {
+  void writeAll(Iterable<Object?> objects, [String separator = '']) {
     write(objects.map((Object? e) => '$e').join(separator));
   }
 

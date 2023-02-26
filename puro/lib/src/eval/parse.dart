@@ -13,8 +13,9 @@ import 'package:analyzer/src/dart/scanner/scanner.dart';
 import 'package:analyzer/src/generated/parser.dart';
 import 'package:analyzer/src/string_source.dart';
 
-class SimpleParseResult<T extends AstNode> {
-  SimpleParseResult({
+class ParseResult<T extends AstNode> {
+  ParseResult({
+    required this.code,
     this.node,
     this.token,
     this.scanErrors = const [],
@@ -24,6 +25,7 @@ class SimpleParseResult<T extends AstNode> {
     this.exhaustive = false,
   });
 
+  final String code;
   final T? node;
   final Token? token;
   final CaughtException? scanException;
@@ -31,6 +33,19 @@ class SimpleParseResult<T extends AstNode> {
   final List<AnalysisError> scanErrors;
   final List<AnalysisError> parseErrors;
   final bool exhaustive;
+
+  late final hasReturn = () {
+    if (node is! CompilationUnit) return false;
+    for (final decl in (node as CompilationUnit).declarations) {
+      if (decl is FunctionDeclaration && decl.name.lexeme == 'main') {
+        final returnType = decl.returnType?.toSource();
+        if (returnType == 'void' || returnType == 'Future<void>') {
+          return false;
+        }
+      }
+    }
+    return true;
+  }();
 
   bool get hasError =>
       scanException != null ||
@@ -41,14 +56,14 @@ class SimpleParseResult<T extends AstNode> {
   @override
   String toString() {
     return 'SimpleParseResult<$T>('
-        'node: $node, '
-        'token: $token, '
-        'scanException: $scanException, '
-        'parseException: $parseException, '
-        'scanErrors: $scanErrors, '
-        'parseErrors: $parseErrors, '
-        'hasError: $hasError, '
-        'exhaustive: $exhaustive'
+        '  node: $node, '
+        '  token: $token, '
+        '  scanException: $scanException, '
+        '  parseException: $parseException, '
+        '  scanErrors: $scanErrors, '
+        '  parseErrors: $parseErrors, '
+        '  hasError: $hasError, '
+        '  exhaustive: $exhaustive'
         ')';
   }
 }
@@ -60,7 +75,7 @@ extension TokenExtension on Token {
   }
 }
 
-SimpleParseResult<T> parseDart<T extends AstNode>(
+ParseResult<T> parseDart<T extends AstNode>(
   String code,
   T Function(Parser parser) fn,
 ) {
@@ -80,7 +95,8 @@ SimpleParseResult<T> parseDart<T extends AstNode>(
   try {
     token = scanner.tokenize();
   } catch (exception, stackTrace) {
-    return SimpleParseResult(
+    return ParseResult(
+      code: code,
       scanException: CaughtException(exception, stackTrace),
     );
   }
@@ -92,7 +108,8 @@ SimpleParseResult<T> parseDart<T extends AstNode>(
     lineInfo: LineInfo.fromContent(code),
   )..currentToken = token;
   final node = fn(parser);
-  return SimpleParseResult(
+  return ParseResult(
+    code: code,
     node: node,
     token: token,
     scanErrors: scanErrors.errors,
@@ -101,7 +118,7 @@ SimpleParseResult<T> parseDart<T extends AstNode>(
   );
 }
 
-SimpleParseResult<Expression> parseDartExpression(
+ParseResult<Expression> parseDartExpression(
   String code, {
   bool async = false,
 }) =>
@@ -116,13 +133,12 @@ SimpleParseResult<Expression> parseDartExpression(
       },
     );
 
-SimpleParseResult<CompilationUnit> parseDartCompilationUnit(String code) =>
-    parseDart(
+ParseResult<CompilationUnit> parseDartCompilationUnit(String code) => parseDart(
       code,
       (parser) => parser.parseCompilationUnit2(),
     );
 
-SimpleParseResult<Block> parseDartBlock(String code) => parseDart(
+ParseResult<Block> parseDartBlock(String code) => parseDart(
       code,
       (parser) => (parser.parseFunctionBody(
         false,
