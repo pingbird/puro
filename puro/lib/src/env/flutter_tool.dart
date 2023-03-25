@@ -117,13 +117,24 @@ Future<FlutterToolInfo> setUpFlutterTool({
         final oldPubExecutable = flutterCache.dartSdk.oldPubExecutable;
         final usePubExecutable = oldPubExecutable.existsSync();
 
+        final internalSharedShFileStr = flutterConfig.internalSharedShFile
+            .readAsStringSync()
+            .replaceAll(RegExp('#.*'), ''); // Remove comments
+
+        final useDeprecatedPub =
+            internalSharedShFileStr.contains('__deprecated_pub');
+
+        final noAnalytics = internalSharedShFileStr.contains('--no-analytics');
+
         final pubProcess = await runProcess(
           scope,
           usePubExecutable
               ? oldPubExecutable.path
               : flutterCache.dartSdk.dartExecutable.path,
           [
-            if (!usePubExecutable) '__deprecated_pub',
+            if (!usePubExecutable)
+              if (useDeprecatedPub) '__deprecated_pub' else 'pub',
+            if (noAnalytics) '--no-analytics',
             'upgrade',
             '--verbosity=normal',
             '--no-precompile',
