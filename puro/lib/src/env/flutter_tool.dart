@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -117,14 +118,19 @@ Future<FlutterToolInfo> setUpFlutterTool({
         final oldPubExecutable = flutterCache.dartSdk.oldPubExecutable;
         final usePubExecutable = oldPubExecutable.existsSync();
 
-        final internalSharedShFileStr = flutterConfig.internalSharedShFile
-            .readAsStringSync()
+        final internalSharedShFileStr = utf8
+            .decode(await git.cat(
+              repository: environment.flutterDir,
+              path: 'bin/internal/shared.sh',
+            ))
             .replaceAll(RegExp('#.*'), ''); // Remove comments
 
         final useDeprecatedPub =
             internalSharedShFileStr.contains('__deprecated_pub');
 
         final noAnalytics = internalSharedShFileStr.contains('--no-analytics');
+        final suppressAnalytics =
+            internalSharedShFileStr.contains('--suppress-analytics');
 
         final pubProcess = await runProcess(
           scope,
@@ -135,9 +141,9 @@ Future<FlutterToolInfo> setUpFlutterTool({
             if (!usePubExecutable)
               if (useDeprecatedPub) '__deprecated_pub' else 'pub',
             if (noAnalytics) '--no-analytics',
+            if (suppressAnalytics) '--suppress-analytics',
             'upgrade',
-            '--verbosity=normal',
-            '--no-precompile',
+            if (!noAnalytics && !suppressAnalytics) '--no-precompile',
           ],
           environment: {
             'PUB_ENVIRONMENT': pubEnvironment,

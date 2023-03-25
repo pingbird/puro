@@ -478,7 +478,6 @@ class FlutterConfig {
   late final FlutterCacheConfig cache = FlutterCacheConfig(cacheDir);
   late final File engineVersionFile =
       binInternalDir.childFile('engine.version');
-  late final File internalSharedShFile = binInternalDir.childFile('shared.sh');
   late final Directory flutterToolsDir =
       packagesDir.childDirectory('flutter_tools');
   late final File flutterToolsScriptFile =

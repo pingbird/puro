@@ -1,3 +1,7 @@
+## 1.2.5
+
+* Bug fixes
+
 ## 1.2.4
 
 * Added the `--extra` option to to `eval`
