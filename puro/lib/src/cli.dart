@@ -16,7 +16,6 @@ import 'commands/eval.dart';
 import 'commands/flutter.dart';
 import 'commands/gc.dart';
 import 'commands/generate_docs.dart';
-import 'commands/inject.dart';
 import 'commands/ls_versions.dart';
 import 'commands/prefs.dart';
 import 'commands/pub.dart';
@@ -228,8 +227,7 @@ void main(List<String> args) async {
     ..addCommand(EngineCommand())
     ..addCommand(PrefsCommand())
     ..addCommand(EvalCommand())
-    ..addCommand(ReplCommand())
-    ..addCommand(InjectCommand());
+    ..addCommand(ReplCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {

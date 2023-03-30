@@ -51,7 +51,7 @@ class VSCodeConfig extends IdeConfig {
       changedDotfile = true;
     }
     if (changedDotfile) {
-      config.writeDotfile(dotfile);
+      config.writeDotfile(scope, dotfile);
     }
   }
 
@@ -75,7 +75,7 @@ class VSCodeConfig extends IdeConfig {
       dartSdkDir = null;
     }
     if (changedDotfile) {
-      config.writeDotfile(dotfile);
+      config.writeDotfile(scope, dotfile);
     }
     return save(scope: scope);
   }

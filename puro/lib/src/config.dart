@@ -64,6 +64,8 @@ class PuroConfig {
     required String? flutterStorageBaseUrl,
     required String? environmentOverride,
     required bool? shouldInstall,
+    // Shims break IDE auto-detection, we use symlinks now instead
+    bool enableShims = false,
   }) {
     final log = PuroLogger.of(scope);
 
@@ -141,7 +143,7 @@ class PuroConfig {
     puroRootDir =
         fileSystem.directory(puroRootDir.resolveSymbolicLinksSync()).absolute;
 
-    if (environmentOverride == null) {
+    if (environmentOverride == null && enableShims) {
       final flutterBin = Platform.environment['FLUTTER_BIN'];
       log.d('FLUTTER_BIN: $flutterBin');
       if (flutterBin != null) {
@@ -185,7 +187,7 @@ class PuroConfig {
       environmentOverride: environmentOverride,
       puroBuildsUrl: Uri.parse('https://puro.dev/builds'),
       buildTarget: PuroBuildTarget.query(),
-      enableShims: false,
+      enableShims: enableShims,
       shouldInstall: shouldInstall ?? true,
     );
   }
@@ -217,7 +219,6 @@ class PuroConfig {
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedEngineDir = sharedDir.childDirectory('engine');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
-  late final Directory sharedDartPkgDir = sharedDir.childDirectory('dart_pkg');
   late final Directory sharedGClientDir = sharedDir.childDirectory('gclient');
   late final Directory pubCacheDir = sharedDir.childDirectory('pub_cache');
   late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
@@ -330,12 +331,12 @@ class PuroConfig {
     return model;
   }
 
-  void writeDotfile(PuroDotfileModel dotfile) {
-    dotfileForWriting.writeAsStringSync(
-      prettyJsonEncoder.convert(
-        dotfile.toProto3Json(),
-      ),
-    );
+  void writeDotfile(Scope scope, PuroDotfileModel dotfile) {
+    final log = PuroLogger.of(scope);
+    final file = dotfileForWriting;
+    final jsonStr = prettyJsonEncoder.convert(dotfile.toProto3Json());
+    log.d(() => 'Writing dotfile ${file.path}\n$jsonStr');
+    dotfileForWriting.writeAsStringSync(jsonStr);
   }
 
   Uri? tryGetFlutterGitDownloadUrl({

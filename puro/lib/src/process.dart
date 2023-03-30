@@ -293,7 +293,6 @@ Future<List<PsInfo>> getParentProcesses({
     var pid = io.pid;
     for (;;) {
       final result = await runProcess(scope, 'ps', [
-        '--no-headers',
         '-o',
         '%P\n%c',
         '-p',
@@ -301,9 +300,9 @@ Future<List<PsInfo>> getParentProcesses({
       ]);
       if (result.exitCode != 0) break;
       final lines = (result.stdout as String).trim().split('\n');
-      if (lines.length != 2) break;
-      final ppid = int.tryParse(lines[0].trim());
-      final name = lines[1].trim();
+      if (lines.length != 4) break;
+      final ppid = int.tryParse(lines[2].trim());
+      final name = lines[3].trim();
       if (ppid == null || name.isEmpty) break;
       stack.add(PsInfo(pid, name));
       pid = ppid;

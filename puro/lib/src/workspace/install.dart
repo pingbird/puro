@@ -128,7 +128,7 @@ Future<EnvConfig> switchEnvironment({
     envName: envName,
   );
   model.env = environment.name;
-  config.writeDotfile(model);
+  config.writeDotfile(scope, model);
   final projectDir = config.ensureParentProjectDir();
   await installWorkspaceEnvironment(
     scope: scope,
