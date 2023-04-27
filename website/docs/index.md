@@ -21,7 +21,7 @@ With Puro you can:
 
 === "Windows"
 
-    Puro can be installed on Windows with PowerShell:
+    Puro can be installed on Windows with PowerShell (as your current user, **do not use administrator**):
 
     ```ps1
     Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro.exe" -OutFile "$env:temp\puro.exe"; &"$env:temp\puro.exe" install-puro --promote
