@@ -105,7 +105,7 @@ commands:
 jobs:
   linux_tests:
     environment: &dart_version
-      DART_VERSION: "2.19.2"
+      DART_VERSION: "2.19.5"
       DART_RELEASE: "stable"
     docker:
       - image: cimg/base:stable

@@ -200,7 +200,6 @@ Future<FlutterToolInfo> setUpFlutterTool({
             flutterCache.dartSdk.dartExecutable.path,
             [
               '--disable-dart-dev',
-              '--verbosity=error',
               '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
               if (environment.flutterToolArgs.isNotEmpty)
                 ...environment.flutterToolArgs.split(RegExp(r'\S+')),

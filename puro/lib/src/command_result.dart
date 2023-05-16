@@ -24,19 +24,21 @@ extension CommandResultModelExtensions on CommandResultModel {
 }
 
 class CommandErrorResult extends CommandResult {
-  CommandErrorResult(this.exception, this.stackTrace);
+  CommandErrorResult(this.exception, this.stackTrace, this.logLevel);
 
   final Object exception;
   final StackTrace stackTrace;
+  final int? logLevel;
 
   @override
   Iterable<CommandMessage> get messages {
     return [
       CommandMessage('$exception\n$stackTrace'),
-      CommandMessage(
-        'Puro crashed! Please file an issue at https://github.com/PixelToast/puro\n'
-        'Consider running the command with a higher log level: `--log-level=4`',
-      ),
+      CommandMessage([
+        'Puro crashed! Please file an issue at https://github.com/PixelToast/puro',
+        if (logLevel != null && logLevel! < 4)
+          'Consider running the command with a higher log level: `--log-level=4`',
+      ].join('\n')),
     ];
   }
 

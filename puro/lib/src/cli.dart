@@ -247,6 +247,10 @@ void main(List<String> args) async {
       ),
     );
   } catch (exception, stackTrace) {
-    await runner.writeResultAndExit(CommandErrorResult(exception, stackTrace));
+    await runner.writeResultAndExit(CommandErrorResult(
+      exception,
+      stackTrace,
+      log.level?.index ?? 0,
+    ));
   }
 }
