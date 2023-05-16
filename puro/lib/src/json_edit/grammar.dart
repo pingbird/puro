@@ -39,12 +39,15 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
       if (leading.isEmpty && trailing.isEmpty) {
         return body;
       } else {
-        return token.map(
-          (res) => JsonWhitespace(
+        return Token(
+          JsonWhitespace(
             leading: leading,
             body: body,
             trailing: trailing,
           ),
+          token.buffer,
+          token.start,
+          token.stop,
         );
       }
     });
