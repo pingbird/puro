@@ -124,9 +124,15 @@ class FlutterVersion {
           version: parsedVersion,
           channel: parsedChannel,
         );
+        final releaseVersion = tryParseVersion(release.version);
+        if (releaseVersion == null) {
+          throw AssertionError(
+            'Invalid version "${release.version}" in release $parsedVersion/$parsedChannel',
+          );
+        }
         return FlutterVersion(
           commit: release.hash,
-          version: Version.parse(release.version),
+          version: releaseVersion,
           branch: release.channel,
         );
       }
