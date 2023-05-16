@@ -281,19 +281,22 @@ class IntelliJConfig extends IdeConfig {
       final xml = XmlDocument.parse(
         intellijConfig.dartSdkFile.readAsStringSync(),
       );
-      final classElement = xml.findAllElements('root').first;
-      final urlPath = Uri.parse(classElement.getAttribute('url')!.replaceAll(
-            RegExp(r'\$USER_HOME\$', caseSensitive: false),
-            config.homeDir.path,
-          )).toFilePath().replaceAll(RegExp(r'^\\\\'), '');
-      final dartSdkDir =
-          config.fileSystem.directory(urlPath).absolute.parent.parent;
-      if (dartSdkDir.childDirectory('bin').existsSync()) {
-        intellijConfig.dartSdkDir = dartSdkDir.absolute;
-        if (dartSdkDir.parent.basename == 'cache' &&
-            dartSdkDir.parent.parent.basename == 'bin') {
-          intellijConfig.flutterSdkDir =
-              dartSdkDir.parent.parent.parent.absolute;
+      final classElements = xml.findAllElements('root');
+      if (classElements.isNotEmpty) {
+        final classElement = classElements.first;
+        final urlPath = Uri.parse(classElement.getAttribute('url')!.replaceAll(
+              RegExp(r'\$USER_HOME\$', caseSensitive: false),
+              config.homeDir.path,
+            )).toFilePath().replaceAll(RegExp(r'^\\\\'), '');
+        final dartSdkDir =
+            config.fileSystem.directory(urlPath).absolute.parent.parent;
+        if (dartSdkDir.childDirectory('bin').existsSync()) {
+          intellijConfig.dartSdkDir = dartSdkDir.absolute;
+          if (dartSdkDir.parent.basename == 'cache' &&
+              dartSdkDir.parent.parent.basename == 'bin') {
+            intellijConfig.flutterSdkDir =
+                dartSdkDir.parent.parent.parent.absolute;
+          }
         }
       }
     }
