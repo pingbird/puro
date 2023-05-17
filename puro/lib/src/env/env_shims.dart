@@ -120,7 +120,9 @@ Future<void> installEnvShims({
 
   await git.assumeUnchanged(
     repository: flutterConfig.sdkDir,
-    files: _binFiles.followedBy(_sharedScripts),
+    files: _binFiles.followedBy(_sharedScripts).where(
+          (name) => flutterConfig.sdkDir.childFile(name).existsSync(),
+        ),
   );
 
   await updateGitAttributes(

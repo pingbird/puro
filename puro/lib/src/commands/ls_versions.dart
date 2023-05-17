@@ -20,6 +20,12 @@ class LsVersionsCommand extends PuroCommand {
       help: 'Prints all releases instead of the last 10',
       negatable: false,
     );
+    argParser.addFlag(
+      'force',
+      abbr: 'f',
+      help: 'Forces new releases to be fetched regardless of cache duration',
+      negatable: false,
+    );
   }
 
   @override
@@ -34,10 +40,14 @@ class LsVersionsCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final full = argResults!['full'] as bool;
+    final force = argResults!['force'] as bool;
 
-    final flutterVersions =
-        await getCachedFlutterReleases(scope: scope, unlessStale: true) ??
-            await fetchFlutterReleases(scope: scope);
+    FlutterReleasesModel? flutterVersions;
+    if (!force) {
+      flutterVersions =
+          await getCachedFlutterReleases(scope: scope, unlessStale: true);
+    }
+    flutterVersions ??= await fetchFlutterReleases(scope: scope);
 
     final parsedVersions = <String, Version>{};
     final sortedReleases = flutterVersions.releases.toList()
