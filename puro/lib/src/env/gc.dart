@@ -32,7 +32,14 @@ Future<int> collectGarbage({
         !isValidCommitHash(dir.basename) ||
         usedCaches.contains(dir.basename)) continue;
     final config = FlutterCacheConfig(dir);
-    unusedCaches[dir] = config.engineVersionFile.lastAccessedSync();
+    final versionFile = config.engineVersionFile;
+    if (versionFile.existsSync()) {
+      unusedCaches[dir] = config.engineVersionFile.lastAccessedSync();
+    } else {
+      // Perhaps a delete was incomplete? The cache is invalid without an
+      // engine version file regardless.
+      unusedCaches[dir] = DateTime.fromMillisecondsSinceEpoch(0);
+    }
   }
 
   Future<int> deleteRecursive(FileSystemEntity entity) async {
