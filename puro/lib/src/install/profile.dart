@@ -113,7 +113,9 @@ Future<bool> updateProfile({
         // Not exporting anything
         return false;
       }
-      while (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
+      while (lines.isNotEmpty && lines.last.isEmpty) {
+        lines.removeLast();
+      }
       lines.add('');
       lines.add(export);
       await handle.writeAllString('${lines.join('\n')}\n');
@@ -329,7 +331,8 @@ Future<bool> deleteWindowsRegistryValue({
     result = await runProcess(scope, 'reg', args);
   }
   if (result.exitCode != 0) {
-    log.w('reg add failed with exit code ${result.exitCode}\n${result.stderr}');
+    log.w(
+        'reg delete failed with exit code ${result.exitCode}\n${result.stderr}');
   }
   return result.exitCode == 0;
 }
@@ -370,7 +373,7 @@ Future<bool> tryDeleteWindowsEnv({
       key: 'HKEY_CURRENT_USER\\Environment',
       valueName: name,
     );
-    if (currentValue != null && currentValue != value) {
+    if (currentValue != value) {
       return false;
     }
   }

@@ -176,8 +176,9 @@ Future<void> ensureWindowsDebuggerInstalled({required Scope scope}) async {
             .childDirectory(dependencyKey);
         log.d('depDirectory: $depDirectory');
         var installerFile = depDirectory.childFile('winsdksetup.exe');
-        if (!installerFile.existsSync())
+        if (!installerFile.existsSync()) {
           installerFile = depDirectory.childFile('sdksetup.exe');
+        }
         if (installerFile.existsSync()) {
           final result = await runProcess(
             scope,
