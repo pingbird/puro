@@ -19,17 +19,12 @@ const _sharedScripts = {
   'bin/internal/update_dart_sdk.sh',
 };
 
-const _dartBinFiles = {
+const _binFiles = {
   'bin/dart',
   'bin/dart.bat',
-};
-
-const _flutterBinFiles = {
   'bin/flutter',
   'bin/flutter.bat',
 };
-
-final _binFiles = {..._dartBinFiles, ..._flutterBinFiles};
 
 final _ignoredFiles = {
   'bin/cache',
@@ -130,9 +125,12 @@ Future<void> installEnvShims({
         '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!\n',
   );
 
-  var assumeUnchanged = _flutterBinFiles.followedBy(_sharedScripts);
-  if (hasDartScript) {
-    assumeUnchanged = _dartBinFiles.followedBy(assumeUnchanged);
+  final assumeUnchanged = _binFiles.followedBy(_sharedScripts).toList();
+
+  if (!hasDartScript) {
+    assumeUnchanged.remove('bin/dart');
+    assumeUnchanged.remove('bin/dart.bat');
+    assumeUnchanged.removeWhere(_sharedScripts.contains);
   }
 
   log.d('assumeUnchanged: $assumeUnchanged');
