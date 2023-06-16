@@ -306,12 +306,10 @@ Future<bool> deleteWindowsRegistryValue({
   bool elevated = false,
 }) async {
   final args = [
-    'add',
+    'delete',
     key,
     '/v',
     valueName,
-    '/t',
-    'REG_EXPAND_SZ',
     '/f',
   ];
 
