@@ -35,12 +35,14 @@ class ToolQuirks {
     required this.noAnalytics,
     required this.suppressAnalytics,
     required this.disableDartDev,
+    required this.disableMirrors,
   });
 
   final bool useDeprecatedPub;
   final bool noAnalytics;
   final bool suppressAnalytics;
   final bool disableDartDev;
+  final bool disableMirrors;
 }
 
 Future<ToolQuirks> getToolQuirks({
@@ -68,6 +70,7 @@ Future<ToolQuirks> getToolQuirks({
     noAnalytics: flutterScriptStr.contains('--no-analytics'),
     suppressAnalytics: flutterScriptStr.contains('--suppress-analytics'),
     disableDartDev: flutterScriptStr.contains('--disable-dart-dev'),
+    disableMirrors: flutterScriptStr.contains('--no-enable-mirrors'),
   );
 }
 
@@ -247,7 +250,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
               if (environment.flutterToolArgs.isNotEmpty)
                 ...environment.flutterToolArgs.split(RegExp(r'\S+')),
               '--snapshot=${tempSnapshotFile.path}',
-              '--no-enable-mirrors',
+              if (toolQuirks.disableMirrors) '--no-enable-mirrors',
               flutterConfig.flutterToolsScriptFile.path,
             ],
             environment: {
