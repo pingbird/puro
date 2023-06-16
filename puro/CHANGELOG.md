@@ -1,6 +1,7 @@
-## 1.2.7
+## 1.3.0
 
 * Bug fixes
+* Added the `uninstall-puro` command
 
 ## 1.2.6
 
@@ -45,8 +46,8 @@
 
 * Bug fixes
 * Added support for Google storage mirrors with FLUTTER_STORAGE_BASE_URL
-* Added the `puro engine prepare` command
-* Added the `puro engine build-env` command
+* Added the `engine prepare` command
+* Added the `engine build-env` command
 
 ## 1.1.10
 

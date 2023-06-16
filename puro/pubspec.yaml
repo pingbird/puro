@@ -1,6 +1,6 @@
 name: puro
 description: A powerful tool for installing and upgrading Flutter versions
-version: 1.2.7
+version: 1.3.0
 repository: https://github.com/PixelToast/puro
 homepage: https://puro.dev
 
@@ -8,7 +8,7 @@ executables:
   puro: puro
 
 environment:
-  sdk: '>=2.18.0 <3.0.0'
+  sdk: '>=2.18.0 <4.0.0'
 
 dependencies:
   analyzer: ^5.4.0
