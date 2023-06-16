@@ -91,7 +91,7 @@ Future<File?> findProfileFile({
       : config.fileSystem.file(profileOverride).absolute;
 }
 
-Future<void> updateProfile({
+Future<bool> updateProfile({
   required Scope scope,
   required File file,
   required Iterable<String> lines,
@@ -104,19 +104,20 @@ Future<void> updateProfile({
       final contents = await handle.readAllAsString();
       if (export.isNotEmpty && contents.contains(export)) {
         // Already exported
-        return;
+        return false;
       }
       final lines = contents.split('\n');
       final originalLines = lines.length;
       lines.removeWhere((e) => e.endsWith(_kProfileComment));
       if (export.isEmpty && lines.length == originalLines) {
         // Not exporting anything
-        return;
+        return false;
       }
       while (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
       lines.add('');
       lines.add(export);
       await handle.writeAllString('${lines.join('\n')}\n');
+      return true;
     },
     mode: FileMode.append,
   );
@@ -134,7 +135,7 @@ Future<File?> installProfileEnv({
     return null;
   }
   final home = config.homeDir.path;
-  await updateProfile(
+  final result = await updateProfile(
     scope: scope,
     file: file,
     lines: [
@@ -144,7 +145,7 @@ Future<File?> installProfileEnv({
       'export PUB_CACHE="${config.pubCacheDir.path}"'
     ],
   );
-  return file;
+  return result ? file : null;
 }
 
 Future<File?> uninstallProfileEnv({
@@ -157,12 +158,12 @@ Future<File?> uninstallProfileEnv({
   if (file == null) {
     return null;
   }
-  await updateProfile(
+  final result = await updateProfile(
     scope: scope,
     file: file,
     lines: [],
   );
-  return file;
+  return result ? file : null;
 }
 
 Future<File?> detectProfile({required Scope scope}) async {
