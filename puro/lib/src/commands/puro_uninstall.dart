@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:neoansi/neoansi.dart';
-
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
@@ -78,13 +76,7 @@ class PuroUninstallCommand extends PuroCommand {
       CommandMessage.format(
         (format) => Platform.isWindows
             ? 'To remove environments and settings completely, delete \'${config.puroRoot}\'`'
-            : 'To remove environments and settings completely, run ${format.color(
-                'rm',
-                foregroundColor: Ansi8BitColor.blue,
-              )} -r ${format.color(
-                '\'${config.puroRoot}\'',
-                foregroundColor: Ansi8BitColor.green,
-              )}',
+            : 'To remove environments and settings completely, run rm -r \'${config.puroRoot.path}\'',
       ),
     ]);
   }
