@@ -118,19 +118,25 @@ Future<FlutterToolInfo> setUpFlutterTool({
         final oldPubExecutable = flutterCache.dartSdk.oldPubExecutable;
         final usePubExecutable = oldPubExecutable.existsSync();
 
-        final internalSharedShFileStr = utf8
-            .decode(await git.cat(
-              repository: environment.flutterDir,
-              path: 'bin/internal/shared.sh',
-            ))
+        var flutterScriptBuf = await git.tryCat(
+          repository: environment.flutterDir,
+          path: 'bin/internal/shared.sh',
+        );
+
+        flutterScriptBuf ??= await git.cat(
+          repository: environment.flutterDir,
+          path: 'bin/flutter',
+        );
+
+        final flutterScriptStr = utf8
+            .decode(flutterScriptBuf)
             .replaceAll(RegExp('#.*'), ''); // Remove comments
 
-        final useDeprecatedPub =
-            internalSharedShFileStr.contains('__deprecated_pub');
+        final useDeprecatedPub = flutterScriptStr.contains('__deprecated_pub');
 
-        final noAnalytics = internalSharedShFileStr.contains('--no-analytics');
+        final noAnalytics = flutterScriptStr.contains('--no-analytics');
         final suppressAnalytics =
-            internalSharedShFileStr.contains('--suppress-analytics');
+            flutterScriptStr.contains('--suppress-analytics');
 
         final pubProcess = await runProcess(
           scope,
