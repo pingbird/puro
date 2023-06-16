@@ -4,6 +4,7 @@ import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
 import '../install/profile.dart';
+import '../terminal.dart';
 import '../version.dart';
 
 class PuroUninstallCommand extends PuroCommand {
@@ -75,8 +76,9 @@ class PuroUninstallCommand extends PuroCommand {
         ),
       CommandMessage.format(
         (format) => Platform.isWindows
-            ? 'To remove environments and settings completely, delete \'${config.puroRoot.path}\'`'
-            : 'To remove environments and settings completely, run rm -r \'${config.puroRoot.path}\'',
+            ? 'To delete environments and settings, delete \'${config.puroRoot.path}\''
+            : 'To delete environments and settings, rm -r \'${config.puroRoot.path}\'',
+        type: CompletionType.info,
       ),
     ]);
   }

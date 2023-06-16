@@ -490,6 +490,8 @@ class FlutterConfig {
   late final File flutterToolsPackageConfigJsonFile = flutterToolsDir
       .childDirectory('.dart_tool')
       .childFile('package_config.json');
+  late final File flutterToolsLegacyPackagesFile =
+      flutterToolsDir.childFile('.packages');
   late final File versionFile = sdkDir.childFile('version');
 
   String? get engineVersion => engineVersionFile.existsSync()

@@ -149,7 +149,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
   final shouldPrecompile =
       !environmentPrefs.hasPrecompileTool() || environmentPrefs.precompileTool;
 
-  Future<void> updateTool() async {
+  Future<void> updateTool({required ToolQuirks toolQuirks}) async {
     await ProgressNode.of(scope).wrap((scope, node) async {
       final pubEnvironment =
           '${Platform.environment['PUB_ENVIRONMENT'] ?? ''}:flutter_install:puro';
@@ -159,10 +159,6 @@ Future<FlutterToolInfo> setUpFlutterTool({
         node.description = 'Updating flutter tool';
         final oldPubExecutable = flutterCache.dartSdk.oldPubExecutable;
         final usePubExecutable = oldPubExecutable.existsSync();
-        final toolQuirks = await getToolQuirks(
-          scope: scope,
-          environment: environment,
-        );
         final pubProcess = await runProcess(
           scope,
           usePubExecutable
@@ -221,13 +217,24 @@ Future<FlutterToolInfo> setUpFlutterTool({
       onFail: () async {
         log.v('Flutter tool out of date');
 
-        await updateTool();
-
-        snapshotFile.parent.createSync(recursive: true);
         final toolQuirks = await getToolQuirks(
           scope: scope,
           environment: environment,
         );
+
+        await updateTool(toolQuirks: toolQuirks);
+
+        snapshotFile.parent.createSync(recursive: true);
+
+        var packagesFile = flutterConfig.flutterToolsPackageConfigJsonFile;
+        if (!packagesFile.existsSync()) {
+          packagesFile = flutterConfig.flutterToolsLegacyPackagesFile;
+        }
+        if (!packagesFile.existsSync()) {
+          throw AssertionError(
+            'Packages file `${flutterConfig.flutterToolsPackageConfigJsonFile}` not found, did pub fail?',
+          );
+        }
 
         await ProgressNode.of(scope).wrap((scope, node) async {
           node.description = 'Compiling flutter tool';
@@ -236,7 +243,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
             flutterCache.dartSdk.dartExecutable.path,
             [
               if (toolQuirks.disableDartDev) '--disable-dart-dev',
-              '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
+              '--packages=${packagesFile.path}',
               if (environment.flutterToolArgs.isNotEmpty)
                 ...environment.flutterToolArgs.split(RegExp(r'\S+')),
               '--snapshot=${tempSnapshotFile.path}',
@@ -267,7 +274,11 @@ Future<FlutterToolInfo> setUpFlutterTool({
               .isAfter(pubspecYamlFile.lastModifiedSync()),
       onFail: () async {
         log.v('Flutter tool out of date');
-        await updateTool();
+        final toolQuirks = await getToolQuirks(
+          scope: scope,
+          environment: environment,
+        );
+        await updateTool(toolQuirks: toolQuirks);
       },
     );
   }
