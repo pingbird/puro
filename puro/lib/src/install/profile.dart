@@ -81,45 +81,88 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
 
 const _kProfileComment = '# Added by Puro';
 
-Future<File?> tryUpdateProfile({
+Future<File?> findProfileFile({
+  required Scope scope,
+  String? profileOverride,
+}) async {
+  final config = PuroConfig.of(scope);
+  return profileOverride == null
+      ? await detectProfile(scope: scope)
+      : config.fileSystem.file(profileOverride).absolute;
+}
+
+Future<void> updateProfile({
+  required Scope scope,
+  required File file,
+  required Iterable<String> lines,
+}) {
+  final export = lines.map((e) => '$e $_kProfileComment').join('\n');
+  return lockFile(
+    scope,
+    file,
+    (handle) async {
+      final contents = await handle.readAllAsString();
+      if (export.isNotEmpty && contents.contains(export)) {
+        // Already exported
+        return;
+      }
+      final lines = contents.split('\n');
+      final originalLines = lines.length;
+      lines.removeWhere((e) => e.endsWith(_kProfileComment));
+      if (export.isEmpty && lines.length == originalLines) {
+        // Not exporting anything
+        return;
+      }
+      while (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
+      lines.add('');
+      lines.add(export);
+      await handle.writeAllString('${lines.join('\n')}\n');
+    },
+    mode: FileMode.append,
+  );
+}
+
+Future<File?> installProfileEnv({
   required Scope scope,
   String? profileOverride,
 }) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
-  final file = profileOverride == null
-      ? await detectProfile(scope: scope)
-      : config.fileSystem.file(profileOverride).absolute;
+  final file = await findProfileFile(scope: scope);
   log.d('detected profile: ${file?.path}');
   if (file == null) {
     return null;
   }
   final home = config.homeDir.path;
-  final export = [
-    for (final path in config.desiredEnvPaths)
-      'export PATH="\$PATH:${path.replaceAll(home, '\$HOME')}"',
-    'export PURO_ROOT="${config.puroRoot.path}"',
-    'export PUB_CACHE="${config.pubCacheDir.path}"'
-  ].map((e) => '$e $_kProfileComment').join('\n');
-  return await lockFile(
-    scope,
-    file,
-    (handle) async {
-      final contents = await handle.readAllAsString();
-      if (contents.contains(export)) {
-        // Already exported
-        return null;
-      }
-      final lines = contents.split('\n');
-      lines.removeWhere((e) => e.endsWith(_kProfileComment));
-      while (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
-      lines.add('');
-      lines.add(export);
-      await handle.writeAllString('${lines.join('\n')}\n');
-      return file;
-    },
-    mode: FileMode.append,
+  await updateProfile(
+    scope: scope,
+    file: file,
+    lines: [
+      for (final path in config.desiredEnvPaths)
+        'export PATH="\$PATH:${path.replaceAll(home, '\$HOME')}"',
+      'export PURO_ROOT="${config.puroRoot.path}"',
+      'export PUB_CACHE="${config.pubCacheDir.path}"'
+    ],
   );
+  return file;
+}
+
+Future<File?> uninstallProfileEnv({
+  required Scope scope,
+  String? profileOverride,
+}) async {
+  final log = PuroLogger.of(scope);
+  final file = await findProfileFile(scope: scope);
+  log.d('detected profile: ${file?.path}');
+  if (file == null) {
+    return null;
+  }
+  await updateProfile(
+    scope: scope,
+    file: file,
+    lines: [],
+  );
+  return file;
 }
 
 Future<File?> detectProfile({required Scope scope}) async {

@@ -89,7 +89,7 @@ class PuroInstallCommand extends PuroCommand {
                 !prefs.hasEnableProfileUpdate() ||
             prefs.enableProfileUpdate)) {
       if (Platform.isLinux || Platform.isMacOS) {
-        final profile = await tryUpdateProfile(
+        final profile = await installProfileEnv(
           scope: scope,
           profileOverride:
               prefs.hasProfileOverride() ? prefs.profileOverride : null,
