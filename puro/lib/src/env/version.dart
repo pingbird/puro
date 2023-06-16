@@ -251,7 +251,7 @@ Future<FlutterVersion?> getEnvironmentFlutterVersion({
   if (!versionFile.existsSync()) {
     await runOptional(
       scope,
-      'querying Flutter version',
+      'querying Flutter version for `${environment.name}`',
       () {
         return runFlutterCommand(
           scope: scope,

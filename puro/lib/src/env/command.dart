@@ -116,6 +116,7 @@ Future<int> runDartCommand({
     flutterConfig.cache.dartSdk.dartExecutable.path,
     args,
     environment: {
+      'FLUTTER_ROOT': flutterConfig.sdkDir.path,
       'PUB_CACHE': config.pubCacheDir.path,
     },
     workingDirectory: workingDirectory,
