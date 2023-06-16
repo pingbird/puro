@@ -56,7 +56,7 @@ class PuroUninstallCommand extends PuroCommand {
       );
       profilePath = profile?.path.replaceAll(homeDir, '~');
     } else if (Platform.isWindows) {
-      updatedWindowsRegistry = await tryUpdateWindowsPath(
+      updatedWindowsRegistry = await tryCleanWindowsPath(
         scope: scope,
       );
     }

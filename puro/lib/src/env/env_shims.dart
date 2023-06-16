@@ -19,12 +19,17 @@ const _sharedScripts = {
   'bin/internal/update_dart_sdk.sh',
 };
 
-const _binFiles = {
+const _dartBinFiles = {
   'bin/dart',
   'bin/dart.bat',
+};
+
+const _flutterBinFiles = {
   'bin/flutter',
   'bin/flutter.bat',
 };
+
+final _binFiles = {..._dartBinFiles, ..._flutterBinFiles};
 
 final _ignoredFiles = {
   'bin/cache',
@@ -42,6 +47,13 @@ Future<void> installEnvShims({
   final flutterConfig = environment.flutter;
 
   log.d('installEnvShims');
+
+  final hasDartScript = await git.exists(
+    repository: flutterConfig.sdkDir,
+    path: 'bin/dart',
+  );
+
+  log.d('hasDartScript: $hasDartScript');
 
   for (var name in _binFiles) {
     name = name.replaceAll('/', path.context.separator);
@@ -118,11 +130,16 @@ Future<void> installEnvShims({
         '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!\n',
   );
 
+  var assumeUnchanged = _flutterBinFiles.followedBy(_sharedScripts);
+  if (hasDartScript) {
+    assumeUnchanged = _dartBinFiles.followedBy(assumeUnchanged);
+  }
+
+  log.d('assumeUnchanged: $assumeUnchanged');
+
   await git.assumeUnchanged(
     repository: flutterConfig.sdkDir,
-    files: _binFiles.followedBy(_sharedScripts).where(
-          (name) => flutterConfig.sdkDir.childFile(name).existsSync(),
-        ),
+    files: assumeUnchanged,
   );
 
   await updateGitAttributes(

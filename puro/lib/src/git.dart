@@ -576,6 +576,20 @@ class GitClient {
     );
   }
 
+  /// Checks if a file exists in the repository.
+  Future<bool> exists({
+    required Directory repository,
+    String ref = 'HEAD',
+    required String path,
+  }) async {
+    final result = await _git(
+      ['cat-file', '-e', '$ref:$path'],
+      directory: repository,
+      binary: true,
+    );
+    return result.exitCode == 0;
+  }
+
   /// Same as [cat] but returns null on failure.
   Future<Uint8List?> tryCat({
     required Directory repository,
