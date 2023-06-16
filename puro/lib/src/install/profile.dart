@@ -299,40 +299,151 @@ Future<bool> writeWindowsRegistryValue({
   return result.exitCode == 0;
 }
 
+Future<bool> deleteWindowsRegistryValue({
+  required Scope scope,
+  required String key,
+  required String valueName,
+  bool elevated = false,
+}) async {
+  final args = [
+    'add',
+    key,
+    '/v',
+    valueName,
+    '/t',
+    'REG_EXPAND_SZ',
+    '/f',
+  ];
+
+  final log = PuroLogger.of(scope);
+  final ProcessResult result;
+  if (elevated) {
+    result = await runProcess(
+      scope,
+      'powershell',
+      [
+        '-command',
+        ('Start-Process reg -Wait -Verb runAs -ArgumentList '
+            '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}'),
+      ],
+    );
+  } else {
+    result = await runProcess(scope, 'reg', args);
+  }
+  if (result.exitCode != 0) {
+    log.w('reg add failed with exit code ${result.exitCode}\n${result.stderr}');
+  }
+  return result.exitCode == 0;
+}
+
+Future<bool> tryUpdateWindowsEnv({
+  required Scope scope,
+  required Map<String, String> env,
+}) async {
+  var result = false;
+  for (final entry in env.entries) {
+    final currentValue = await readWindowsRegistryValue(
+      scope: scope,
+      key: 'HKEY_CURRENT_USER\\Environment',
+      valueName: entry.key,
+    );
+    if (currentValue == entry.value) {
+      continue;
+    }
+    await writeWindowsRegistryValue(
+      scope: scope,
+      key: 'HKEY_CURRENT_USER\\Environment',
+      valueName: entry.key,
+      value: entry.value,
+    );
+    result = true;
+  }
+  return result;
+}
+
+Future<bool> tryDeleteWindowsEnv({
+  required Scope scope,
+  required String name,
+  required String? value,
+}) async {
+  if (value != null) {
+    final currentValue = await readWindowsRegistryValue(
+      scope: scope,
+      key: 'HKEY_CURRENT_USER\\Environment',
+      valueName: name,
+    );
+    if (currentValue == value) {
+      return false;
+    }
+  }
+  return await deleteWindowsRegistryValue(
+    scope: scope,
+    key: 'HKEY_CURRENT_USER\\Environment',
+    valueName: name,
+  );
+}
+
 Future<bool> tryUpdateWindowsPath({
   required Scope scope,
 }) async {
+  final config = PuroConfig.of(scope);
+
+  final env = <String, String>{
+    'PURO_ROOT': config.puroRoot.path,
+    'PUB_CACHE': config.pubCacheDir.path,
+  };
+
   final currentPath = await readWindowsRegistryValue(
     scope: scope,
     key: 'HKEY_CURRENT_USER\\Environment',
     valueName: 'Path',
   );
-  final config = PuroConfig.of(scope);
   final paths = (currentPath ?? '').split(';');
-  if (!config.desiredEnvPaths.any((e) => !paths.contains(e))) {
-    // Already has all of our paths
-    return false;
+  if (config.desiredEnvPaths.any((e) => !paths.contains(e))) {
+    while (paths.isNotEmpty && paths.last.isEmpty) paths.removeLast();
+    paths.removeWhere(config.desiredEnvPaths.contains);
+    paths.addAll(config.desiredEnvPaths);
+    env['Path'] = paths.join(';');
   }
-  while (paths.isNotEmpty && paths.last.isEmpty) paths.removeLast();
-  paths.removeWhere(config.desiredEnvPaths.contains);
-  paths.addAll(config.desiredEnvPaths);
-  await writeWindowsRegistryValue(
+
+  return await tryUpdateWindowsEnv(
+    scope: scope,
+    env: env,
+  );
+}
+
+Future<bool> tryCleanWindowsPath({
+  required Scope scope,
+}) async {
+  final config = PuroConfig.of(scope);
+  final currentPath = await readWindowsRegistryValue(
     scope: scope,
     key: 'HKEY_CURRENT_USER\\Environment',
     valueName: 'Path',
-    value: paths.join(';'),
   );
-  await writeWindowsRegistryValue(
+  final paths = (currentPath ?? '').split(';');
+  paths.removeWhere(config.desiredEnvPaths.contains);
+
+  var result = await tryUpdateWindowsEnv(
     scope: scope,
-    key: 'HKEY_CURRENT_USER\\Environment',
-    valueName: 'PURO_ROOT',
+    env: {'Path': paths.join(';')},
+  );
+
+  if (await tryDeleteWindowsEnv(
+    scope: scope,
+    name: 'PURO_ROOT',
     value: config.puroRoot.path,
-  );
-  await writeWindowsRegistryValue(
+  )) {
+    result = true;
+  }
+
+  if (await tryDeleteWindowsEnv(
     scope: scope,
-    key: 'HKEY_CURRENT_USER\\Environment',
-    valueName: 'PUB_CACHE',
+    name: 'PUB_CACHE',
     value: config.pubCacheDir.path,
-  );
-  return true;
+  )) {
+    result = true;
+  }
+
+  return result;
 }
