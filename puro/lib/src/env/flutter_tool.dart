@@ -29,6 +29,48 @@ class FlutterToolInfo {
   final bool didUpdateTool;
 }
 
+class ToolQuirks {
+  ToolQuirks({
+    required this.useDeprecatedPub,
+    required this.noAnalytics,
+    required this.suppressAnalytics,
+    required this.disableDartDev,
+  });
+
+  final bool useDeprecatedPub;
+  final bool noAnalytics;
+  final bool suppressAnalytics;
+  final bool disableDartDev;
+}
+
+Future<ToolQuirks> getToolQuirks({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  final git = GitClient.of(scope);
+
+  var flutterScriptBuf = await git.tryCat(
+    repository: environment.flutterDir,
+    path: 'bin/internal/shared.sh',
+  );
+
+  flutterScriptBuf ??= await git.cat(
+    repository: environment.flutterDir,
+    path: 'bin/flutter',
+  );
+
+  final flutterScriptStr = utf8
+      .decode(flutterScriptBuf)
+      .replaceAll(RegExp('#.*'), ''); // Remove comments
+
+  return ToolQuirks(
+    useDeprecatedPub: flutterScriptStr.contains('__deprecated_pub'),
+    noAnalytics: flutterScriptStr.contains('--no-analytics'),
+    suppressAnalytics: flutterScriptStr.contains('--suppress-analytics'),
+    disableDartDev: flutterScriptStr.contains('--disable-dart-dev'),
+  );
+}
+
 Future<FlutterToolInfo> setUpFlutterTool({
   required Scope scope,
   required EnvConfig environment,
@@ -117,27 +159,10 @@ Future<FlutterToolInfo> setUpFlutterTool({
         node.description = 'Updating flutter tool';
         final oldPubExecutable = flutterCache.dartSdk.oldPubExecutable;
         final usePubExecutable = oldPubExecutable.existsSync();
-
-        var flutterScriptBuf = await git.tryCat(
-          repository: environment.flutterDir,
-          path: 'bin/internal/shared.sh',
+        final toolQuirks = await getToolQuirks(
+          scope: scope,
+          environment: environment,
         );
-
-        flutterScriptBuf ??= await git.cat(
-          repository: environment.flutterDir,
-          path: 'bin/flutter',
-        );
-
-        final flutterScriptStr = utf8
-            .decode(flutterScriptBuf)
-            .replaceAll(RegExp('#.*'), ''); // Remove comments
-
-        final useDeprecatedPub = flutterScriptStr.contains('__deprecated_pub');
-
-        final noAnalytics = flutterScriptStr.contains('--no-analytics');
-        final suppressAnalytics =
-            flutterScriptStr.contains('--suppress-analytics');
-
         final pubProcess = await runProcess(
           scope,
           usePubExecutable
@@ -145,11 +170,12 @@ Future<FlutterToolInfo> setUpFlutterTool({
               : flutterCache.dartSdk.dartExecutable.path,
           [
             if (!usePubExecutable)
-              if (useDeprecatedPub) '__deprecated_pub' else 'pub',
-            if (noAnalytics) '--no-analytics',
-            if (suppressAnalytics) '--suppress-analytics',
+              if (toolQuirks.useDeprecatedPub) '__deprecated_pub' else 'pub',
+            if (toolQuirks.noAnalytics) '--no-analytics',
+            if (toolQuirks.suppressAnalytics) '--suppress-analytics',
             'upgrade',
-            if (!noAnalytics && !suppressAnalytics) '--no-precompile',
+            if (!toolQuirks.noAnalytics && !toolQuirks.suppressAnalytics)
+              '--no-precompile',
           ],
           environment: {
             'PUB_ENVIRONMENT': pubEnvironment,
@@ -198,6 +224,10 @@ Future<FlutterToolInfo> setUpFlutterTool({
         await updateTool();
 
         snapshotFile.parent.createSync(recursive: true);
+        final toolQuirks = await getToolQuirks(
+          scope: scope,
+          environment: environment,
+        );
 
         await ProgressNode.of(scope).wrap((scope, node) async {
           node.description = 'Compiling flutter tool';
@@ -205,7 +235,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
             scope,
             flutterCache.dartSdk.dartExecutable.path,
             [
-              '--disable-dart-dev',
+              if (toolQuirks.disableDartDev) '--disable-dart-dev',
               '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
               if (environment.flutterToolArgs.isNotEmpty)
                 ...environment.flutterToolArgs.split(RegExp(r'\S+')),
