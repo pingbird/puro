@@ -53,6 +53,6 @@ extra:
   social:
     - icon: fontawesome/solid/heart
       link: https://tst.sh
-repo_url: https://github.com/PixelToast/puro
+repo_url: https://github.com/pingbird/puro
 extra_css:
   - stylesheets/extra.css

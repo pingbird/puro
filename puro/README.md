@@ -30,7 +30,7 @@ puro create my_env 3.3.6
 puro create my_env d9111f6
 
 # Or from a fork
-puro create my_env --fork git@github.com:PixelToast/flutter.git
+puro create my_env --fork git@github.com:pingbird/flutter.git
 ```
 
 Inside a Flutter project, run the [use](https://puro.dev/reference/commands/#use) command to switch to the environment you created:

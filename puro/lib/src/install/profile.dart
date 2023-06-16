@@ -372,7 +372,7 @@ Future<bool> tryDeleteWindowsEnv({
       key: 'HKEY_CURRENT_USER\\Environment',
       valueName: name,
     );
-    if (currentValue == value) {
+    if (currentValue != null && currentValue != value) {
       return false;
     }
   }

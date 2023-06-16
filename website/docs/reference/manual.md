@@ -171,7 +171,7 @@ You can also create one from a version, commit, or branch like `3.3.6`, `d9111f6
 Forks are supported with the `--fork` option:
 
 ```
-$> puro create my_env --fork git@github.com:PixelToast/flutter.git
+$> puro create my_env --fork git@github.com:pingbird/flutter.git
 [✓] Created new environment at `/home/ping/.puro/envs/my_env/flutter`
 ```
 

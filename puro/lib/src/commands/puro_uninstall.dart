@@ -75,7 +75,7 @@ class PuroUninstallCommand extends PuroCommand {
         ),
       CommandMessage.format(
         (format) => Platform.isWindows
-            ? 'To remove environments and settings completely, delete \'${config.puroRoot}\'`'
+            ? 'To remove environments and settings completely, delete \'${config.puroRoot.path}\'`'
             : 'To remove environments and settings completely, run rm -r \'${config.puroRoot.path}\'',
       ),
     ]);
