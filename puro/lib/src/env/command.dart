@@ -38,11 +38,12 @@ Future<int> runFlutterCommand({
   final dartPath = flutterConfig.cache.dartSdk.dartExecutable.path;
   final shouldPrecompile =
       !environmentPrefs.hasPrecompileTool() || environmentPrefs.precompileTool;
+  final quirks = await getToolQuirks(scope: scope, environment: environment);
   final flutterProcess = await startProcess(
     scope,
     dartPath,
     [
-      '--disable-dart-dev',
+      if (quirks.disableDartDev) '--disable-dart-dev',
       '--packages=${flutterConfig.flutterToolsPackageConfigJsonFile.path}',
       if (environment.flutterToolArgs.isNotEmpty)
         ...environment.flutterToolArgs.split(RegExp(r'\S+')),
