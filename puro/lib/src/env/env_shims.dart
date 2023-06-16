@@ -43,13 +43,6 @@ Future<void> installEnvShims({
 
   log.d('installEnvShims');
 
-  final hasDartScript = await git.exists(
-    repository: flutterConfig.sdkDir,
-    path: 'bin/dart',
-  );
-
-  log.d('hasDartScript: $hasDartScript');
-
   for (var name in _binFiles) {
     name = name.replaceAll('/', path.context.separator);
     final file = flutterConfig.sdkDir.childFile(name);
@@ -127,10 +120,10 @@ Future<void> installEnvShims({
 
   final assumeUnchanged = _binFiles.followedBy(_sharedScripts).toList();
 
-  if (!hasDartScript) {
-    assumeUnchanged.remove('bin/dart');
-    assumeUnchanged.remove('bin/dart.bat');
-    assumeUnchanged.removeWhere(_sharedScripts.contains);
+  for (final fn in assumeUnchanged.toList()) {
+    if (!await git.exists(repository: flutterConfig.sdkDir, path: fn)) {
+      assumeUnchanged.remove(fn);
+    }
   }
 
   log.d('assumeUnchanged: $assumeUnchanged');
