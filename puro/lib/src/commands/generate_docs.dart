@@ -50,7 +50,7 @@ class GenerateDocsCommand extends PuroCommand {
         );
 
     if (argResults!['deploy'] as bool) {
-      // Replace main in the installation instructions with the latest version
+      // Replace master in the installation instructions with the latest version
       final httpClient = scope.read(clientProvider);
       var latestVersion = Platform.environment['CIRCLE_TAG'];
       if (latestVersion == null || latestVersion.isEmpty) {
@@ -66,7 +66,7 @@ class GenerateDocsCommand extends PuroCommand {
       final indexFile = docsDir.childFile('index.md');
       var index = await indexFile.readAsString();
       index = index.replaceAll(
-        builds.append(path: 'main').toString(),
+        builds.append(path: 'master').toString(),
         builds.append(path: latestVersion).toString(),
       );
       index = index.replaceAll(

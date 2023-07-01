@@ -82,10 +82,10 @@ class PuroUpgradeCommand extends PuroCommand {
       );
     }
 
-    if (targetVersionString == 'main') {
+    if (targetVersionString == 'master') {
       final exitCode = await upgradePuro(
         scope: scope,
-        targetVersion: 'main',
+        targetVersion: 'master',
         path:
             argResults!.wasParsed('path') ? argResults!['path'] as bool : null,
       );
