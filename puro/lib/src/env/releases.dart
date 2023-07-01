@@ -173,4 +173,4 @@ Future<FlutterChannel?> getFlutterChannel({
   return FlutterChannel.parse(branch);
 }
 
-const pseudoEnvironmentNames = {'stable', 'beta', 'master'};
+const pseudoEnvironmentNames = {'stable', 'beta', 'main'};
