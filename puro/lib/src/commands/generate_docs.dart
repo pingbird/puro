@@ -70,7 +70,7 @@ class GenerateDocsCommand extends PuroCommand {
         builds.append(path: latestVersion).toString(),
       );
       index = index.replaceAll(
-        'PURO_VERSION="main"',
+        'PURO_VERSION="master"',
         'PURO_VERSION="$latestVersion"',
       );
       await indexFile.writeAsString(index);
