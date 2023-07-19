@@ -64,7 +64,7 @@ class PuroConfig {
     required String? flutterStorageBaseUrl,
     required String? environmentOverride,
     required bool? shouldInstall,
-    // Shims break IDE auto-detection, we use symlinks now instead
+    // Global shims break IDE auto-detection, we use symlinks now instead
     bool enableShims = false,
   }) {
     final log = PuroLogger.of(scope);
@@ -143,9 +143,9 @@ class PuroConfig {
     puroRootDir =
         fileSystem.directory(puroRootDir.resolveSymbolicLinksSync()).absolute;
 
-    if (environmentOverride == null && enableShims) {
-      final flutterBin = Platform.environment['FLUTTER_BIN'];
-      log.d('FLUTTER_BIN: $flutterBin');
+    if (environmentOverride == null) {
+      final flutterBin = Platform.environment['PURO_FLUTTER_BIN'];
+      log.d('PURO_FLUTTER_BIN: $flutterBin');
       if (flutterBin != null) {
         final flutterBinDir = fileSystem.directory(flutterBin).absolute;
         final flutterSdkDir = flutterBinDir.parent;

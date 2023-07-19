@@ -74,16 +74,16 @@ Future<void> installEnvShims({
     scope: scope,
     file: flutterConfig.binDir.childFile('dart'),
     content: '$bashShimHeader\n'
-        'export FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
-        'PURO_BIN="\$FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
+        'export PURO_FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
+        'PURO_BIN="\$PURO_FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
         '"\$PURO_BIN/puro" dart "\$@"\n',
   );
   await writePassiveAtomic(
     scope: scope,
     file: flutterConfig.binDir.childFile('flutter'),
     content: '$bashShimHeader\n'
-        'export FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
-        'PURO_BIN="\$FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
+        'export PURO_FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
+        'PURO_BIN="\$PURO_FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
         '"\$PURO_BIN/puro" flutter "\$@"\n',
   );
 
@@ -104,8 +104,8 @@ Future<void> installEnvShims({
     file: flutterConfig.binDir.childFile('dart.bat'),
     content: '@echo off\n'
         'SETLOCAL ENABLEDELAYEDEXPANSION\n'
-        'FOR %%i IN ("%~dp0.") DO SET FLUTTER_BIN=%%~fi\n'
-        'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
+        'FOR %%i IN ("%~dp0.") DO SET PURO_FLUTTER_BIN=%%~fi\n'
+        'SET PURO_BIN=%PURO_FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
         '"%PURO_BIN%\\puro" dart %* & exit /B !ERRORLEVEL!\n',
   );
   await writePassiveAtomic(
@@ -113,8 +113,8 @@ Future<void> installEnvShims({
     file: flutterConfig.binDir.childFile('flutter.bat'),
     content: '@echo off\n'
         'SETLOCAL ENABLEDELAYEDEXPANSION\n'
-        'FOR %%i IN ("%~dp0.") DO SET FLUTTER_BIN=%%~fi\n'
-        'SET PURO_BIN=%FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
+        'FOR %%i IN ("%~dp0.") DO SET PURO_FLUTTER_BIN=%%~fi\n'
+        'SET PURO_BIN=%PURO_FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
         '"%PURO_BIN%\\puro" flutter %* & exit /B !ERRORLEVEL!\n',
   );
 
