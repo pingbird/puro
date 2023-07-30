@@ -131,7 +131,10 @@ Future<File?> installProfileEnv({
 }) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
-  final file = await findProfileFile(scope: scope);
+  final file = await findProfileFile(
+    scope: scope,
+    profileOverride: profileOverride,
+  );
   log.d('detected profile: ${file?.path}');
   if (file == null) {
     return null;
@@ -155,7 +158,10 @@ Future<File?> uninstallProfileEnv({
   String? profileOverride,
 }) async {
   final log = PuroLogger.of(scope);
-  final file = await findProfileFile(scope: scope);
+  final file = await findProfileFile(
+    scope: scope,
+    profileOverride: profileOverride,
+  );
   log.d('detected profile: ${file?.path}');
   if (file == null) {
     return null;
@@ -182,6 +188,7 @@ Future<File?> detectProfile({required Scope scope}) async {
     path.join(home, '.bashrc'),
   };
   final zshProfiles = {
+    path.join(home, '.zshenv'),
     path.join(home, '.zprofile'),
     path.join(home, '.zshrc'),
   };

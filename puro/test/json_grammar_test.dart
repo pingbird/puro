@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:puro/src/json_edit/element.dart';
 import 'package:puro/src/json_edit/grammar.dart';
 import 'package:test/test.dart';
@@ -10,5 +12,11 @@ void main() {
       expect(value, isA<JsonLiteral>());
       expect((value as JsonLiteral).value.value, entry.value);
     }
+  });
+
+  test('Trailing commas', () {
+    final result = JsonGrammar.parse('{"foo": "bar",}');
+    final value = result.value;
+    expect(jsonEncode(value.toJson()), '{"foo":"bar"}');
   });
 }

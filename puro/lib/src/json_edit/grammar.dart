@@ -108,6 +108,8 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
                 .map((e) => e.elements)
                 .optional() &
             ref0<String>(space) &
+            char(',').optional() &
+            ref0<String>(space) &
             char('}'))
         .map((res) {
       return JsonMap(
@@ -125,6 +127,8 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
                 .plusSeparated(char(','))
                 .map((e) => e.elements)
                 .optional() &
+            ref0<String>(space) &
+            char(',').optional() &
             ref0<String>(space) &
             char(']'))
         .map((res) {

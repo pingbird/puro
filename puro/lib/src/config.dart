@@ -37,6 +37,7 @@ class PuroConfig {
     required this.fileSystem,
     required this.gitExecutable,
     required Directory puroRoot,
+    required this.pubCacheDir,
     required this.homeDir,
     required this.projectDir,
     required this.parentProjectDir,
@@ -168,12 +169,20 @@ class PuroConfig {
       }
     }
 
+    final pubCacheOverride = Platform.environment['PUB_CACHE'];
+    var pubCache =
+        puroRootDir.childDirectory('shared').childDirectory('pub_cache');
+    if (pubCacheOverride != null && pubCacheOverride.isNotEmpty) {
+      pubCache = fileSystem.directory(pubCacheOverride).absolute;
+    }
+
     flutterStorageBaseUrl ??= 'https://storage.googleapis.com';
 
     return PuroConfig(
       fileSystem: fileSystem,
       gitExecutable: fileSystem.file(gitExecutable),
       puroRoot: puroRootDir,
+      pubCacheDir: pubCache,
       homeDir: fileSystem.directory(homeDir),
       projectDir: resultProjectDir,
       parentProjectDir: parentProjectDir,
@@ -195,6 +204,7 @@ class PuroConfig {
   final FileSystem fileSystem;
   final File gitExecutable;
   final Directory puroRoot;
+  final Directory pubCacheDir;
   final Directory homeDir;
   final Directory? projectDir;
   final Directory? parentProjectDir;
@@ -220,7 +230,6 @@ class PuroConfig {
   late final Directory sharedEngineDir = sharedDir.childDirectory('engine');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
   late final Directory sharedGClientDir = sharedDir.childDirectory('gclient');
-  late final Directory pubCacheDir = sharedDir.childDirectory('pub_cache');
   late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
   late final Directory sharedFlutterToolsDir =
       sharedDir.childDirectory('flutter_tools');
@@ -372,6 +381,7 @@ class PuroConfig {
     return 'PuroConfig(\n'
         '  gitExecutable: $gitExecutable,\n'
         '  puroRoot: $puroRoot,\n'
+        '  pubCacheDir: $pubCacheDir,\n'
         '  homeDir: $homeDir,\n'
         '  projectDir: $projectDir,\n'
         '  parentProjectDir: $parentProjectDir,\n'
