@@ -101,9 +101,13 @@ class PuroVersion {
     final executablePath = path.canonicalize(Platform.resolvedExecutable);
     var scriptPath = Platform.script.toFilePath();
     if (path.equals(
-      scriptPath,
-      path.join(path.current, target.executableName),
-    )) {
+          scriptPath,
+          path.join(path.current, target.executableName),
+        ) ||
+        path.equals(
+          scriptPath,
+          path.join(path.current, 'puro'),
+        )) {
       // A bug in dart gives an incorrect Platform.script :/
       // https://github.com/dart-lang/sdk/issues/45005
       scriptPath = executablePath;
