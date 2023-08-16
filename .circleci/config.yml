@@ -28,13 +28,13 @@ commands:
           command: |-
             Write-Output "Installing dart $env:DART_VERSION"
             choco install dart-sdk --version $env:DART_VERSION -y
+            $env:Path += ';C:\tools\dart-sdk\bin'
   pub_get:
     steps:
       - run:
           name: "Pub Get"
           command: |-
             cd puro
-            refreshenv
             echo $env:path
             dart pub get
 
