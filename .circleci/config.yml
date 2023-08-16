@@ -28,16 +28,22 @@ commands:
           command: |-
             Write-Output "Installing dart $env:DART_VERSION"
             choco install dart-sdk --version $env:DART_VERSION -y
-            [Environment]::SetEnvironmentVariable(
-              "Path",
-              [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User) + ";C:\tools\dart-sdk\bin",
-              [EnvironmentVariableTarget]::User)
+
   pub_get:
     steps:
       - run:
           name: "Pub Get"
           command: |-
             cd puro
+            dart pub get
+
+  pub_get_windows:
+    steps:
+      - run:
+          name: "Pub Get"
+          command: |-
+            cd puro
+            $env:Path += ';C:\tools\dart-sdk\bin'
             echo $env:path
             dart pub get
 
@@ -107,6 +113,14 @@ commands:
       - analyze
       - test
 
+  test_all_windows:
+    steps:
+      - checkout
+      - pub_get_windows
+      - format
+      - analyze
+      - test
+
 jobs:
   linux_tests:
     environment: &dart_version
@@ -158,7 +172,7 @@ jobs:
       name: win/default
     steps:
       - install_dart_windows
-      - test_all
+      - test_all_windows
       - build_puro_windows:
           build_args: << parameters.build_args >>
 
