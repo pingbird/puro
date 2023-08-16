@@ -463,6 +463,7 @@ class GitClient {
     final result = await tryRevParseSingle(
       repository: repository,
       arg: '$commit^{commit}',
+      verify: true,
     );
     return result == commit;
   }
