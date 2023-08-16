@@ -44,10 +44,9 @@ linter:
     - flutter_style_todos
     - hash_and_equals
     - implementation_imports
-    - iterable_contains_unrelated_type
+    - collection_methods_unrelated_type
     - library_names
     - library_prefixes
-    - list_remove_unrelated_type
     - no_adjacent_strings_in_list
     - no_duplicate_case_values
     - non_constant_identifier_names
@@ -64,7 +63,6 @@ linter:
     - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
     - prefer_contains
-    - prefer_equal_for_default_values
     - prefer_final_fields
     - prefer_final_in_for_each
     - prefer_final_locals

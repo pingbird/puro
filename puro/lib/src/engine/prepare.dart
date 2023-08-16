@@ -47,11 +47,10 @@ Future<void> prepareEngine({
 
   final sharedRepository = config.sharedEngineDir;
   if (forkRemoteUrl != null ||
-      await git.tryRevParseSingle(
-            repository: sharedRepository,
-            arg: ref,
-          ) ==
-          null) {
+      !await git.checkCommitExists(
+        repository: sharedRepository,
+        commit: ref,
+      )) {
     await fetchOrCloneShared(
       scope: scope,
       repository: sharedRepository,

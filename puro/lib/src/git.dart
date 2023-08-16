@@ -363,12 +363,14 @@ class GitClient {
     required List<String> args,
     bool short = false,
     bool abbreviation = false,
+    bool verify = false,
   }) async {
     final result = await _git(
       [
         'rev-parse',
         if (short) '--short',
         if (abbreviation) '--abbrev-ref',
+        if (verify) '--verify',
         ...args,
       ],
       directory: repository,
@@ -385,12 +387,14 @@ class GitClient {
     required String arg,
     bool short = false,
     bool abbreviation = false,
+    bool verify = false,
   }) async {
     final result = await tryRevParse(
       repository: repository,
       args: [arg],
       short: short,
       abbreviation: abbreviation,
+      verify: verify,
     );
     return result?.single;
   }
@@ -458,7 +462,7 @@ class GitClient {
     if (!repository.existsSync()) return false;
     final result = await tryRevParseSingle(
       repository: repository,
-      arg: commit,
+      arg: '$commit^{commit}',
     );
     return result == commit;
   }
