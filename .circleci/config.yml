@@ -34,7 +34,7 @@ commands:
           name: "Pub Get"
           command: |-
             cd puro
-            echo $PATH
+            echo $env:path
             dart pub get
 
   format:
