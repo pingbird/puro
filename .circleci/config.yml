@@ -30,8 +30,8 @@ commands:
             choco install dart-sdk --version $env:DART_VERSION -y
             [Environment]::SetEnvironmentVariable(
               "Path",
-              [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";C:\tools\dart-sdk\bin",
-              [EnvironmentVariableTarget]::Machine)
+              [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User) + ";C:\tools\dart-sdk\bin",
+              [EnvironmentVariableTarget]::User)
   pub_get:
     steps:
       - run:
