@@ -170,7 +170,7 @@ jobs:
     environment: *dart_version
     machine:
       image: windows-server-2019-vs2019:stable
-      resource_class: medium
+      resource_class: windows.medium
       shell: powershell.exe -ExecutionPolicy Bypass
     steps:
       - install_dart_windows
