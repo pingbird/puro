@@ -43,8 +43,6 @@ commands:
           name: "Pub Get"
           command: |-
             cd puro
-            $env:Path += ';C:\tools\dart-sdk\bin'
-            echo $env:path
             dart pub get
 
   format:
@@ -212,9 +210,13 @@ jobs:
       - checkout
       - install_dart
       - pub_get
+      - add_ssh_keys:
+          fingerprints:
+            - "b2:23:ce:56:3e:ef:20:5a:5a:4a:8d:04:4d:b7:cb:a7"
       - run: |-
+          git clone https://github.com/PixelToast/mkdocs-material-insiders.git
+          pip install ./mkdocs-material-insiders
           dart puro/bin/puro.dart _generate-docs --deploy
-          pip install -q mkdocs mkdocs-material
           cd website
           export PYTHONPATH=`pwd`
           mkdocs build
