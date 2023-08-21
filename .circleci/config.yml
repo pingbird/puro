@@ -168,7 +168,10 @@ jobs:
         type: string
         default: ""
     environment: *dart_version
-    executor: win/server-2019
+    machine:
+      image: windows-server-2019-vs2019:stable
+      resource_class: medium
+      shell: powershell.exe -ExecutionPolicy Bypass
     steps:
       - install_dart_windows
       - test_all_windows
