@@ -502,7 +502,7 @@ class FlutterConfig {
       .childFile('package_config.json');
   late final File flutterToolsLegacyPackagesFile =
       flutterToolsDir.childFile('.packages');
-  late final File versionFile = sdkDir.childFile('version');
+  late final File legacyVersionFile = sdkDir.childFile('version');
 
   String? get engineVersion => engineVersionFile.existsSync()
       ? engineVersionFile.readAsStringSync().trim()
@@ -527,6 +527,7 @@ class FlutterCacheConfig {
   String? get flutterToolsStamp => flutterToolsStampFile.existsSync()
       ? flutterToolsStampFile.readAsStringSync().trim()
       : null;
+  late final File versionJsonFile = cacheDir.childFile('flutter.version.json');
 
   bool get exists => cacheDir.existsSync();
 }

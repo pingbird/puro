@@ -150,8 +150,8 @@ Future<EnvUpgradeResult> upgradeEnvironment({
     environment: environment,
   );
 
-  if (environment.flutter.versionFile.existsSync()) {
-    environment.flutter.versionFile.deleteSync();
+  if (environment.flutter.legacyVersionFile.existsSync()) {
+    environment.flutter.legacyVersionFile.deleteSync();
   }
 
   return EnvUpgradeResult(

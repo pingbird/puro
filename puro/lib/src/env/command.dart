@@ -32,7 +32,7 @@ Future<int> runFlutterCommand({
     environmentPrefs: environmentPrefs,
   );
   log.v(
-    'Setting up flutter took ${clock.now().difference(start).inMilliseconds}ms',
+    'Setting up flutter tool took ${clock.now().difference(start).inMilliseconds}ms',
   );
   Terminal.of(scope).flushStatus();
   final dartPath = flutterConfig.cache.dartSdk.dartExecutable.path;

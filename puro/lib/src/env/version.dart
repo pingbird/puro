@@ -241,7 +241,7 @@ Future<FlutterVersion?> getEnvironmentFlutterVersion({
 }) async {
   final git = GitClient.of(scope);
   final flutterConfig = environment.flutter;
-  final versionFile = flutterConfig.versionFile;
+  final versionFile = flutterConfig.legacyVersionFile;
   final commit = await git.tryGetCurrentCommitHash(
     repository: flutterConfig.sdkDir,
   );

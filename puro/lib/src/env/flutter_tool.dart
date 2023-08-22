@@ -286,6 +286,8 @@ Future<FlutterToolInfo> setUpFlutterTool({
     );
   }
 
+  await fixLegacyVersionFile(scope: scope, environment: environment);
+
   // Explicitly set the last accessed time so `puro gc` can figure out which
   // engines are less frequently used.
   flutterCache.engineVersionFile.setLastAccessedSync(DateTime.now());
@@ -297,4 +299,19 @@ Future<FlutterToolInfo> setUpFlutterTool({
     didUpdateEngine: didUpdateEngine,
     didUpdateTool: didUpdateTool,
   );
+}
+
+// https://github.com/pingbird/puro/issues/20
+// Some tools will break if `version` does not exist and flutter won't re-create
+// it if `flutter.version.json` exists in the cache. Not ideal but we just
+// delete it.
+Future<void> fixLegacyVersionFile({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  if (!environment.flutter.legacyVersionFile.existsSync()) {
+    if (environment.flutter.cache.versionJsonFile.existsSync()) {
+      environment.flutter.cache.versionJsonFile.deleteSync();
+    }
+  }
 }
