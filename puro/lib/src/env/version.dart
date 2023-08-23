@@ -14,7 +14,7 @@ import 'create.dart';
 import 'releases.dart';
 
 enum FlutterChannel {
-  master,
+  main,
   dev,
   beta,
   stable;
@@ -112,10 +112,10 @@ class FlutterVersion {
 
     // Check the official releases if a version or channel was given.
     if (parsedVersion != null || parsedChannel != null) {
-      if (parsedChannel == FlutterChannel.master) {
+      if (parsedChannel == FlutterChannel.main) {
         if (parsedVersion != null) {
           throw CommandError(
-            'Unexpected version $version, the master channel does not have versions',
+            'Unexpected version $version, the main channel does not have versions',
           );
         }
       } else {
