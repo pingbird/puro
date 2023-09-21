@@ -6,6 +6,7 @@ import '../command_result.dart';
 import '../config.dart';
 import '../downloader.dart';
 import '../http.dart';
+import '../install/profile.dart';
 import '../logger.dart';
 import '../process.dart';
 import '../progress.dart';
@@ -118,18 +119,34 @@ Future<void> unzip({
 }) async {
   destination.createSync(recursive: true);
   if (Platform.isWindows) {
-    await runProcess(
-      scope,
-      'powershell',
-      [
-        'Expand-Archive',
-        zipFile.path,
-        '-DestinationPath',
-        destination.path,
-      ],
-      runInShell: true,
-      throwOnFailure: true,
-    );
+    final zip = await findProgramInPath(scope: scope, name: '7z');
+    if (zip.isNotEmpty) {
+      await runProcess(
+        scope,
+        zip.first.path,
+        [
+          'x',
+          '-y',
+          '-o${destination.path}',
+          zipFile.path,
+        ],
+        runInShell: true,
+        throwOnFailure: true,
+      );
+    } else {
+      await runProcess(
+        scope,
+        'powershell',
+        [
+          'Expand-Archive',
+          zipFile.path,
+          '-DestinationPath',
+          destination.path,
+        ],
+        runInShell: true,
+        throwOnFailure: true,
+      );
+    }
   } else if (Platform.isLinux || Platform.isMacOS) {
     await runProcess(
       scope,

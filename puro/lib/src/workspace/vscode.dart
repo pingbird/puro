@@ -135,7 +135,8 @@ class VSCodeConfig extends IdeConfig {
       workspaceDir: workspaceDir,
       exists: true,
     );
-    if (vscodeConfig.settingsFile.existsSync()) {
+    if (vscodeConfig.settingsFile.existsSync() &&
+        vscodeConfig.settingsFile.lengthSync() > 0) {
       final editor = vscodeConfig.readSettings();
       final flutterSdkPathStr =
           editor.query([flutterSdkDirKey])?.value.toJson();
