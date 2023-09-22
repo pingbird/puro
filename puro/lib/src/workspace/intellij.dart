@@ -100,12 +100,17 @@ class IntelliJConfig extends IdeConfig {
         libraries.remove(currentLib);
         continue;
       }
-      if (!line.startsWith('  "')) continue;
-      final libName = line.substring(3, line.indexOf('"', 3));
+      if (!line.startsWith(RegExp('\\s\\s["\']'))) continue;
+      final libName = line.substring(3, line.indexOf(RegExp('[\'"]'), 3));
       currentLib = libName;
       if (libName.startsWith('_')) continue;
 
       libraries.add(libName);
+    }
+    if (libraries.isEmpty) {
+      throw AssertionError(
+        'Failed to extract libraries from ${dartSdk.internalLibrariesDartFile.path}',
+      );
     }
     final homeDirStr =
         path.canonicalize(config.homeDir.path).replaceAll('\\', '/');
