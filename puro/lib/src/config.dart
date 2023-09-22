@@ -340,12 +340,13 @@ class PuroConfig {
     return model;
   }
 
-  void writeDotfile(Scope scope, PuroDotfileModel dotfile) {
+  Future<void> writeDotfile(Scope scope, PuroDotfileModel dotfile) async {
     final log = PuroLogger.of(scope);
     final file = dotfileForWriting;
     final jsonStr = prettyJsonEncoder.convert(dotfile.toProto3Json());
     log.d(() => 'Writing dotfile ${file.path}\n$jsonStr');
-    dotfileForWriting.writeAsStringSync(jsonStr);
+    file.writeAsStringSync(jsonStr);
+    await registerDotfile(scope: scope, dotfile: file);
   }
 
   Uri? tryGetFlutterGitDownloadUrl({
@@ -621,7 +622,7 @@ void ensureValidName(String name) {
 
 const prettyJsonEncoder = JsonEncoder.withIndent('  ');
 
-Future<PuroGlobalPrefsModel> readGlobalPrefs({
+Future<PuroGlobalPrefsModel> _readGlobalPrefs({
   required Scope scope,
 }) async {
   final model = PuroGlobalPrefsModel();
@@ -634,7 +635,7 @@ Future<PuroGlobalPrefsModel> readGlobalPrefs({
   return model;
 }
 
-Future<PuroGlobalPrefsModel> updateGlobalPrefs({
+Future<PuroGlobalPrefsModel> _updateGlobalPrefs({
   required Scope scope,
   required FutureOr<void> Function(PuroGlobalPrefsModel prefs) fn,
   bool background = false,
@@ -660,6 +661,94 @@ Future<PuroGlobalPrefsModel> updateGlobalPrefs({
     },
     mode: FileMode.append,
   );
+}
+
+final globalPrefsProvider = Provider<Future<PuroGlobalPrefsModel>>(
+  (scope) => _readGlobalPrefs(scope: scope),
+);
+
+Future<PuroGlobalPrefsModel> readGlobalPrefs({
+  required Scope scope,
+}) {
+  return scope.read(globalPrefsProvider);
+}
+
+Future<PuroGlobalPrefsModel> updateGlobalPrefs({
+  required Scope scope,
+  required FutureOr<void> Function(PuroGlobalPrefsModel prefs) fn,
+  bool background = false,
+}) async {
+  await scope.read(globalPrefsProvider);
+  final result = await _updateGlobalPrefs(
+    scope: scope,
+    fn: fn,
+    background: background,
+  );
+  scope.replace(globalPrefsProvider, Future.value(result));
+  return result;
+}
+
+Future<void> registerDotfile({
+  required Scope scope,
+  required File dotfile,
+}) async {
+  final prefs = await readGlobalPrefs(scope: scope);
+  if (!prefs.projectDotfiles.contains(dotfile.path)) {
+    await updateGlobalPrefs(
+      scope: scope,
+      fn: (prefs) {
+        prefs.projectDotfiles.add(dotfile.path);
+      },
+    );
+  }
+}
+
+Future<void> cleanDotfiles({required Scope scope}) {
+  final config = PuroConfig.of(scope);
+  return updateGlobalPrefs(
+    scope: scope,
+    fn: (prefs) {
+      for (final path in prefs.projectDotfiles.toList()) {
+        if (config.fileSystem.statSync(path).type ==
+            FileSystemEntityType.notFound) {
+          prefs.projectDotfiles.remove(path);
+        }
+      }
+    },
+  );
+}
+
+Future<List<File>> getDotfilesUsingEnv({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  final log = PuroLogger.of(scope);
+  final config = PuroConfig.of(scope);
+  final prefs = await readGlobalPrefs(scope: scope);
+  final result = <File>[];
+  var needsClean = false;
+  for (final path in prefs.projectDotfiles) {
+    final dotfile = config.fileSystem.file(path);
+    if (!dotfile.existsSync()) {
+      needsClean = true;
+      continue;
+    }
+    try {
+      final data = jsonDecode(dotfile.readAsStringSync());
+      final model = PuroDotfileModel.create();
+      model.mergeFromProto3Json(data);
+      if (model.hasEnv() && model.env == environment.name) {
+        result.add(dotfile);
+      }
+    } catch (exception, stackTrace) {
+      log.w('Error while reading $path');
+      log.w('$exception\n$stackTrace');
+    }
+  }
+  if (needsClean) {
+    await cleanDotfiles(scope: scope);
+  }
+  return result;
 }
 
 class PuroInternalPrefsVars {

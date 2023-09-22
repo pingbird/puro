@@ -9,6 +9,7 @@ import 'commands/dart.dart';
 import 'commands/engine.dart';
 import 'commands/env_create.dart';
 import 'commands/env_ls.dart';
+import 'commands/env_rename.dart';
 import 'commands/env_rm.dart';
 import 'commands/env_upgrade.dart';
 import 'commands/env_use.dart';
@@ -216,6 +217,7 @@ void main(List<String> args) async {
     ..addCommand(EnvUseCommand())
     ..addCommand(CleanCommand())
     ..addCommand(EnvRmCommand())
+    ..addCommand(EnvRenameCommand())
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand())
     ..addCommand(PubCommand())

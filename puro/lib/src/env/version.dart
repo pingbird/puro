@@ -44,6 +44,13 @@ class FlutterVersion {
   final String? branch;
   final String? tag;
 
+  bool operator >(FlutterVersion other) {
+    if (version != null && other.version != null) {
+      return version! > other.version!;
+    }
+    return false;
+  }
+
   @override
   String toString([OutputFormatter? format]) {
     format ??= const OutputFormatter();

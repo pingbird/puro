@@ -138,7 +138,7 @@ Future<void> unzip({
         scope,
         'powershell',
         [
-          'Expand-Archive',
+          'Import-Module Microsoft.PowerShell.Archive; Expand-Archive',
           zipFile.path,
           '-DestinationPath',
           destination.path,

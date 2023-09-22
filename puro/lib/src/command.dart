@@ -324,8 +324,10 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       final command = commandName == null ? null : commands[commandName];
       if (command != null &&
           (command is! PuroCommand || !command.allowUpdateCheck)) {
-        final message =
-            await checkIfUpdateAvailable(scope: scope, runner: this);
+        final message = await checkIfUpdateAvailable(
+          scope: scope,
+          runner: this,
+        );
         if (message != null) {
           messages.add(message);
         }

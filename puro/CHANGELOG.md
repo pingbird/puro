@@ -1,3 +1,11 @@
+## 1.3.6
+
+* Bug fixes
+* Now using 7zip to speed up engine unzipping on Windows
+* Added 'downgrade' as an alias for the 'upgrade' command
+* Added the `rename` command
+* The `rm` command now warns if projects are using the environment
+
 ## 1.3.5
 
 * Bug fixes

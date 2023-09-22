@@ -29,13 +29,15 @@ class EnvUpgradeResult extends CommandResult {
   @override
   bool get success => true;
 
+  bool get downgrade => from > to;
+
   @override
   CommandMessage get message => CommandMessage.format(
         (format) => from.commit == to.commit
             ? toolInfo.didUpdateTool || toolInfo.didUpdateEngine
                 ? 'Finished installation of $to in environment `${environment.name}`'
                 : 'Environment `${environment.name}` is already up to date'
-            : 'Upgraded environment `${environment.name}`\n'
+            : '${downgrade ? 'Downgraded' : 'Upgraded'} environment `${environment.name}`\n'
                 '${from.toString(format)} => ${to.toString(format)}',
       );
 

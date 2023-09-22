@@ -24,10 +24,14 @@ class EnvUpgradeCommand extends PuroCommand {
   final name = 'upgrade';
 
   @override
+  List<String> get aliases => ['downgrade'];
+
+  @override
   String? get argumentUsage => '<name> [version]';
 
   @override
-  final description = 'Upgrades an environment to a new version of Flutter';
+  final description =
+      'Upgrades or downgrades an environment to a new version of Flutter';
 
   @override
   Future<EnvUpgradeResult> run() async {

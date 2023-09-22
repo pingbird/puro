@@ -58,6 +58,7 @@ message PuroGlobalPrefsModel {
   optional bool enableUpdateCheck = 4;
   optional bool enableProfileUpdate = 5;
   optional string profileOverride = 6;
+  repeated string projectDotfiles = 7;
 }
 
 message PuroEnvPrefsModel {

@@ -12,6 +12,7 @@ abstract class Provider<T> {
 
 abstract class Scope {
   void add<T>(Provider<T> provider, T value);
+  void replace<T>(Provider<T> provider, T value);
   T read<T>(Provider<T> provider);
 }
 
@@ -20,6 +21,10 @@ abstract class ProxyScope implements Scope {
 
   @override
   void add<V>(Provider<V> provider, V value) => parent.add(provider, value);
+
+  @override
+  void replace<V>(Provider<V> provider, V value) =>
+      parent.replace(provider, value);
 
   @override
   V read<V>(Provider<V> provider) => parent.read(provider);
@@ -68,6 +73,17 @@ class RootScope extends Scope {
   }
 
   @override
+  void replace<T>(Provider<T> provider, T value) {
+    assert(overrides.containsKey(provider) || nodes.containsKey(provider));
+    overrides[provider] = value;
+    final node = nodes[provider];
+    if (node != null) {
+      node.dispose();
+      nodes.remove(provider);
+    }
+  }
+
+  @override
   T read<T>(Provider<T> provider) {
     if (overrides.containsKey(provider)) {
       return overrides[provider] as T;
@@ -87,6 +103,15 @@ class OverrideScope extends Scope {
   @override
   void add<T>(Provider<T> provider, T value) {
     overrides[provider] = value;
+  }
+
+  @override
+  void replace<T>(Provider<T> provider, T value) {
+    if (overrides.containsKey(provider)) {
+      overrides[provider] = value;
+      return;
+    }
+    parent.replace(provider, value);
   }
 
   @override

@@ -86,6 +86,10 @@ Future<FlutterToolInfo> setUpFlutterTool({
   final flutterCache = flutterConfig.cache;
   final desiredEngineVersion = flutterConfig.engineVersion;
 
+  if (config.parentPuroDotfile != null) {
+    await registerDotfile(scope: scope, dotfile: config.parentPuroDotfile!);
+  }
+
   if (desiredEngineVersion == null) {
     throw AssertionError(
       'Flutter installation corrupt: Could not find engine version at ${flutterConfig.engineVersionFile.path}\n'

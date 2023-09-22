@@ -27,6 +27,9 @@ class VersionCommand extends PuroCommand {
   String get description => 'Prints version information';
 
   @override
+  bool get allowUpdateCheck => false;
+
+  @override
   Future<CommandResult> run() async {
     final plain = argResults!['plain'] as bool;
     final puroVersion = await PuroVersion.of(scope);
