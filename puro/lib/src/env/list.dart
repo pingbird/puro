@@ -114,7 +114,9 @@ Future<ListEnvironmentResult> listEnvironments({
 
   if (config.envsDir.existsSync()) {
     for (final childEntity in config.envsDir.listSync()) {
-      if (childEntity is! Directory || !isValidName(childEntity.basename)) {
+      if (childEntity is! Directory ||
+          !isValidName(childEntity.basename) ||
+          childEntity.basename == 'default') {
         continue;
       }
       final environment = config.getEnv(childEntity.basename);
