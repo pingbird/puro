@@ -6,7 +6,7 @@ import '../config.dart';
 import '../logger.dart';
 import '../provider.dart';
 
-const gitIgnoredFilesForWorkspace = {PuroConfig.dotfileName};
+const gitIgnoredFilesForWorkspace = {ProjectConfig.dotfileName};
 const gitConfigComment = '# Managed by puro';
 
 Future<void> updateConfigLines({

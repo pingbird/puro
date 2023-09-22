@@ -86,8 +86,11 @@ Future<FlutterToolInfo> setUpFlutterTool({
   final flutterCache = flutterConfig.cache;
   final desiredEngineVersion = flutterConfig.engineVersion;
 
-  if (config.parentPuroDotfile != null) {
-    await registerDotfile(scope: scope, dotfile: config.parentPuroDotfile!);
+  if (config.project.parentPuroDotfile != null) {
+    await registerDotfile(
+      scope: scope,
+      dotfile: config.project.parentPuroDotfile!,
+    );
   }
 
   if (desiredEngineVersion == null) {

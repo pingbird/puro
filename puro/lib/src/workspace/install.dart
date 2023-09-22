@@ -2,6 +2,7 @@ import 'package:file/file.dart';
 
 import '../config.dart';
 import '../env/default.dart';
+import '../extensions.dart';
 import '../logger.dart';
 import '../provider.dart';
 import 'common.dart';
@@ -15,8 +16,10 @@ Future<void> installIdeConfigs({
   required Scope scope,
   required Directory projectDir,
   required EnvConfig environment,
+  required ProjectConfig projectConfig,
   bool? vscode,
   bool? intellij,
+  EnvConfig? replaceOnly,
 }) async {
   final log = PuroLogger.of(scope);
   log.d('vscode override: $vscode');
@@ -28,9 +31,14 @@ Future<void> installIdeConfigs({
       final ideConfig = await IntelliJConfig.load(
         scope: scope,
         projectDir: projectDir,
+        projectConfig: projectConfig,
       );
       log.d('intellij exists: ${ideConfig.exists}');
-      if (ideConfig.exists || intellij == true) {
+      if ((ideConfig.exists || intellij == true) &&
+          (replaceOnly == null ||
+              (ideConfig.dartSdkDir?.absolute
+                      .pathEquals(replaceOnly.flutter.cache.dartSdkDir) ==
+                  true))) {
         await installIdeConfig(
           scope: scope,
           ideConfig: ideConfig,
@@ -48,9 +56,14 @@ Future<void> installIdeConfigs({
       final ideConfig = await VSCodeConfig.load(
         scope: scope,
         projectDir: projectDir,
+        projectConfig: projectConfig,
       );
       log.d('vscode exists: ${ideConfig.exists}');
-      if (ideConfig.exists || vscode == true) {
+      if ((ideConfig.exists || vscode == true) ||
+          (replaceOnly == null ||
+              (ideConfig.dartSdkDir?.absolute
+                      .pathEquals(replaceOnly.flutter.cache.dartSdkDir) ==
+                  true))) {
         await installIdeConfig(
           scope: scope,
           ideConfig: ideConfig,
@@ -89,8 +102,10 @@ Future<void> installWorkspaceEnvironment({
   required Scope scope,
   required Directory projectDir,
   required EnvConfig environment,
+  required ProjectConfig projectConfig,
   bool? vscode,
   bool? intellij,
+  EnvConfig? replaceOnly,
 }) async {
   await runOptional(
     scope,
@@ -110,6 +125,8 @@ Future<void> installWorkspaceEnvironment({
       environment: environment,
       vscode: vscode,
       intellij: intellij,
+      projectConfig: projectConfig,
+      replaceOnly: replaceOnly,
     ),
   );
 }
@@ -118,24 +135,30 @@ Future<void> installWorkspaceEnvironment({
 Future<EnvConfig> switchEnvironment({
   required Scope scope,
   required String? envName,
+  required ProjectConfig projectConfig,
+  Directory? projectDir,
   bool? vscode,
   bool? intellij,
+  bool passive = false,
 }) async {
   final config = PuroConfig.of(scope);
-  final model = config.readDotfile();
+  projectDir ??= config.project.ensureParentProjectDir();
+  final model = config.project.readDotfile();
   final environment = await getProjectEnvOrDefault(
     scope: scope,
     envName: envName,
   );
+  final oldEnv = model.env;
   model.env = environment.name;
-  await config.writeDotfile(scope, model);
-  final projectDir = config.ensureParentProjectDir();
+  await config.project.writeDotfile(scope, model);
   await installWorkspaceEnvironment(
     scope: scope,
     projectDir: projectDir,
     environment: environment,
     vscode: vscode,
     intellij: intellij,
+    projectConfig: projectConfig,
+    replaceOnly: passive && model.hasEnv() ? config.getEnv(oldEnv) : null,
   );
   return environment;
 }

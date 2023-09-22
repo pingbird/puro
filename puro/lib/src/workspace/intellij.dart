@@ -13,6 +13,7 @@ import 'common.dart';
 class IntelliJConfig extends IdeConfig {
   IntelliJConfig({
     required super.workspaceDir,
+    required super.projectConfig,
     super.dartSdkDir,
     super.flutterSdkDir,
     required super.exists,
@@ -261,6 +262,7 @@ class IntelliJConfig extends IdeConfig {
   static Future<IntelliJConfig> load({
     required Scope scope,
     required Directory projectDir,
+    required ProjectConfig projectConfig,
   }) async {
     final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
@@ -269,12 +271,14 @@ class IntelliJConfig extends IdeConfig {
     if (workspaceDir == null) {
       return IntelliJConfig(
         workspaceDir: config.findVSCodeWorkspaceDir(projectDir) ??
-            config.ensureParentProjectDir(),
+            projectConfig.ensureParentProjectDir(),
+        projectConfig: projectConfig,
         exists: false,
       );
     }
     final intellijConfig = IntelliJConfig(
       workspaceDir: workspaceDir,
+      projectConfig: projectConfig,
       exists: true,
     );
     if (intellijConfig.dartSdkFile.existsSync()) {

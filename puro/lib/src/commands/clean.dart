@@ -1,5 +1,6 @@
 import '../command.dart';
 import '../command_result.dart';
+import '../config.dart';
 import '../workspace/clean.dart';
 
 class CleanCommand extends PuroCommand {
@@ -15,7 +16,8 @@ class CleanCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
-    await cleanWorkspace(scope: scope);
+    final config = PuroConfig.of(scope);
+    await cleanWorkspace(scope: scope, projectConfig: config.project);
     return BasicMessageResult('Removed puro from current project');
   }
 }

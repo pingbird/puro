@@ -13,6 +13,7 @@ import 'vscode.dart';
 Future<void> restoreIdeConfigs({
   required Scope scope,
   required Directory projectDir,
+  required ProjectConfig projectConfig,
 }) async {
   runOptional(
     scope,
@@ -21,6 +22,7 @@ Future<void> restoreIdeConfigs({
       final ideConfig = await IntelliJConfig.load(
         scope: scope,
         projectDir: projectDir,
+        projectConfig: projectConfig,
       );
       if (ideConfig.exists) {
         await restoreIdeConfig(
@@ -38,6 +40,7 @@ Future<void> restoreIdeConfigs({
       final ideConfig = await VSCodeConfig.load(
         scope: scope,
         projectDir: projectDir,
+        projectConfig: projectConfig,
       );
       if (ideConfig.exists) {
         await restoreIdeConfig(
@@ -77,9 +80,10 @@ Future<void> restoreIdeConfig({
 Future<void> cleanWorkspace({
   required Scope scope,
   Directory? projectDir,
+  required ProjectConfig projectConfig,
 }) async {
   final config = PuroConfig.of(scope);
-  projectDir ??= config.ensureParentProjectDir();
+  projectDir ??= config.project.ensureParentProjectDir();
   await runOptional(scope, 'restoring gitignore', () {
     return updateGitignore(
       scope: scope,
@@ -91,9 +95,10 @@ Future<void> cleanWorkspace({
     return restoreIdeConfigs(
       scope: scope,
       projectDir: projectDir!,
+      projectConfig: projectConfig,
     );
   });
-  if (config.dotfileForWriting.existsSync()) {
-    config.dotfileForWriting.deleteSync();
+  if (config.project.dotfileForWriting.existsSync()) {
+    config.project.dotfileForWriting.deleteSync();
   }
 }

@@ -10,6 +10,7 @@ import 'common.dart';
 class VSCodeConfig extends IdeConfig {
   VSCodeConfig({
     required super.workspaceDir,
+    required super.projectConfig,
     super.flutterSdkDir,
     super.dartSdkDir,
     required super.exists,
@@ -39,8 +40,7 @@ class VSCodeConfig extends IdeConfig {
 
   @override
   Future<void> backup({required Scope scope}) async {
-    final config = PuroConfig.of(scope);
-    final dotfile = config.readDotfileForWriting();
+    final dotfile = projectConfig.readDotfileForWriting();
     var changedDotfile = false;
     if (flutterSdkDir != null && !dotfile.hasPreviousFlutterSdk()) {
       dotfile.previousFlutterSdk = flutterSdkDir!.path;
@@ -51,14 +51,14 @@ class VSCodeConfig extends IdeConfig {
       changedDotfile = true;
     }
     if (changedDotfile) {
-      await config.writeDotfile(scope, dotfile);
+      await projectConfig.writeDotfile(scope, dotfile);
     }
   }
 
   @override
   Future<void> restore({required Scope scope}) async {
     final config = PuroConfig.of(scope);
-    final dotfile = config.readDotfileForWriting();
+    final dotfile = projectConfig.readDotfileForWriting();
     var changedDotfile = false;
     if (dotfile.hasPreviousFlutterSdk()) {
       flutterSdkDir = config.fileSystem.directory(dotfile.previousFlutterSdk);
@@ -75,7 +75,7 @@ class VSCodeConfig extends IdeConfig {
       dartSdkDir = null;
     }
     if (changedDotfile) {
-      await config.writeDotfile(scope, dotfile);
+      await projectConfig.writeDotfile(scope, dotfile);
     }
     return save(scope: scope);
   }
@@ -119,6 +119,7 @@ class VSCodeConfig extends IdeConfig {
   static Future<VSCodeConfig> load({
     required Scope scope,
     required Directory projectDir,
+    required ProjectConfig projectConfig,
   }) async {
     final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
@@ -127,12 +128,14 @@ class VSCodeConfig extends IdeConfig {
     if (workspaceDir == null) {
       return VSCodeConfig(
         workspaceDir: findProjectDir(projectDir, '.idea') ??
-            config.ensureParentProjectDir(),
+            projectConfig.ensureParentProjectDir(),
+        projectConfig: projectConfig,
         exists: false,
       );
     }
     final vscodeConfig = VSCodeConfig(
       workspaceDir: workspaceDir,
+      projectConfig: projectConfig,
       exists: true,
     );
     if (vscodeConfig.settingsFile.existsSync() &&

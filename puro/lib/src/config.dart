@@ -120,7 +120,7 @@ class PuroConfig {
     final Directory? parentProjectDir = absoluteProjectDir ??
         findProjectDir(
           currentDir,
-          dotfileName,
+          ProjectConfig.dotfileName,
         ) ??
         (resultProjectDir != null
             ? findProjectDir(
@@ -218,11 +218,6 @@ class PuroConfig {
   final bool enableShims;
   final bool shouldInstall;
 
-  static const dotfileName = '.puro.json';
-
-  late final File? pubspecYamlFile = projectDir?.childFile('pubspec.yaml');
-  late final File? puroDotfile = projectDir?.childFile(dotfileName);
-  late final File? parentPuroDotfile = parentProjectDir?.childFile(dotfileName);
   late final Directory envsDir = puroRoot.childDirectory('envs');
   late final Directory binDir = puroRoot.childDirectory('bin');
   late final Directory sharedDir = puroRoot.childDirectory('shared');
@@ -257,13 +252,38 @@ class PuroConfig {
     getEnv('default', resolve: false).flutter.binDir.path,
   ];
 
-  Directory ensureParentProjectDir() {
-    final dir = parentProjectDir;
-    if (dir == null) {
-      throw CommandError(
-        'Could not find a dart project in the current directory and no '
-        'path selected with --project',
-      );
+  EnvConfig getEnv(String name, {bool resolve = true}) {
+    if (resolve && name == 'default') {
+      if (defaultEnvLink.existsSync()) {
+        final target = fileSystem.directory(defaultEnvLink.targetSync());
+        name = target.basename;
+      } else {
+        name = 'stable';
+      }
+    }
+    name = name.toLowerCase();
+    ensureValidName(name);
+    return EnvConfig(parentConfig: this, envDir: envsDir.childDirectory(name));
+  }
+
+  late final ProjectConfig project = ProjectConfig(
+    parentConfig: this,
+    projectDir: projectDir,
+    parentProjectDir: parentProjectDir,
+  );
+
+  EnvConfig? tryGetProjectEnv() {
+    if (environmentOverride != null) {
+      final result = getEnv(environmentOverride!);
+      return result.exists ? result : null;
+    }
+    return project.tryGetProjectEnv();
+  }
+
+  Directory? findVSCodeWorkspaceDir(Directory projectDir) {
+    final dir = findProjectDir(projectDir, '.vscode');
+    if (dir != null && dir.pathEquals(homeDir)) {
+      return null;
     }
     return dir;
   }
@@ -279,29 +299,83 @@ class PuroConfig {
     return FlutterCacheConfig(sharedCachesDir.childDirectory(engineVersion));
   }
 
-  EnvConfig getEnv(String name, {bool resolve = true}) {
-    if (resolve && name == 'default') {
-      if (defaultEnvLink.existsSync()) {
-        final target = fileSystem.directory(defaultEnvLink.targetSync());
-        name = target.basename;
-      } else {
-        name = 'stable';
-      }
+  Uri? tryGetFlutterGitDownloadUrl({
+    required String commit,
+    required String path,
+  }) {
+    const httpPrefix = 'https://github.com/';
+    const sshPrefix = 'git@github.com:';
+    final isHttp = flutterGitUrl.startsWith(httpPrefix);
+    if ((isHttp || flutterGitUrl.startsWith(sshPrefix)) &&
+        flutterGitUrl.endsWith('.git')) {
+      return Uri.https(
+        'raw.githubusercontent.com',
+        '${flutterGitUrl.substring(
+          isHttp ? httpPrefix.length : sshPrefix.length,
+          flutterGitUrl.length - 4,
+        )}/$commit/$path',
+      );
     }
-    name = name.toLowerCase();
-    ensureValidName(name);
-    return EnvConfig(parentConfig: this, envDir: envsDir.childDirectory(name));
+    return null;
+  }
+
+  @override
+  String toString() {
+    return 'PuroConfig(\n'
+        '  gitExecutable: $gitExecutable,\n'
+        '  puroRoot: $puroRoot,\n'
+        '  pubCacheDir: $pubCacheDir,\n'
+        '  homeDir: $homeDir,\n'
+        '  projectDir: $projectDir,\n'
+        '  parentProjectDir: $parentProjectDir,\n'
+        '  flutterGitUrl: $flutterGitUrl,\n'
+        '  engineGitUrl: $engineGitUrl,\n'
+        '  releasesJsonUrl: $releasesJsonUrl,\n'
+        '  flutterStorageBaseUrl: $flutterStorageBaseUrl,\n'
+        '  environmentOverride: $environmentOverride,\n'
+        '  puroBuildsUrl: $puroBuildsUrl,\n'
+        '  buildTarget: $buildTarget,\n'
+        '  enableShims: $enableShims,\n'
+        ')';
+  }
+
+  static final provider = Provider<PuroConfig>.late();
+  static PuroConfig of(Scope scope) => scope.read(provider);
+}
+
+class ProjectConfig {
+  ProjectConfig({
+    required this.parentConfig,
+    required this.projectDir,
+    required this.parentProjectDir,
+  });
+
+  final PuroConfig parentConfig;
+  final Directory? projectDir;
+  final Directory? parentProjectDir;
+
+  late final File? pubspecYamlFile = projectDir?.childFile('pubspec.yaml');
+  late final File? puroDotfile = projectDir?.childFile(dotfileName);
+  late final File? parentPuroDotfile = parentProjectDir?.childFile(dotfileName);
+
+  static const dotfileName = '.puro.json';
+
+  Directory ensureParentProjectDir() {
+    final dir = parentProjectDir;
+    if (dir == null) {
+      throw CommandError(
+        'Could not find a dart project in the current directory and no '
+        'path selected with --project',
+      );
+    }
+    return dir;
   }
 
   EnvConfig? tryGetProjectEnv() {
-    if (environmentOverride != null) {
-      final result = getEnv(environmentOverride!);
-      return result.exists ? result : null;
-    }
     if (parentPuroDotfile?.existsSync() != true) return null;
     final dotfile = readDotfile();
     if (!dotfile.hasEnv()) return null;
-    final result = getEnv(dotfile.env);
+    final result = parentConfig.getEnv(dotfile.env);
     return result.exists ? result : null;
   }
 
@@ -348,57 +422,6 @@ class PuroConfig {
     file.writeAsStringSync(jsonStr);
     await registerDotfile(scope: scope, dotfile: file);
   }
-
-  Uri? tryGetFlutterGitDownloadUrl({
-    required String commit,
-    required String path,
-  }) {
-    const httpPrefix = 'https://github.com/';
-    const sshPrefix = 'git@github.com:';
-    final isHttp = flutterGitUrl.startsWith(httpPrefix);
-    if ((isHttp || flutterGitUrl.startsWith(sshPrefix)) &&
-        flutterGitUrl.endsWith('.git')) {
-      return Uri.https(
-        'raw.githubusercontent.com',
-        '${flutterGitUrl.substring(
-          isHttp ? httpPrefix.length : sshPrefix.length,
-          flutterGitUrl.length - 4,
-        )}/$commit/$path',
-      );
-    }
-    return null;
-  }
-
-  Directory? findVSCodeWorkspaceDir(Directory projectDir) {
-    final dir = findProjectDir(projectDir, '.vscode');
-    if (dir != null && dir.pathEquals(homeDir)) {
-      return null;
-    }
-    return dir;
-  }
-
-  @override
-  String toString() {
-    return 'PuroConfig(\n'
-        '  gitExecutable: $gitExecutable,\n'
-        '  puroRoot: $puroRoot,\n'
-        '  pubCacheDir: $pubCacheDir,\n'
-        '  homeDir: $homeDir,\n'
-        '  projectDir: $projectDir,\n'
-        '  parentProjectDir: $parentProjectDir,\n'
-        '  flutterGitUrl: $flutterGitUrl,\n'
-        '  engineGitUrl: $engineGitUrl,\n'
-        '  releasesJsonUrl: $releasesJsonUrl,\n'
-        '  flutterStorageBaseUrl: $flutterStorageBaseUrl,\n'
-        '  environmentOverride: $environmentOverride,\n'
-        '  puroBuildsUrl: $puroBuildsUrl,\n'
-        '  buildTarget: $buildTarget,\n'
-        '  enableShims: $enableShims,\n'
-        ')';
-  }
-
-  static final provider = Provider<PuroConfig>.late();
-  static PuroConfig of(Scope scope) => scope.read(provider);
 }
 
 class EnvConfig {

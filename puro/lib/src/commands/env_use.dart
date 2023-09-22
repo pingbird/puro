@@ -87,6 +87,7 @@ class EnvUseCommand extends PuroCommand {
       intellij: argResults!.wasParsed('intellij')
           ? argResults!['intellij'] as bool
           : null,
+      projectConfig: config.project,
     );
     return BasicMessageResult(
       'Switched to environment `${environment.name}`',
