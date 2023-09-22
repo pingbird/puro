@@ -46,7 +46,7 @@ Future<void> renameEnvironment({
   final updated = <File>[];
 
   await ProgressNode.of(scope).wrap((scope, node) async {
-    node.description = 'Switching project environments';
+    node.description = 'Updating projects';
     for (final dotfile in dotfiles) {
       try {
         await switchEnvironment(
@@ -75,7 +75,7 @@ Future<void> renameEnvironment({
 
   if (dotfiles.isNotEmpty) {
     CommandMessage(
-      'Switched the following projects:\n'
+      'Updated the following projects:\n'
       '${dotfiles.map((p) => '* ${p.parent.path}').join('\n')}',
       type: CompletionType.info,
     ).queue(scope);
