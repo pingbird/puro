@@ -52,10 +52,16 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
     return $result;
   }
   FlutterReleaseModel._() : super();
-  factory FlutterReleaseModel.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory FlutterReleaseModel.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory FlutterReleaseModel.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory FlutterReleaseModel.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FlutterReleaseModel', createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FlutterReleaseModel',
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'hash')
     ..aOS(2, _omitFieldNames ? '' : 'channel')
     ..aOS(3, _omitFieldNames ? '' : 'version')
@@ -64,34 +70,38 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'releaseDate')
     ..aOS(7, _omitFieldNames ? '' : 'archive')
     ..aOS(8, _omitFieldNames ? '' : 'sha256')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   FlutterReleaseModel clone() => FlutterReleaseModel()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  FlutterReleaseModel copyWith(void Function(FlutterReleaseModel) updates) => super.copyWith((message) => updates(message as FlutterReleaseModel)) as FlutterReleaseModel;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  FlutterReleaseModel copyWith(void Function(FlutterReleaseModel) updates) =>
+      super.copyWith((message) => updates(message as FlutterReleaseModel))
+          as FlutterReleaseModel;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static FlutterReleaseModel create() => FlutterReleaseModel._();
   FlutterReleaseModel createEmptyInstance() => create();
-  static $pb.PbList<FlutterReleaseModel> createRepeated() => $pb.PbList<FlutterReleaseModel>();
+  static $pb.PbList<FlutterReleaseModel> createRepeated() =>
+      $pb.PbList<FlutterReleaseModel>();
   @$core.pragma('dart2js:noInline')
-  static FlutterReleaseModel getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FlutterReleaseModel>(create);
+  static FlutterReleaseModel getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FlutterReleaseModel>(create);
   static FlutterReleaseModel? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get hash => $_getSZ(0);
   @$pb.TagNumber(1)
-  set hash($core.String v) { $_setString(0, v); }
+  set hash($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasHash() => $_has(0);
   @$pb.TagNumber(1)
@@ -100,7 +110,10 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get channel => $_getSZ(1);
   @$pb.TagNumber(2)
-  set channel($core.String v) { $_setString(1, v); }
+  set channel($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasChannel() => $_has(1);
   @$pb.TagNumber(2)
@@ -109,7 +122,10 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get version => $_getSZ(2);
   @$pb.TagNumber(3)
-  set version($core.String v) { $_setString(2, v); }
+  set version($core.String v) {
+    $_setString(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasVersion() => $_has(2);
   @$pb.TagNumber(3)
@@ -118,7 +134,10 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.String get dartSdkVersion => $_getSZ(3);
   @$pb.TagNumber(4)
-  set dartSdkVersion($core.String v) { $_setString(3, v); }
+  set dartSdkVersion($core.String v) {
+    $_setString(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasDartSdkVersion() => $_has(3);
   @$pb.TagNumber(4)
@@ -127,7 +146,10 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.String get dartSdkArch => $_getSZ(4);
   @$pb.TagNumber(5)
-  set dartSdkArch($core.String v) { $_setString(4, v); }
+  set dartSdkArch($core.String v) {
+    $_setString(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasDartSdkArch() => $_has(4);
   @$pb.TagNumber(5)
@@ -136,7 +158,10 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.String get releaseDate => $_getSZ(5);
   @$pb.TagNumber(6)
-  set releaseDate($core.String v) { $_setString(5, v); }
+  set releaseDate($core.String v) {
+    $_setString(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasReleaseDate() => $_has(5);
   @$pb.TagNumber(6)
@@ -145,7 +170,10 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.String get archive => $_getSZ(6);
   @$pb.TagNumber(7)
-  set archive($core.String v) { $_setString(6, v); }
+  set archive($core.String v) {
+    $_setString(6, v);
+  }
+
   @$pb.TagNumber(7)
   $core.bool hasArchive() => $_has(6);
   @$pb.TagNumber(7)
@@ -154,7 +182,10 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $core.String get sha256 => $_getSZ(7);
   @$pb.TagNumber(8)
-  set sha256($core.String v) { $_setString(7, v); }
+  set sha256($core.String v) {
+    $_setString(7, v);
+  }
+
   @$pb.TagNumber(8)
   $core.bool hasSha256() => $_has(7);
   @$pb.TagNumber(8)
@@ -180,41 +211,57 @@ class FlutterReleasesModel extends $pb.GeneratedMessage {
     return $result;
   }
   FlutterReleasesModel._() : super();
-  factory FlutterReleasesModel.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory FlutterReleasesModel.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory FlutterReleasesModel.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory FlutterReleasesModel.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FlutterReleasesModel', createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FlutterReleasesModel',
+      createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'baseUrl')
-    ..m<$core.String, $core.String>(2, _omitFieldNames ? '' : 'currentRelease', entryClassName: 'FlutterReleasesModel.CurrentReleaseEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS)
-    ..pc<FlutterReleaseModel>(3, _omitFieldNames ? '' : 'releases', $pb.PbFieldType.PM, subBuilder: FlutterReleaseModel.create)
-    ..hasRequiredFields = false
-  ;
+    ..m<$core.String, $core.String>(2, _omitFieldNames ? '' : 'currentRelease',
+        entryClassName: 'FlutterReleasesModel.CurrentReleaseEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS)
+    ..pc<FlutterReleaseModel>(
+        3, _omitFieldNames ? '' : 'releases', $pb.PbFieldType.PM,
+        subBuilder: FlutterReleaseModel.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  FlutterReleasesModel clone() => FlutterReleasesModel()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  FlutterReleasesModel copyWith(void Function(FlutterReleasesModel) updates) => super.copyWith((message) => updates(message as FlutterReleasesModel)) as FlutterReleasesModel;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  FlutterReleasesModel clone() =>
+      FlutterReleasesModel()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  FlutterReleasesModel copyWith(void Function(FlutterReleasesModel) updates) =>
+      super.copyWith((message) => updates(message as FlutterReleasesModel))
+          as FlutterReleasesModel;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static FlutterReleasesModel create() => FlutterReleasesModel._();
   FlutterReleasesModel createEmptyInstance() => create();
-  static $pb.PbList<FlutterReleasesModel> createRepeated() => $pb.PbList<FlutterReleasesModel>();
+  static $pb.PbList<FlutterReleasesModel> createRepeated() =>
+      $pb.PbList<FlutterReleasesModel>();
   @$core.pragma('dart2js:noInline')
-  static FlutterReleasesModel getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FlutterReleasesModel>(create);
+  static FlutterReleasesModel getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FlutterReleasesModel>(create);
   static FlutterReleasesModel? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get baseUrl => $_getSZ(0);
   @$pb.TagNumber(1)
-  set baseUrl($core.String v) { $_setString(0, v); }
+  set baseUrl($core.String v) {
+    $_setString(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasBaseUrl() => $_has(0);
   @$pb.TagNumber(1)
@@ -227,6 +274,6 @@ class FlutterReleasesModel extends $pb.GeneratedMessage {
   $core.List<FlutterReleaseModel> get releases => $_getList(2);
 }
 
-
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');

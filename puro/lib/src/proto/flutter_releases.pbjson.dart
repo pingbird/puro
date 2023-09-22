@@ -41,8 +41,22 @@ const FlutterReleasesModel$json = {
   '1': 'FlutterReleasesModel',
   '2': [
     {'1': 'base_url', '3': 1, '4': 1, '5': 9, '10': 'baseUrl'},
-    {'1': 'current_release', '3': 2, '4': 3, '5': 11, '6': '.FlutterReleasesModel.CurrentReleaseEntry', '10': 'currentRelease'},
-    {'1': 'releases', '3': 3, '4': 3, '5': 11, '6': '.FlutterReleaseModel', '10': 'releases'},
+    {
+      '1': 'current_release',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.FlutterReleasesModel.CurrentReleaseEntry',
+      '10': 'currentRelease'
+    },
+    {
+      '1': 'releases',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.FlutterReleaseModel',
+      '10': 'releases'
+    },
   ],
   '3': [FlutterReleasesModel_CurrentReleaseEntry$json],
 };
@@ -64,4 +78,3 @@ final $typed_data.Uint8List flutterReleasesModelDescriptor = $convert.base64Deco
     'ZUVudHJ5Ug5jdXJyZW50UmVsZWFzZRIwCghyZWxlYXNlcxgDIAMoCzIULkZsdXR0ZXJSZWxlYX'
     'NlTW9kZWxSCHJlbGVhc2VzGkEKE0N1cnJlbnRSZWxlYXNlRW50cnkSEAoDa2V5GAEgASgJUgNr'
     'ZXkSFAoFdmFsdWUYAiABKAlSBXZhbHVlOgI4AQ==');
-

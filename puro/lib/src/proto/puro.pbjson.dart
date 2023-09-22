@@ -49,7 +49,15 @@ const FlutterVersionModel$json = {
   '1': 'FlutterVersionModel',
   '2': [
     {'1': 'commit', '3': 1, '4': 1, '5': 9, '10': 'commit'},
-    {'1': 'version', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'version', '17': true},
+    {
+      '1': 'version',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'version',
+      '17': true
+    },
     {'1': 'branch', '3': 3, '4': 1, '5': 9, '9': 1, '10': 'branch', '17': true},
     {'1': 'tag', '3': 4, '4': 1, '5': 9, '9': 2, '10': 'tag', '17': true},
   ],
@@ -72,7 +80,16 @@ const EnvironmentInfoModel$json = {
   '2': [
     {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
     {'1': 'path', '3': 2, '4': 1, '5': 9, '10': 'path'},
-    {'1': 'version', '3': 3, '4': 1, '5': 11, '6': '.FlutterVersionModel', '9': 0, '10': 'version', '17': true},
+    {
+      '1': 'version',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.FlutterVersionModel',
+      '9': 0,
+      '10': 'version',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_version'},
@@ -89,8 +106,23 @@ final $typed_data.Uint8List environmentInfoModelDescriptor = $convert.base64Deco
 const EnvironmentListModel$json = {
   '1': 'EnvironmentListModel',
   '2': [
-    {'1': 'environments', '3': 1, '4': 3, '5': 11, '6': '.EnvironmentInfoModel', '10': 'environments'},
-    {'1': 'selectedEnvironment', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'selectedEnvironment', '17': true},
+    {
+      '1': 'environments',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.EnvironmentInfoModel',
+      '10': 'environments'
+    },
+    {
+      '1': 'selectedEnvironment',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'selectedEnvironment',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_selectedEnvironment'},
@@ -108,8 +140,22 @@ const EnvironmentUpgradeModel$json = {
   '1': 'EnvironmentUpgradeModel',
   '2': [
     {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
-    {'1': 'from', '3': 2, '4': 1, '5': 11, '6': '.FlutterVersionModel', '10': 'from'},
-    {'1': 'to', '3': 3, '4': 1, '5': 11, '6': '.FlutterVersionModel', '10': 'to'},
+    {
+      '1': 'from',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.FlutterVersionModel',
+      '10': 'from'
+    },
+    {
+      '1': 'to',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.FlutterVersionModel',
+      '10': 'to'
+    },
   ],
 };
 
@@ -138,12 +184,46 @@ const CommandResultModel$json = {
   '1': 'CommandResultModel',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {'1': 'messages', '3': 2, '4': 3, '5': 11, '6': '.CommandMessageModel', '10': 'messages'},
+    {
+      '1': 'messages',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.CommandMessageModel',
+      '10': 'messages'
+    },
     {'1': 'usage', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'usage', '17': true},
-    {'1': 'error', '3': 4, '4': 1, '5': 11, '6': '.CommandErrorModel', '9': 1, '10': 'error', '17': true},
+    {
+      '1': 'error',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.CommandErrorModel',
+      '9': 1,
+      '10': 'error',
+      '17': true
+    },
     {'1': 'logs', '3': 5, '4': 3, '5': 11, '6': '.LogEntryModel', '10': 'logs'},
-    {'1': 'environmentList', '3': 6, '4': 1, '5': 11, '6': '.EnvironmentListModel', '9': 2, '10': 'environmentList', '17': true},
-    {'1': 'environmentUpgrade', '3': 7, '4': 1, '5': 11, '6': '.EnvironmentUpgradeModel', '9': 3, '10': 'environmentUpgrade', '17': true},
+    {
+      '1': 'environmentList',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.EnvironmentListModel',
+      '9': 2,
+      '10': 'environmentList',
+      '17': true
+    },
+    {
+      '1': 'environmentUpgrade',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.EnvironmentUpgradeModel',
+      '9': 3,
+      '10': 'environmentUpgrade',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_usage'},
@@ -168,12 +248,60 @@ final $typed_data.Uint8List commandResultModelDescriptor = $convert.base64Decode
 const PuroGlobalPrefsModel$json = {
   '1': 'PuroGlobalPrefsModel',
   '2': [
-    {'1': 'defaultEnvironment', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'defaultEnvironment', '17': true},
-    {'1': 'lastUpdateCheck', '3': 2, '4': 1, '5': 9, '9': 1, '10': 'lastUpdateCheck', '17': true},
-    {'1': 'lastUpdateNotification', '3': 3, '4': 1, '5': 9, '9': 2, '10': 'lastUpdateNotification', '17': true},
-    {'1': 'enableUpdateCheck', '3': 4, '4': 1, '5': 8, '9': 3, '10': 'enableUpdateCheck', '17': true},
-    {'1': 'enableProfileUpdate', '3': 5, '4': 1, '5': 8, '9': 4, '10': 'enableProfileUpdate', '17': true},
-    {'1': 'profileOverride', '3': 6, '4': 1, '5': 9, '9': 5, '10': 'profileOverride', '17': true},
+    {
+      '1': 'defaultEnvironment',
+      '3': 1,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'defaultEnvironment',
+      '17': true
+    },
+    {
+      '1': 'lastUpdateCheck',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'lastUpdateCheck',
+      '17': true
+    },
+    {
+      '1': 'lastUpdateNotification',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 2,
+      '10': 'lastUpdateNotification',
+      '17': true
+    },
+    {
+      '1': 'enableUpdateCheck',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '9': 3,
+      '10': 'enableUpdateCheck',
+      '17': true
+    },
+    {
+      '1': 'enableProfileUpdate',
+      '3': 5,
+      '4': 1,
+      '5': 8,
+      '9': 4,
+      '10': 'enableProfileUpdate',
+      '17': true
+    },
+    {
+      '1': 'profileOverride',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '9': 5,
+      '10': 'profileOverride',
+      '17': true
+    },
     {'1': 'projectDotfiles', '3': 7, '4': 3, '5': 9, '10': 'projectDotfiles'},
   ],
   '8': [
@@ -203,10 +331,43 @@ final $typed_data.Uint8List puroGlobalPrefsModelDescriptor = $convert.base64Deco
 const PuroEnvPrefsModel$json = {
   '1': 'PuroEnvPrefsModel',
   '2': [
-    {'1': 'desiredVersion', '3': 1, '4': 1, '5': 11, '6': '.FlutterVersionModel', '9': 0, '10': 'desiredVersion', '17': true},
-    {'1': 'forkRemoteUrl', '3': 2, '4': 1, '5': 9, '9': 1, '10': 'forkRemoteUrl', '17': true},
-    {'1': 'engineForkRemoteUrl', '3': 3, '4': 1, '5': 9, '9': 2, '10': 'engineForkRemoteUrl', '17': true},
-    {'1': 'precompileTool', '3': 4, '4': 1, '5': 8, '9': 3, '10': 'precompileTool', '17': true},
+    {
+      '1': 'desiredVersion',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.FlutterVersionModel',
+      '9': 0,
+      '10': 'desiredVersion',
+      '17': true
+    },
+    {
+      '1': 'forkRemoteUrl',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'forkRemoteUrl',
+      '17': true
+    },
+    {
+      '1': 'engineForkRemoteUrl',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 2,
+      '10': 'engineForkRemoteUrl',
+      '17': true
+    },
+    {
+      '1': 'precompileTool',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '9': 3,
+      '10': 'precompileTool',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_desiredVersion'},
@@ -230,8 +391,24 @@ const PuroDotfileModel$json = {
   '1': 'PuroDotfileModel',
   '2': [
     {'1': 'env', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'env', '17': true},
-    {'1': 'previousDartSdk', '3': 2, '4': 1, '5': 9, '9': 1, '10': 'previousDartSdk', '17': true},
-    {'1': 'previousFlutterSdk', '3': 3, '4': 1, '5': 9, '9': 2, '10': 'previousFlutterSdk', '17': true},
+    {
+      '1': 'previousDartSdk',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'previousDartSdk',
+      '17': true
+    },
+    {
+      '1': 'previousFlutterSdk',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 2,
+      '10': 'previousFlutterSdk',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_env'},
@@ -246,4 +423,3 @@ final $typed_data.Uint8List puroDotfileModelDescriptor = $convert.base64Decode(
     'J0U2RrGAIgASgJSAFSD3ByZXZpb3VzRGFydFNka4gBARIzChJwcmV2aW91c0ZsdXR0ZXJTZGsY'
     'AyABKAlIAlIScHJldmlvdXNGbHV0dGVyU2RriAEBQgYKBF9lbnZCEgoQX3ByZXZpb3VzRGFydF'
     'Nka0IVChNfcHJldmlvdXNGbHV0dGVyU2Rr');
-
