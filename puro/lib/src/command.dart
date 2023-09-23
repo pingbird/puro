@@ -34,6 +34,11 @@ abstract class PuroCommand extends Command<CommandResult> {
   bool get allowUpdateCheck => true;
 
   @override
+  String get summary => aliases.isEmpty
+      ? description.split('\n').first
+      : '${description.split('\n').first}\naliases: ${aliases.join(', ')}';
+
+  @override
   String get invocation {
     final parents = [name];
     for (var command = parent; command != null; command = command.parent) {
