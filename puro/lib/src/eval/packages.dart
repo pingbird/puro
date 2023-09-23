@@ -28,7 +28,7 @@ Future<bool> updateBootstrapPackages({
   final pubspecLockFile = bootstrapDir.childFile('pubspec.lock');
   final pubspecYamlFile = bootstrapDir.childFile('pubspec.yaml');
   final updateLockFile = bootstrapDir.childFile('update.lock');
-  bootstrapDir.createSync();
+  bootstrapDir.createSync(recursive: true);
 
   return await lockFile(scope, updateLockFile, (handle) async {
     if (!reset) {

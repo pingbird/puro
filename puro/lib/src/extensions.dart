@@ -57,6 +57,19 @@ extension FileSystemEntityExtensions on FileSystemEntity {
   bool pathEquals(FileSystemEntity other) {
     return path.equals(this.path, other.path);
   }
+
+  bool resolvedPathEquals(FileSystemEntity other) {
+    return path.equals(
+      resolveSymbolicLinksSync(),
+      other.resolveSymbolicLinksSync(),
+    );
+  }
+}
+
+extension DirectoryExtensions on Directory {
+  Directory resolve() {
+    return fileSystem.directory(resolveSymbolicLinksSync());
+  }
 }
 
 extension FileExtensions on File {
@@ -76,6 +89,10 @@ extension FileExtensions on File {
         renameSync(oldFile.path);
       }
     }
+  }
+
+  File resolve() {
+    return fileSystem.file(resolveSymbolicLinksSync());
   }
 }
 

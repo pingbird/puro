@@ -1,6 +1,7 @@
 import 'package:file/file.dart';
 
 import '../config.dart';
+import '../extensions.dart';
 import '../json_edit/editor.dart';
 import '../logger.dart';
 import '../process.dart';
@@ -40,13 +41,23 @@ class VSCodeConfig extends IdeConfig {
 
   @override
   Future<void> backup({required Scope scope}) async {
+    final config = PuroConfig.of(scope);
     final dotfile = projectConfig.readDotfileForWriting();
     var changedDotfile = false;
-    if (flutterSdkDir != null && !dotfile.hasPreviousFlutterSdk()) {
+    if (flutterSdkDir != null &&
+        !flutterSdkDir!.parent.parent.pathEquals(config.envsDir) &&
+        !dotfile.hasPreviousFlutterSdk()) {
       dotfile.previousFlutterSdk = flutterSdkDir!.path;
       changedDotfile = true;
     }
-    if (dartSdkDir != null && !dotfile.hasPreviousDartSdk()) {
+    final log = PuroLogger.of(scope);
+    if (dartSdkDir != null &&
+        !dartSdkDir!
+            .resolve()
+            .parent
+            .parent
+            .resolvedPathEquals(config.sharedCachesDir) &&
+        !dotfile.hasPreviousDartSdk()) {
       dotfile.previousDartSdk = dartSdkDir!.path;
       changedDotfile = true;
     }
