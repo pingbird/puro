@@ -413,14 +413,18 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
 class EnvironmentListModel extends $pb.GeneratedMessage {
   factory EnvironmentListModel({
     $core.Iterable<EnvironmentInfoModel>? environments,
-    $core.String? selectedEnvironment,
+    $core.String? projectEnvironment,
+    $core.String? globalEnvironment,
   }) {
     final $result = create();
     if (environments != null) {
       $result.environments.addAll(environments);
     }
-    if (selectedEnvironment != null) {
-      $result.selectedEnvironment = selectedEnvironment;
+    if (projectEnvironment != null) {
+      $result.projectEnvironment = projectEnvironment;
+    }
+    if (globalEnvironment != null) {
+      $result.globalEnvironment = globalEnvironment;
     }
     return $result;
   }
@@ -438,8 +442,10 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
     ..pc<EnvironmentInfoModel>(
         1, _omitFieldNames ? '' : 'environments', $pb.PbFieldType.PM,
         subBuilder: EnvironmentInfoModel.create)
-    ..aOS(2, _omitFieldNames ? '' : 'selectedEnvironment',
-        protoName: 'selectedEnvironment')
+    ..aOS(2, _omitFieldNames ? '' : 'projectEnvironment',
+        protoName: 'projectEnvironment')
+    ..aOS(3, _omitFieldNames ? '' : 'globalEnvironment',
+        protoName: 'globalEnvironment')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -470,16 +476,28 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
   $core.List<EnvironmentInfoModel> get environments => $_getList(0);
 
   @$pb.TagNumber(2)
-  $core.String get selectedEnvironment => $_getSZ(1);
+  $core.String get projectEnvironment => $_getSZ(1);
   @$pb.TagNumber(2)
-  set selectedEnvironment($core.String v) {
+  set projectEnvironment($core.String v) {
     $_setString(1, v);
   }
 
   @$pb.TagNumber(2)
-  $core.bool hasSelectedEnvironment() => $_has(1);
+  $core.bool hasProjectEnvironment() => $_has(1);
   @$pb.TagNumber(2)
-  void clearSelectedEnvironment() => clearField(2);
+  void clearProjectEnvironment() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get globalEnvironment => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set globalEnvironment($core.String v) {
+    $_setString(2, v);
+  }
+
+  @$pb.TagNumber(3)
+  $core.bool hasGlobalEnvironment() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearGlobalEnvironment() => clearField(3);
 }
 
 class EnvironmentUpgradeModel extends $pb.GeneratedMessage {

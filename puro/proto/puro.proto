@@ -27,7 +27,8 @@ message EnvironmentInfoModel {
 
 message EnvironmentListModel {
   repeated EnvironmentInfoModel environments = 1;
-  optional string selectedEnvironment = 2;
+  optional string projectEnvironment = 2;
+  optional string globalEnvironment = 3;
 }
 
 message EnvironmentUpgradeModel {

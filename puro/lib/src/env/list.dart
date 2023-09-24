@@ -30,11 +30,13 @@ class EnvironmentInfoResult {
 class ListEnvironmentResult extends CommandResult {
   ListEnvironmentResult({
     required this.results,
-    required this.selectedEnvironment,
+    required this.projectEnvironment,
+    required this.globalEnvironment,
   });
 
   final List<EnvironmentInfoResult> results;
-  final String? selectedEnvironment;
+  final String? projectEnvironment;
+  final String? globalEnvironment;
 
   @override
   bool get success => true;
@@ -50,7 +52,7 @@ class ListEnvironmentResult extends CommandResult {
 
         for (final result in results) {
           final name = result.environment.name;
-          if (name == selectedEnvironment) {
+          if (name == projectEnvironment) {
             lines.add(
               format.color(
                 '* $name',
@@ -58,6 +60,16 @@ class ListEnvironmentResult extends CommandResult {
                 bold: true,
               ),
             );
+          } else if (name == globalEnvironment && projectEnvironment == null) {
+            lines.add(
+              format.color(
+                '~ $name',
+                foregroundColor: Ansi8BitColor.green,
+                bold: true,
+              ),
+            );
+          } else if (name == globalEnvironment) {
+            lines.add('~ $name');
           } else {
             lines.add('  $name');
           }
@@ -88,7 +100,8 @@ class ListEnvironmentResult extends CommandResult {
       environments: [
         for (final info in results) info.toModel(),
       ],
-      selectedEnvironment: selectedEnvironment,
+      projectEnvironment: projectEnvironment,
+      globalEnvironment: globalEnvironment,
     ),
   );
 }
@@ -131,7 +144,7 @@ Future<ListEnvironmentResult> listEnvironments({
 
   return ListEnvironmentResult(
     results: results,
-    selectedEnvironment: config.tryGetProjectEnv()?.name ??
-        await getDefaultEnvName(scope: scope),
+    projectEnvironment: config.tryGetProjectEnv()?.name,
+    globalEnvironment: await getDefaultEnvName(scope: scope),
   );
 }

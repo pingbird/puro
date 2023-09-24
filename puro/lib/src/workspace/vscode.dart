@@ -50,7 +50,6 @@ class VSCodeConfig extends IdeConfig {
       dotfile.previousFlutterSdk = flutterSdkDir!.path;
       changedDotfile = true;
     }
-    final log = PuroLogger.of(scope);
     if (dartSdkDir != null &&
         !dartSdkDir!
             .resolve()

@@ -115,25 +115,37 @@ const EnvironmentListModel$json = {
       '10': 'environments'
     },
     {
-      '1': 'selectedEnvironment',
+      '1': 'projectEnvironment',
       '3': 2,
       '4': 1,
       '5': 9,
       '9': 0,
-      '10': 'selectedEnvironment',
+      '10': 'projectEnvironment',
+      '17': true
+    },
+    {
+      '1': 'globalEnvironment',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'globalEnvironment',
       '17': true
     },
   ],
   '8': [
-    {'1': '_selectedEnvironment'},
+    {'1': '_projectEnvironment'},
+    {'1': '_globalEnvironment'},
   ],
 };
 
 /// Descriptor for `EnvironmentListModel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List environmentListModelDescriptor = $convert.base64Decode(
     'ChRFbnZpcm9ubWVudExpc3RNb2RlbBI5CgxlbnZpcm9ubWVudHMYASADKAsyFS5FbnZpcm9ubW'
-    'VudEluZm9Nb2RlbFIMZW52aXJvbm1lbnRzEjUKE3NlbGVjdGVkRW52aXJvbm1lbnQYAiABKAlI'
-    'AFITc2VsZWN0ZWRFbnZpcm9ubWVudIgBAUIWChRfc2VsZWN0ZWRFbnZpcm9ubWVudA==');
+    'VudEluZm9Nb2RlbFIMZW52aXJvbm1lbnRzEjMKEnByb2plY3RFbnZpcm9ubWVudBgCIAEoCUgA'
+    'UhJwcm9qZWN0RW52aXJvbm1lbnSIAQESMQoRZ2xvYmFsRW52aXJvbm1lbnQYAyABKAlIAVIRZ2'
+    'xvYmFsRW52aXJvbm1lbnSIAQFCFQoTX3Byb2plY3RFbnZpcm9ubWVudEIUChJfZ2xvYmFsRW52'
+    'aXJvbm1lbnQ=');
 
 @$core.Deprecated('Use environmentUpgradeModelDescriptor instead')
 const EnvironmentUpgradeModel$json = {
