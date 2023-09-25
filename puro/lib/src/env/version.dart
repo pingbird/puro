@@ -131,6 +131,25 @@ class FlutterVersion {
           version: parsedVersion,
           channel: parsedChannel,
         );
+        if (release == null) {
+          // The version may be a tag but not a release for some reason
+          final sharedRepository = config.sharedFlutterDir;
+          await fetchOrCloneShared(
+            scope: scope,
+            repository: sharedRepository,
+            remoteUrl: config.flutterGitUrl,
+          );
+          final commit = await git.tryRevParseSingle(
+            repository: sharedRepository,
+            arg: version,
+          );
+          if (commit != null) {
+            return FlutterVersion(commit: commit);
+          }
+          throw CommandError(
+            'Could not find version $version',
+          );
+        }
         final releaseVersion = tryParseVersion(release.version);
         if (releaseVersion == null) {
           throw AssertionError(

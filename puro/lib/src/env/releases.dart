@@ -88,7 +88,7 @@ FlutterReleaseModel? searchFlutterVersions({
 
 /// Finds a framework release matching [version] and/or [channel], pulling from
 /// a cache when possible.
-Future<FlutterReleaseModel> findFrameworkRelease({
+Future<FlutterReleaseModel?> findFrameworkRelease({
   required Scope scope,
   Version? version,
   FlutterChannel? channel,
@@ -152,9 +152,7 @@ Future<FlutterReleaseModel> findFrameworkRelease({
       'Could not find latest version of the ${channel.name} channel',
     );
   } else if (channel == null) {
-    throw CommandError(
-      'Could not find version $version',
-    );
+    return null;
   } else {
     throw CommandError(
       'Could not find version $version in the $channel channel',

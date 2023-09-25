@@ -1,3 +1,9 @@
+## 1.3.7
+
+* Bug fixes
+* The `ls` command now has a separate indicator for the global default
+* The `create` and `upgrade` commands now recognize tags without an official release
+
 ## 1.3.6
 
 * Bug fixes
