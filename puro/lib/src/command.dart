@@ -323,8 +323,6 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       );
       scope.add(CommandMessage.provider, messages.add);
 
-      log.d('Config: $config');
-
       final commandName = topLevelResults.command?.name;
       final command = commandName == null ? null : commands[commandName];
       if (command != null &&

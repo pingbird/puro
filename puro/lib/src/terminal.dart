@@ -129,7 +129,9 @@ class Terminal extends StringSink {
   });
 
   final Stdout stdout;
-  late var enableColor = stdout.supportsAnsiEscapes;
+  late var enableColor = stdout.supportsAnsiEscapes ||
+      (Platform.isWindows &&
+          (Platform.environment['TERM']?.contains('xterm') ?? false));
   late var enableStatus = enableColor;
   late final statusDebouncer = Debouncer<String>(
     minDuration: const Duration(milliseconds: 50),
