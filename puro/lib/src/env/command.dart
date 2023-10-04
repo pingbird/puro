@@ -59,6 +59,7 @@ Future<int> runFlutterCommand({
     },
     workingDirectory: workingDirectory,
     mode: mode,
+    rosettaWorkaround: true,
   );
   if (stdin != null) {
     unawaited(flutterProcess.stdin.addStream(stdin));
@@ -122,6 +123,7 @@ Future<int> runDartCommand({
     },
     workingDirectory: workingDirectory,
     mode: mode,
+    rosettaWorkaround: true,
   );
   if (stdin != null) {
     unawaited(dartProcess.stdin.addStream(stdin));

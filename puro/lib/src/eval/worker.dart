@@ -138,6 +138,7 @@ class EvalWorker {
         '${mainFile.path}',
       ],
       workingDirectory: projectDir.path,
+      rosettaWorkaround: true,
     );
     context.needsPackageReload = false;
 

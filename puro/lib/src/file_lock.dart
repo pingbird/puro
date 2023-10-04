@@ -258,13 +258,14 @@ Future<void> createLink({
       link.path,
       path,
     ];
+    final startProc = 'Start-Process cmd -Wait -Verb runAs -ArgumentList '
+        '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}';
     await runProcess(
       scope,
       'powershell',
       [
         '-command',
-        ('Start-Process cmd -Wait -Verb runAs -ArgumentList '
-            '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}'),
+        startProc,
       ],
       throwOnFailure: true,
     );

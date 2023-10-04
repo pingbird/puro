@@ -147,6 +147,7 @@ class EngineBuildEnvCommand extends PuroCommand {
       environment: buildEnv,
       mode: ProcessStartMode.inheritStdio,
       workingDirectory: defaultShell ? env.engine.srcDir.path : null,
+      rosettaWorkaround: true,
     );
 
     final exitCode = await process.exitCode;

@@ -24,15 +24,21 @@ enum EngineArch {
 }
 
 enum EngineBuildTarget {
-  windowsX64(zipName: 'dart-sdk-windows-x64.zip'),
-  linuxX64(zipName: 'dart-sdk-linux-x64.zip'),
-  linuxArm64(zipName: 'dart-sdk-linux-arm64.zip'),
-  macosX64(zipName: 'dart-sdk-darwin-x64.zip'),
-  macosArm64(zipName: 'dart-sdk-darwin-arm64.zip');
+  windowsX64('dart-sdk-windows-x64.zip', EngineOS.windows, EngineArch.x64),
+  linuxX64('dart-sdk-linux-x64.zip', EngineOS.linux, EngineArch.x64),
+  linuxArm64('dart-sdk-linux-arm64.zip', EngineOS.linux, EngineArch.arm64),
+  macosX64('dart-sdk-darwin-x64.zip', EngineOS.macOS, EngineArch.x64),
+  macosArm64('dart-sdk-darwin-arm64.zip', EngineOS.macOS, EngineArch.arm64);
 
-  const EngineBuildTarget({required this.zipName});
+  const EngineBuildTarget(
+    this.zipName,
+    this.os,
+    this.arch,
+  );
 
   final String zipName;
+  final EngineOS os;
+  final EngineArch arch;
 
   static EngineBuildTarget from(EngineOS os, EngineArch arch) {
     switch (os) {
@@ -110,6 +116,9 @@ enum EngineBuildTarget {
     }
     return EngineBuildTarget.from(os, arch);
   }
+
+  static final Provider<Future<EngineBuildTarget>> provider =
+      Provider((scope) => query(scope: scope));
 }
 
 Future<void> unzip({
@@ -199,7 +208,7 @@ Future<bool> downloadSharedEngine({
   if (!sharedCache.exists) {
     log.v('Downloading engine');
 
-    final target = await EngineBuildTarget.query(scope: scope);
+    final target = await scope.read(EngineBuildTarget.provider);
     final engineZipUrl = config.flutterStorageBaseUrl.append(
       path: 'flutter_infra_release/flutter/$engineVersion/${target.zipName}',
     );
