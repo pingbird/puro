@@ -21,28 +21,6 @@ commands:
             fi
             dart --version
 
-  install_dart_macos_x64:
-    steps:
-      - run:
-          name: "Install Dart (x64)"
-          command: |-
-            cd ~/
-            curl https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-x64-release.zip -o dart-sdk.zip
-            unzip dart-sdk.zip
-            sudo ln -s `pwd`/dart-sdk/bin/dart /usr/local/bin/dart
-
-  install_dart_macos_arm64:
-    steps:
-      - run:
-          name: "Install Dart (arm64)"
-          command: |-
-            cd ~/
-            rm -rf dart-sdk
-            rm /usr/local/bin/dart
-            curl https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-arm64-release.zip -o dart-sdk.zip
-            unzip dart-sdk.zip
-            sudo ln -s `pwd`/dart-sdk/bin/dart /usr/local/bin/dart
-
   install_dart_windows:
     steps:
       - run:
