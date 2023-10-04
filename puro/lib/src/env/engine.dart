@@ -277,3 +277,15 @@ Future<Version> getDartSDKVersion({
   }
   return Version.parse(match.group(1)!);
 }
+
+Future<void> syncEngineCache({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  final config = PuroConfig.of(scope);
+  final engineVersion = environment.flutter.engineVersion;
+  if (engineVersion == null) {
+    return;
+  }
+  final sharedCacheDir = config.sharedCachesDir.childDirectory(engineVersion);
+}
