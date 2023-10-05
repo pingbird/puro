@@ -94,6 +94,16 @@ extension FileExtensions on File {
   File resolve() {
     return fileSystem.file(resolveSymbolicLinksSync());
   }
+
+  void moveSync(String newPath) {
+    try {
+      renameSync(newPath);
+    } catch (e) {
+      final data = readAsBytesSync();
+      fileSystem.file(newPath).writeAsBytesSync(data);
+      deleteSync();
+    }
+  }
 }
 
 extension NumExtensions on num {
@@ -325,5 +335,11 @@ extension IterableExtensions<T> on Iterable<T> {
   Iterable<R> mapWithIndex<R>(R Function(T e, int i) f) {
     var i = 0;
     return map((e) => f(e, i++));
+  }
+}
+
+extension FileSystemExtension on FileSystem {
+  bool existsSync(String path) {
+    return statSync(path).type != FileSystemEntityType.notFound;
   }
 }

@@ -1,16 +1,21 @@
 import 'dart:io';
 
+import 'package:file/file.dart';
+import 'package:process/process.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../command_result.dart';
 import '../config.dart';
 import '../downloader.dart';
+import '../extensions.dart';
+import '../file_lock.dart';
 import '../http.dart';
 import '../install/profile.dart';
 import '../logger.dart';
 import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
+import '../terminal.dart';
 
 enum EngineOS {
   windows,
@@ -157,6 +162,18 @@ Future<void> unzip({
       );
     }
   } else if (Platform.isLinux || Platform.isMacOS) {
+    const pm = LocalProcessManager();
+    if (!pm.canRun('unzip')) {
+      throw CommandError.list([
+        CommandMessage('unzip not found in PATH'),
+        CommandMessage(
+          Platform.isLinux
+              ? 'Try running `sudo apt install unzip`'
+              : 'Try running `brew install unzip`',
+          type: CompletionType.info,
+        ),
+      ]);
+    }
     await runProcess(
       scope,
       'unzip',
@@ -278,14 +295,100 @@ Future<Version> getDartSDKVersion({
   return Version.parse(match.group(1)!);
 }
 
-Future<void> syncEngineCache({
+/// These files shouldn't be shared between flutter installs.
+const cacheBlacklist = {
+  'flutter_version_check.stamp',
+  'flutter.version.json',
+};
+
+/// Syncs an environment's flutter cache with the shared cache by creating
+/// symlinks to individual files / folders.
+Future<void> syncFlutterCache({
   required Scope scope,
   required EnvConfig environment,
 }) async {
+  final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
+  final fs = config.fileSystem;
   final engineVersion = environment.flutter.engineVersion;
   if (engineVersion == null) {
     return;
   }
   final sharedCacheDir = config.sharedCachesDir.childDirectory(engineVersion);
+  if (!sharedCacheDir.existsSync()) {
+    return;
+  }
+  final cacheDir = environment.flutter.cacheDir;
+
+  if (fs.isLinkSync(cacheDir.path)) {
+    // Old versions of puro used to create a symlink to the whole shared cache.
+    log.v('Deleting old symlink to shared cache');
+    cacheDir.deleteSync();
+  }
+
+  if (!cacheDir.existsSync()) {
+    cacheDir.createSync(recursive: true);
+  }
+
+  // Loop through the files in the cache dir, deleting or moving any that
+  // aren't symlinks to the shared cache.
+  final cacheDirFiles = <String>{};
+  for (final file in cacheDir.listSync()) {
+    cacheDirFiles.add(file.basename);
+    if (cacheBlacklist.contains(file.basename)) {
+      continue;
+    }
+    final sharedFile = sharedCacheDir.childFile(file.basename);
+    if (fs.isLinkSync(file.path)) {
+      // Delete the link if it doesn't point to the file we want.
+      final link = fs.link(file.path);
+      if (link.targetSync() != sharedFile.path) {
+        log.d('Deleting ${file.basename} symlink because it points to '
+            '`${link.targetSync()}` instead of `${sharedFile.path}`');
+        link.deleteSync();
+      }
+      continue;
+    }
+    final sharedPath = sharedCacheDir.childFile(file.basename).path;
+    if (fs.existsSync(sharedPath)) {
+      // Delete local copy and link to shared copy, perhaps we could
+      // merge them instead?
+      log.d('Deleting ${file.basename} because it already exists in the '
+          'shared cache');
+      file.deleteSync(recursive: true);
+    } else {
+      // Move it to the shared cache.
+      log.d('Moving ${file.basename} to the shared cache');
+      file.renameSync(sharedPath);
+    }
+  }
+
+  final paths = <Link, String>{};
+
+  // Loop through the files in the shared cache, creating symlinks to them
+  // in the cache dir.
+  for (final file in sharedCacheDir.listSync()) {
+    final cachePath = cacheDir.childFile(file.basename).path;
+    if (cacheBlacklist.contains(file.basename) || fs.existsSync(cachePath)) {
+      continue;
+    }
+    paths[fs.link(cachePath)] = file.path;
+    log.d('Creating symlink for ${file.basename}');
+  }
+
+  // We create the links all at once to avoid having to elevate multiple times
+  // on Windows.
+  await createLinks(scope: scope, paths: paths);
+}
+
+Future<void> trySyncFlutterCache({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  await runOptional(scope, 'Syncing flutter cache', () async {
+    await syncFlutterCache(
+      scope: scope,
+      environment: environment,
+    );
+  });
 }

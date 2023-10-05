@@ -9,6 +9,7 @@ import '../process.dart';
 import '../provider.dart';
 import '../terminal.dart';
 import 'default.dart';
+import 'engine.dart';
 import 'flutter_tool.dart';
 
 Future<int> runFlutterCommand({
@@ -39,6 +40,10 @@ Future<int> runFlutterCommand({
   final shouldPrecompile =
       !environmentPrefs.hasPrecompileTool() || environmentPrefs.precompileTool;
   final quirks = await getToolQuirks(scope: scope, environment: environment);
+  final syncCache = !args.contains('--version');
+  if (syncCache) {
+    await trySyncFlutterCache(scope: scope, environment: environment);
+  }
   final flutterProcess = await startProcess(
     scope,
     dartPath,
@@ -73,6 +78,9 @@ Future<int> runFlutterCommand({
   final exitCode = await flutterProcess.exitCode;
   await stdoutFuture;
   await stderrFuture;
+  if (syncCache) {
+    await trySyncFlutterCache(scope: scope, environment: environment);
+  }
   return exitCode;
 }
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import '../../models.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../extensions.dart';
 import '../file_lock.dart';
@@ -94,7 +95,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
   }
 
   if (desiredEngineVersion == null) {
-    throw AssertionError(
+    throw CommandError(
       'Flutter installation corrupt: Could not find engine version at ${flutterConfig.engineVersionFile.path}\n'
       'This can happen if `puro create` or `puro upgrade` was interrupted, try deleting the environment with `puro rm ${environment.name}`',
     );
@@ -116,33 +117,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
       );
       final sharedCache = config.getFlutterCache(desiredEngineVersion);
       sharedCache.engineVersionFile.writeAsStringSync(desiredEngineVersion);
-      final cacheExists = flutterCache.exists;
-      final cachePath = flutterConfig.cacheDir.path;
-      final link = config.fileSystem.link(cachePath);
-      final resolvedPath = cacheExists
-          ? flutterConfig.cacheDir.resolveSymbolicLinksSync()
-          : cachePath;
-      final isLink = cachePath != resolvedPath;
-      final linkNeedsUpdate =
-          isLink && resolvedPath != sharedCache.cacheDir.path;
-      log.d('cacheExists: $cacheExists');
-      log.d('cachePath: $cachePath');
-      log.d('resolvedPath: $resolvedPath');
-      log.d('isLink: $isLink');
-      log.d('linkNeedsUpdate: $linkNeedsUpdate');
-      if (!cacheExists || linkNeedsUpdate) {
-        if (link.existsSync()) link.deleteSync();
-        await createLink(
-          scope: scope,
-          link: link,
-          path: sharedCache.cacheDir.path,
-        );
-        didUpdateEngine = true;
-      } else if (!isLink) {
-        throw AssertionError(
-          'Cache ${flutterConfig.cacheDir.path} already exists, was it created without puro?',
-        );
-      }
+      await trySyncFlutterCache(scope: scope, environment: environment);
     },
   );
 

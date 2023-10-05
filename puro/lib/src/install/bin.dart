@@ -64,7 +64,6 @@ Future<void> _promoteStandalone({required Scope scope}) async {
   if (!executableIsTrampoline && trampolineFile.existsSync()) {
     trampolineFile.deleteSync();
   }
-  executableFile.deleteOrRenameSync();
   final currentExecutableFile = version.puroExecutable!;
   executableFile.parent.createSync(recursive: true);
   if (!executableFile.parent.existsSync()) {
@@ -86,7 +85,8 @@ Future<void> _promoteStandalone({required Scope scope}) async {
         ),
     ]);
   }
-  currentExecutableFile.renameSync(executableFile.path);
+  executableFile.deleteOrRenameSync();
+  currentExecutableFile.moveSync(executableFile.path);
 }
 
 Future<void> _installTrampoline({
