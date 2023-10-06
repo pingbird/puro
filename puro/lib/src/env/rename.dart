@@ -10,6 +10,7 @@ import '../progress.dart';
 import '../provider.dart';
 import '../terminal.dart';
 import '../workspace/install.dart';
+import 'default.dart';
 
 /// Deletes an environment.
 Future<void> renameEnvironment({
@@ -30,6 +31,10 @@ Future<void> renameEnvironment({
   } else if (env.name == newEnv.name) {
     throw CommandError(
       'Environment `$name` is already named `$newName`',
+    );
+  } else if (isPseudoEnvName(newName)) {
+    throw CommandError(
+      'Environment `$newName` is already pinned to a version, use `puro create $newName` to create it',
     );
   }
 

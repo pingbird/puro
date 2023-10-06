@@ -75,6 +75,15 @@ Future<EnvCreateResult> createEnvironment({
     );
   }
 
+  if (isValidVersion(envName) &&
+      (flutterVersion == null ||
+          flutterVersion.version == null ||
+          envName != '${flutterVersion.version}')) {
+    throw CommandError(
+      'Cannot create an environment $envName with a different version',
+    );
+  }
+
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
   final git = GitClient.of(scope);

@@ -8,6 +8,10 @@ import 'create.dart';
 import 'releases.dart';
 import 'version.dart';
 
+bool isPseudoEnvName(String name) {
+  return pseudoEnvironmentNames.contains(name) || isValidVersion(name);
+}
+
 Future<EnvConfig> _getPseudoEnvironment({
   required Scope scope,
   required String envName,
@@ -35,15 +39,8 @@ Future<EnvConfig> getProjectEnvOrDefault({
   if (envName != null) {
     final environment = config.getEnv(envName);
     if (!environment.exists) {
-      if (pseudoEnvironmentNames.contains(environment.name)) {
+      if (isPseudoEnvName(environment.name)) {
         return _getPseudoEnvironment(scope: scope, envName: envName);
-      } else if (FlutterChannel.parse(environment.name) != null ||
-          tryParseVersion(environment.name) != null) {
-        throw CommandError(
-          'No environment named `${environment.name}`\n'
-          'That looks like a version, to create a new environment '
-          'use `puro create my_env ${environment.name}; puro use my_env`',
-        );
       }
       environment.ensureExists();
     }
@@ -53,7 +50,7 @@ Future<EnvConfig> getProjectEnvOrDefault({
   if (env == null) {
     final override = config.environmentOverride;
     if (override != null) {
-      if (pseudoEnvironmentNames.contains(override)) {
+      if (isPseudoEnvName(override)) {
         return _getPseudoEnvironment(scope: scope, envName: override);
       }
       throw CommandError(
@@ -61,7 +58,7 @@ Future<EnvConfig> getProjectEnvOrDefault({
       );
     }
     final envName = await getDefaultEnvName(scope: scope);
-    if (pseudoEnvironmentNames.contains(envName)) {
+    if (isPseudoEnvName(envName)) {
       return _getPseudoEnvironment(scope: scope, envName: envName);
     }
     env = config.getEnv(envName);
@@ -85,7 +82,7 @@ Future<void> setDefaultEnvName({
   required Scope scope,
   required String envName,
 }) async {
-  ensureValidName(envName);
+  ensureValidEnvName(envName);
   await updateGlobalPrefs(
     scope: scope,
     fn: (prefs) {

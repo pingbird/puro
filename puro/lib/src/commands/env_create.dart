@@ -1,6 +1,8 @@
 import '../command.dart';
+import '../command_result.dart';
 import '../config.dart';
 import '../env/create.dart';
+import '../env/default.dart';
 import '../env/releases.dart';
 import '../env/version.dart';
 import '../install/bin.dart';
@@ -37,11 +39,16 @@ class EnvCreateCommand extends PuroCommand {
     final args = unwrapArguments(atLeast: 1, atMost: 2);
     final version = args.length > 1 ? args[1] : null;
     final envName = args.first.toLowerCase();
-    ensureValidName(envName);
+    ensureValidEnvName(envName);
 
     await ensurePuroInstalled(scope: scope);
 
     if (fork != null) {
+      if (pseudoEnvironmentNames.contains(envName) || isValidVersion(envName)) {
+        throw CommandError(
+          'Cannot create fixed version `$envName` with a fork',
+        );
+      }
       return createEnvironment(
         scope: scope,
         envName: envName,
@@ -56,8 +63,7 @@ class EnvCreateCommand extends PuroCommand {
           scope: scope,
           version: version,
           channel: channel,
-          defaultChannel:
-              pseudoEnvironmentNames.contains(envName) ? envName : 'stable',
+          defaultVersion: isPseudoEnvName(name) ? envName : 'stable',
         ),
       );
     }
