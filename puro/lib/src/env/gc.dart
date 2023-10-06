@@ -1,21 +1,27 @@
 import 'package:file/file.dart';
 
 import '../config.dart';
+import '../git.dart';
 import '../logger.dart';
 import '../provider.dart';
 
 Future<int> collectGarbage({
   required Scope scope,
   int maxUnusedCaches = 0,
+  int maxUnusedFlutterTools = 0,
 }) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
+  final git = GitClient.of(scope);
   final sharedCacheDirs = config.sharedCachesDir.listSync();
-  if (sharedCacheDirs.length < maxUnusedCaches) {
+  final flutterToolDirs = config.sharedFlutterToolsDir.listSync();
+  if (sharedCacheDirs.length < maxUnusedCaches &&
+      flutterToolDirs.length < maxUnusedFlutterTools) {
     // Don't bother cleaning up if there are less than maxUnusedCaches
     return 0;
   }
   final usedCaches = <String>{};
+  final usedCommits = <String>{};
   for (final dir in config.envsDir.listSync()) {
     if (dir is! Directory || !isValidName(dir.basename)) {
       continue;
@@ -25,7 +31,14 @@ Future<int> collectGarbage({
     if (engineVersion != null) {
       usedCaches.add(engineVersion);
     }
+
+    final commit =
+        await git.tryGetCurrentCommitHash(repository: environment.flutterDir);
+    if (commit != null) {
+      usedCommits.add(commit);
+    }
   }
+
   final unusedCaches = <Directory, DateTime>{};
   for (final dir in sharedCacheDirs) {
     if (dir is! Directory ||
@@ -38,6 +51,19 @@ Future<int> collectGarbage({
     } else {
       // Perhaps a delete was incomplete? The cache is invalid without an
       // engine version file regardless.
+      unusedCaches[dir] = DateTime.fromMillisecondsSinceEpoch(0);
+    }
+  }
+
+  final unusedFlutterTools = <Directory, DateTime>{};
+  for (final dir in flutterToolDirs) {
+    if (dir is! Directory ||
+        !isValidCommitHash(dir.basename) ||
+        usedCommits.contains(dir.basename)) continue;
+    final snapshotFile = dir.childFile('flutter_tool.snapshot');
+    if (snapshotFile.existsSync()) {
+      unusedFlutterTools[dir] = snapshotFile.lastAccessedSync();
+    } else {
       unusedCaches[dir] = DateTime.fromMillisecondsSinceEpoch(0);
     }
   }
@@ -63,9 +89,18 @@ Future<int> collectGarbage({
 
   // In theory this should be the access times in ascending order but I never
   // tested it (famous last words)
-  final entries = unusedCaches.entries.toList()
+  var entries = unusedCaches.entries.toList()
     ..sort((a, b) => a.value.compareTo(b.value));
   for (var i = 0; i < entries.length - maxUnusedCaches; i++) {
+    final dir = entries[i].key;
+    log.v('Deleting ${dir.path}');
+    reclaimed += await deleteRecursive(dir);
+  }
+
+  // Same thing for snapshot files
+  entries = unusedFlutterTools.entries.toList()
+    ..sort((a, b) => a.value.compareTo(b.value));
+  for (var i = 0; i < entries.length - maxUnusedFlutterTools; i++) {
     final dir = entries[i].key;
     log.v('Deleting ${dir.path}');
     reclaimed += await deleteRecursive(dir);

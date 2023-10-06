@@ -248,6 +248,10 @@ Future<FlutterToolInfo> setUpFlutterTool({
         didUpdateTool = true;
       },
     );
+
+    // Explicitly set the last accessed time so `puro gc` can figure out which
+    // snapshots are less frequently used.
+    snapshotFile.setLastAccessedSync(DateTime.now());
   } else {
     await checkAtomic(
       scope: scope,

@@ -68,7 +68,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
           environment.name != '${toVersion.version}')) {
     throw CommandError(
       'Cannot upgrade environment ${environment.name} to a different version, '
-      'run `puro use ${toVersion.name}` to switch your project instead',
+      'run `puro use ${toVersion.name}` instead to switch your project',
     );
   }
 

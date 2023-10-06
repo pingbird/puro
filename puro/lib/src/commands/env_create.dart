@@ -63,7 +63,7 @@ class EnvCreateCommand extends PuroCommand {
           scope: scope,
           version: version,
           channel: channel,
-          defaultVersion: isPseudoEnvName(name) ? envName : 'stable',
+          defaultVersion: isPseudoEnvName(envName) ? envName : 'stable',
         ),
       );
     }

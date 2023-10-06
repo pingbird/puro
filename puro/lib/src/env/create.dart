@@ -80,7 +80,7 @@ Future<EnvCreateResult> createEnvironment({
           flutterVersion.version == null ||
           envName != '${flutterVersion.version}')) {
     throw CommandError(
-      'Cannot create an environment $envName with a different version',
+      'Cannot initialize environment $envName with version ${flutterVersion?.name}',
     );
   }
 

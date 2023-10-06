@@ -128,7 +128,8 @@ Future<ListEnvironmentResult> listEnvironments({
   if (config.envsDir.existsSync()) {
     for (final childEntity in config.envsDir.listSync()) {
       if (childEntity is! Directory ||
-          !isValidName(childEntity.basename) ||
+          !(isValidName(childEntity.basename) ||
+              isValidVersion(childEntity.basename)) ||
           childEntity.basename == 'default') {
         continue;
       }
