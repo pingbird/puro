@@ -17,38 +17,51 @@ instructions at https://puro.dev/
 
 ## Quick start
 
-Once puro is installed, set up a new environment with the [create](https://puro.dev/reference/commands/#create) command:
+Puro uses the concept of "environments" to manage Flutter versions, these can either be tied to a specific version /
+release channel, or a named environment that can be upgraded independently.
 
-```sh
-# Create a new environment from branch
-puro create my_env stable
+Environments can be set globally or per-project, the global environment is set to `stable` by default.
 
-# Or from a version
-puro create my_env 3.3.6
+After installing Puro you can run `puro flutter doctor` to install the latest stable version of Flutter, if you want to
+switch to beta you can run `puro use -g beta` and then `puro flutter doctor` again.
 
-# Or from a commit
-puro create my_env d9111f6
+Cheat sheet:
 
-# Or from a fork
-puro create my_env --fork git@github.com:pingbird/flutter.git
+```
+# Create a new environment "foo" with the latest stable release
+puro create foo stable
+
+# Create a new environment "bar" with with Flutter 3.13.6
+puro create bar 3.13.6
+
+# Switch "bar" to a specific Flutter version
+puro upgrade bar 3.10.6
+
+# List available environments
+puro ls
+
+# List available Flutter releases
+puro releases
+
+# Switch the current project to use "foo"
+puro use foo
+
+# Switch the global default to "bar"
+puro use -g bar
+
+# Remove puro configuration from the current project
+puro clean
+
+# Delete the "foo" environment
+puro rm foo
+
+# Run flutter commands in a specific environment
+puro -e foo flutter ...
+puro -e foo dart ...
+puro -e foo pub ...
 ```
 
-Inside a Flutter project, run the [use](https://puro.dev/reference/commands/#use) command to switch to the environment you created:
-
-```sh
-puro use my_env
-```
-
-Puro will automatically detect if you are using VSCode or Android Studio (IntelliJ) and generate the necessary configs.
-If this is a new project without a workspace, add `--vscode` or `--intellij` to generate them regardless.
-
-You can also configure the global default with `--global` or `-g`:
-
-```sh
-puro use -g my_env
-```
-
-See the [Manual](https://puro.dev/reference/manual/) for more information.
+See the full command list at https://puro.dev/reference/manual/
 
 ## Performance
 

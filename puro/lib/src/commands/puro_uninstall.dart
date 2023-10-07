@@ -63,7 +63,9 @@ class PuroUninstallCommand extends PuroCommand {
     }
 
     if (profilePath == null && !updatedWindowsRegistry) {
-      throw CommandError('Could not find Puro in PATH, is it still installed?');
+      throw CommandError(
+        'Could not find Puro in your PATH, is it still installed?',
+      );
     }
 
     return BasicMessageResult.list([

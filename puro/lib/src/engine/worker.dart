@@ -20,15 +20,15 @@ Future<void> installLinuxWorkerPackages({required Scope scope}) async {
 
   const pm = LocalProcessManager();
   if (!pm.canRun('python3')) {
-    errors.add(CommandMessage('python3 not found in PATH'));
+    errors.add(CommandMessage('python3 not found in your PATH'));
     tryApt.add('python3');
   }
   if (!pm.canRun('curl')) {
-    errors.add(CommandMessage('curl not found in PATH'));
+    errors.add(CommandMessage('curl not found in your PATH'));
     tryApt.add('curl');
   }
   if (!pm.canRun('unzip')) {
-    errors.add(CommandMessage('unzip not found in PATH'));
+    errors.add(CommandMessage('unzip not found in your PATH'));
     tryApt.add('unzip');
   }
 
@@ -230,7 +230,7 @@ Future<void> ensureWindowsLongPathsEnabled({required Scope scope}) async {
 }
 
 Future<void> ensureWindowsPythonInstalled({required Scope scope}) async {
-  final pythonPrograms = await findProgramInPath(scope: scope, name: 'python3');
+  final pythonPrograms = await findProgramInPath(scope: scope, name: 'python');
   // Windows has a dummy python3 executable that opens the microsoft store
   // when you run it, unless you give it arguments, then it prints and fails.
   // There doesn't appear to be a way to programmatically disable the "App
@@ -257,7 +257,7 @@ Future<void> ensureWindowsPythonInstalled({required Scope scope}) async {
   }
   if (pythonPrograms.length > 1) {
     CommandMessage.format(
-      (format) => 'Multiple installations of python3 found in your PATH\n'
+      (format) => 'Multiple installations of python found in your PATH\n'
           'If engine builds fail, try removing all but one:\n'
           '${pythonPrograms.map((e) => '${format.color(
                 '*',
@@ -267,22 +267,22 @@ Future<void> ensureWindowsPythonInstalled({required Scope scope}) async {
     ).queue(scope);
   } else if (pythonPrograms.isEmpty) {
     throw CommandError.list([
-      CommandMessage('python3 not found in your PATH'),
+      CommandMessage('python not found in your PATH'),
       CommandMessage(
-        'Try running `winget install -e -i --id=Python.Python.3.11 --source=winget --scope=machine`',
+        'Try running `winget install -e -i --id=Python.Python.3.10 --source=winget --scope=machine`',
         type: CompletionType.info,
       ),
     ]);
   }
   final python3Result = await runProcess(
     scope,
-    'python3',
+    'python',
     ['-V'],
     runInShell: true,
   );
   if (python3Result.exitCode != 0) {
     throw CommandError(
-      '`python3 -V` did not pass the vibe check (exited with code ${python3Result.exitCode})',
+      '`python -V` did not pass the vibe check (exited with code ${python3Result.exitCode})',
     );
   }
 }

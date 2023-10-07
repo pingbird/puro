@@ -165,7 +165,7 @@ Future<void> unzip({
     const pm = LocalProcessManager();
     if (!pm.canRun('unzip')) {
       throw CommandError.list([
-        CommandMessage('unzip not found in PATH'),
+        CommandMessage('unzip not found in your PATH'),
         CommandMessage(
           Platform.isLinux
               ? 'Try running `sudo apt install unzip`'
