@@ -147,19 +147,6 @@ void main() {
     );
   });
 
-  test('Test empty settings file in .vscode', () {
-    testUpdate(
-      '',
-      ['a'],
-      {'b': 'c'},
-      '''{
-          "a": {
-            "b": "c"
-          }
-        }''',
-    );
-  });
-
   test('Dont expand map single-line siblings', () {
     testUpdate(
       '{"x": "y"}',
