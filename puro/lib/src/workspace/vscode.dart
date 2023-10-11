@@ -30,8 +30,9 @@ class VSCodeConfig extends IdeConfig {
         indentLevel: 4,
       );
     }
+    final source = settingsFile.readAsStringSync();
     return JsonEditor(
-      source: settingsFile.readAsStringSync(),
+      source: source.isEmpty ? '{}' : source,
       indentLevel: 4,
     );
   }
