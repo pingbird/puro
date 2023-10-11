@@ -80,7 +80,7 @@ Future<void> _promoteStandalone({required Scope scope}) async {
         CommandMessage(
           'The most likely culprit is Windows Defender, to make an exception, '
           'go to Windows Security > Protection History > Click the most recent '
-          'item > Check if it says puro.exe > Allow on device',
+          'item > Make sure it says puro.exe > Allow on device',
           type: CompletionType.info,
         ),
     ]);

@@ -12,7 +12,11 @@ class GcCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
-    final bytes = await collectGarbage(scope: scope);
+    final bytes = await collectGarbage(
+      scope: scope,
+      maxUnusedCaches: 0,
+      maxUnusedFlutterTools: 0,
+    );
     if (bytes == 0) {
       return BasicMessageResult('Nothing to clean up');
     } else {
