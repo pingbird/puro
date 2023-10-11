@@ -145,3 +145,7 @@ html {
 	margin-bottom: -64px;
 	z-index: 100;
 }
+
+.giscus-frame {
+	height: auto !important;
+}
