@@ -141,4 +141,7 @@ html {
 
 .giscus {
 	margin-top: 64px;
+	position: relative;
+	margin-bottom: -64px;
+	z-index: 100;
 }
