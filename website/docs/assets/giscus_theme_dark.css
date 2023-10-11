@@ -107,3 +107,7 @@ main .gsc-loading-image {
 .gsc-reactions {
     padding-bottom: 64px;
 }
+
+body {
+    height: 200px;
+}
