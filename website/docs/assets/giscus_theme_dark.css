@@ -103,3 +103,7 @@ main .gsc-loading-image {
 .gsc-comments {
     display: none;
 }
+
+.gsc-reactions {
+    margin-bottom: 32px;
+}
