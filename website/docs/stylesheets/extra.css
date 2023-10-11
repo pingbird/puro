@@ -132,9 +132,3 @@ html {
 	margin: 0;
 	line-height: 0.5;
 }
-
-/* Giscus begone */
-
-.gsc-comments {
-	display: none;
-}
