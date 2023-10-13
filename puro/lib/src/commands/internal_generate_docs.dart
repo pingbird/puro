@@ -22,9 +22,6 @@ class GenerateDocsCommand extends PuroCommand {
   String get name => '_generate-docs';
 
   @override
-  bool get hidden => true;
-
-  @override
   Future<CommandResult> run() async {
     final scriptPath = Platform.script.toFilePath();
     final config = PuroConfig.of(scope);

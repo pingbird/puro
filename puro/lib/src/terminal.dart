@@ -123,7 +123,7 @@ class ColorOutputFormatter extends OutputFormatter {
   }
 }
 
-class Terminal extends StringSink {
+class Terminal implements StringSink {
   Terminal({
     required this.stdout,
   });

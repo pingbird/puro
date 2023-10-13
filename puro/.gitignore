@@ -6,6 +6,7 @@
 build/
 bin/puro
 bin/puro.exe
+temp_ast_gen
 
 # Omit committing pubspec.lock for library packages; see
 # https://dart.dev/guides/libraries/private-files#pubspeclock.

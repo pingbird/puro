@@ -37,7 +37,7 @@ class GitClient {
   late final _log = PuroLogger.of(scope);
   late final _terminal = Terminal.of(scope);
 
-  Future<ProcessResult> _git(
+  Future<ProcessResult> raw(
     List<String> args, {
     Directory? directory,
     void Function(String line)? onStdout,
@@ -114,7 +114,7 @@ class GitClient {
 
   /// https://git-scm.com/docs/git-init
   Future<void> init({required Directory repository}) async {
-    final result = await _git(
+    final result = await raw(
       ['init'],
       directory: repository,
     );
@@ -132,7 +132,7 @@ class GitClient {
     void Function(GitCloneStep step, double progress)? onProgress,
   }) async {
     if (onProgress != null) onProgress(GitCloneStep.values.first, 0);
-    final cloneResult = await _git(
+    final cloneResult = await raw(
       [
         'clone',
         remote,
@@ -199,7 +199,7 @@ class GitClient {
     bool force = false,
     String? newBranch,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'checkout',
         if (detach) '--detach',
@@ -223,7 +223,7 @@ class GitClient {
     bool merge = false,
     bool keep = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'reset',
         if (soft) '--soft',
@@ -248,7 +248,7 @@ class GitClient {
     bool merge = false,
     bool keep = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'reset',
         if (soft) '--soft',
@@ -269,7 +269,7 @@ class GitClient {
     String? remote,
     bool all = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'pull',
         if (remote != null) remote,
@@ -288,7 +288,7 @@ class GitClient {
     bool all = false,
     bool updateHeadOk = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'fetch',
         if (all) '--all',
@@ -308,7 +308,7 @@ class GitClient {
     bool? fastForward,
     bool fastForwardOnly = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'merge',
         if (fastForward != null)
@@ -328,7 +328,7 @@ class GitClient {
     bool short = false,
     bool abbreviation = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'rev-parse',
         if (short) '--short',
@@ -365,7 +365,7 @@ class GitClient {
     bool abbreviation = false,
     bool verify = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'rev-parse',
         if (short) '--short',
@@ -403,8 +403,8 @@ class GitClient {
   Future<bool> hasUncomittedChanges({
     required Directory repository,
   }) async {
-    await _git(['git update-index', '--refresh']);
-    final result = await _git(['diff-index', '--quiet', 'HEAD', '--']);
+    await raw(['git update-index', '--refresh']);
+    final result = await raw(['diff-index', '--quiet', 'HEAD', '--']);
     return result.exitCode != 0;
   }
 
@@ -442,7 +442,7 @@ class GitClient {
     bool force = false,
     bool delete = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'branch',
         if (force) '-f',
@@ -473,7 +473,7 @@ class GitClient {
     required Directory repository,
     required String branch,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'show-ref',
         'refs/heads/$branch',
@@ -488,7 +488,7 @@ class GitClient {
     required Directory repository,
     required String branch,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'branch',
         '-D',
@@ -524,7 +524,7 @@ class GitClient {
     required String name,
     required String? ref,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'symbolic-ref',
         name,
@@ -540,7 +540,7 @@ class GitClient {
     required Directory repository,
     required List<String> objects,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'show',
         ...objects,
@@ -557,7 +557,7 @@ class GitClient {
     required Directory repository,
     required List<String> objects,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'show',
         ...objects,
@@ -587,7 +587,7 @@ class GitClient {
     String ref = 'HEAD',
     required String path,
   }) async {
-    final result = await _git(
+    final result = await raw(
       ['cat-file', '-e', '$ref:$path'],
       directory: repository,
       binary: true,
@@ -614,7 +614,7 @@ class GitClient {
     required Directory repository,
     required String ref,
   }) async {
-    final result = await _git(
+    final result = await raw(
       ['tag', '--points-at', ref],
       directory: repository,
     );
@@ -629,7 +629,7 @@ class GitClient {
     String? match,
     bool long = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'describe',
         if (tags) '--tags',
@@ -650,7 +650,7 @@ class GitClient {
   Future<Map<String, GitRemoteUrls>> getRemotes({
     required Directory repository,
   }) async {
-    final result = await _git(
+    final result = await raw(
       ['remote', '-v'],
       directory: repository,
     );
@@ -690,7 +690,7 @@ class GitClient {
     required String url,
     bool fetch = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'remote',
         'add',
@@ -712,7 +712,7 @@ class GitClient {
     bool add = false,
     bool delete = false,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'remote',
         'set-url',
@@ -732,7 +732,7 @@ class GitClient {
     required Directory repository,
     required String name,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'remote',
         'remove',
@@ -799,7 +799,7 @@ class GitClient {
     required Iterable<String> files,
     bool value = true,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'update-index',
         if (value) '--assume-unchanged' else '--no-assume-unchanged',
@@ -816,7 +816,7 @@ class GitClient {
     required Directory repository,
     required String name,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'config',
         '--get',
@@ -835,7 +835,7 @@ class GitClient {
     required String name,
     required String value,
   }) async {
-    final result = await _git(
+    final result = await raw(
       [
         'config',
         name,

@@ -16,7 +16,8 @@ import 'commands/env_use.dart';
 import 'commands/eval.dart';
 import 'commands/flutter.dart';
 import 'commands/gc.dart';
-import 'commands/generate_docs.dart';
+import 'commands/internal_generate_ast_parser.dart';
+import 'commands/internal_generate_docs.dart';
 import 'commands/ls_versions.dart';
 import 'commands/prefs.dart';
 import 'commands/pub.dart';
@@ -118,6 +119,14 @@ void main(List<String> args) async {
       valueHelp: 'url',
       callback: runner.wrapCallback((url) {
         runner.engineGitUrlOverride = url;
+      }),
+    )
+    ..addOption(
+      'dart-sdk-git-url',
+      help: 'Overrides the Dart SDK git url',
+      valueHelp: 'url',
+      callback: runner.wrapCallback((url) {
+        runner.dartSdkGitUrlOverride = url;
       }),
     )
     ..addOption(
@@ -223,6 +232,7 @@ void main(List<String> args) async {
     ..addCommand(PubCommand())
     ..addCommand(RunCommand())
     ..addCommand(GenerateDocsCommand())
+    ..addCommand(GenerateASTParserCommand())
     ..addCommand(PuroUpgradeCommand())
     ..addCommand(PuroInstallCommand())
     ..addCommand(PuroUninstallCommand())

@@ -846,6 +846,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     $core.bool? enableProfileUpdate,
     $core.String? profileOverride,
     $core.Iterable<$core.String>? projectDotfiles,
+    $core.String? lastUpdateNotificationCommand,
   }) {
     final $result = create();
     if (defaultEnvironment != null) {
@@ -868,6 +869,9 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     }
     if (projectDotfiles != null) {
       $result.projectDotfiles.addAll(projectDotfiles);
+    }
+    if (lastUpdateNotificationCommand != null) {
+      $result.lastUpdateNotificationCommand = lastUpdateNotificationCommand;
     }
     return $result;
   }
@@ -896,6 +900,8 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
         protoName: 'profileOverride')
     ..pPS(7, _omitFieldNames ? '' : 'projectDotfiles',
         protoName: 'projectDotfiles')
+    ..aOS(8, _omitFieldNames ? '' : 'lastUpdateNotificationCommand',
+        protoName: 'lastUpdateNotificationCommand')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -996,6 +1002,18 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(7)
   $core.List<$core.String> get projectDotfiles => $_getList(6);
+
+  @$pb.TagNumber(8)
+  $core.String get lastUpdateNotificationCommand => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set lastUpdateNotificationCommand($core.String v) {
+    $_setString(7, v);
+  }
+
+  @$pb.TagNumber(8)
+  $core.bool hasLastUpdateNotificationCommand() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearLastUpdateNotificationCommand() => clearField(8);
 }
 
 class PuroEnvPrefsModel extends $pb.GeneratedMessage {

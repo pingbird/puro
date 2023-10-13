@@ -29,6 +29,9 @@ abstract class PuroCommand extends Command<CommandResult> {
   @override
   String get description => '';
 
+  @override
+  bool get hidden => name.startsWith('_');
+
   /// Whether or not puro should check for updates while this command is
   /// running.
   bool get allowUpdateCheck => true;
@@ -148,6 +151,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   String? workingDirOverride;
   String? flutterGitUrlOverride;
   String? engineGitUrlOverride;
+  String? dartSdkGitUrlOverride;
   String? versionsJsonUrlOverride;
   String? flutterStorageBaseUrlOverride;
   String? environmentOverride;
@@ -312,6 +316,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         projectDir: projectDirOverride,
         flutterGitUrl: flutterGitUrlOverride,
         engineGitUrl: engineGitUrlOverride,
+        dartSdkGitUrl: dartSdkGitUrlOverride,
         releasesJsonUrl: versionsJsonUrlOverride,
         flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
         environmentOverride: environmentOverride,

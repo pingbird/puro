@@ -43,6 +43,7 @@ class PuroConfig {
     required this.parentProjectDir,
     required this.flutterGitUrl,
     required this.engineGitUrl,
+    required this.dartSdkGitUrl,
     required this.releasesJsonUrl,
     required this.flutterStorageBaseUrl,
     required this.environmentOverride,
@@ -61,6 +62,7 @@ class PuroConfig {
     required String? projectDir,
     required String? flutterGitUrl,
     required String? engineGitUrl,
+    required String? dartSdkGitUrl,
     required String? releasesJsonUrl,
     required String? flutterStorageBaseUrl,
     required String? environmentOverride,
@@ -188,6 +190,7 @@ class PuroConfig {
       parentProjectDir: parentProjectDir,
       flutterGitUrl: flutterGitUrl ?? 'https://github.com/flutter/flutter.git',
       engineGitUrl: engineGitUrl ?? 'https://github.com/flutter/engine.git',
+      dartSdkGitUrl: dartSdkGitUrl ?? 'https://github.com/dart-lang/sdk.git',
       releasesJsonUrl: Uri.parse(
         releasesJsonUrl ??
             '$flutterStorageBaseUrl/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
@@ -210,6 +213,7 @@ class PuroConfig {
   final Directory? parentProjectDir;
   final String flutterGitUrl;
   final String engineGitUrl;
+  final String dartSdkGitUrl;
   final Uri releasesJsonUrl;
   final Uri flutterStorageBaseUrl;
   final String? environmentOverride;
@@ -223,6 +227,7 @@ class PuroConfig {
   late final Directory sharedDir = puroRoot.childDirectory('shared');
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedEngineDir = sharedDir.childDirectory('engine');
+  late final Directory sharedDartSdkDir = sharedDir.childDirectory('dart-sdk');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
   late final Directory sharedGClientDir = sharedDir.childDirectory('gclient');
   late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
@@ -330,6 +335,7 @@ class PuroConfig {
         '  parentProjectDir: $parentProjectDir,\n'
         '  flutterGitUrl: $flutterGitUrl,\n'
         '  engineGitUrl: $engineGitUrl,\n'
+        '  dartSdkGitUrl: $dartSdkGitUrl,\n'
         '  releasesJsonUrl: $releasesJsonUrl,\n'
         '  flutterStorageBaseUrl: $flutterStorageBaseUrl,\n'
         '  environmentOverride: $environmentOverride,\n'

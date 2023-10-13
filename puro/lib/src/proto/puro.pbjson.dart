@@ -288,11 +288,20 @@ const PuroGlobalPrefsModel$json = {
       '17': true
     },
     {
+      '1': 'lastUpdateNotificationCommand',
+      '3': 8,
+      '4': 1,
+      '5': 9,
+      '9': 3,
+      '10': 'lastUpdateNotificationCommand',
+      '17': true
+    },
+    {
       '1': 'enableUpdateCheck',
       '3': 4,
       '4': 1,
       '5': 8,
-      '9': 3,
+      '9': 4,
       '10': 'enableUpdateCheck',
       '17': true
     },
@@ -301,7 +310,7 @@ const PuroGlobalPrefsModel$json = {
       '3': 5,
       '4': 1,
       '5': 8,
-      '9': 4,
+      '9': 5,
       '10': 'enableProfileUpdate',
       '17': true
     },
@@ -310,7 +319,7 @@ const PuroGlobalPrefsModel$json = {
       '3': 6,
       '4': 1,
       '5': 9,
-      '9': 5,
+      '9': 6,
       '10': 'profileOverride',
       '17': true
     },
@@ -320,6 +329,7 @@ const PuroGlobalPrefsModel$json = {
     {'1': '_defaultEnvironment'},
     {'1': '_lastUpdateCheck'},
     {'1': '_lastUpdateNotification'},
+    {'1': '_lastUpdateNotificationCommand'},
     {'1': '_enableUpdateCheck'},
     {'1': '_enableProfileUpdate'},
     {'1': '_profileOverride'},
@@ -331,13 +341,15 @@ final $typed_data.Uint8List puroGlobalPrefsModelDescriptor = $convert.base64Deco
     'ChRQdXJvR2xvYmFsUHJlZnNNb2RlbBIzChJkZWZhdWx0RW52aXJvbm1lbnQYASABKAlIAFISZG'
     'VmYXVsdEVudmlyb25tZW50iAEBEi0KD2xhc3RVcGRhdGVDaGVjaxgCIAEoCUgBUg9sYXN0VXBk'
     'YXRlQ2hlY2uIAQESOwoWbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbhgDIAEoCUgCUhZsYXN0VXBkYX'
-    'RlTm90aWZpY2F0aW9uiAEBEjEKEWVuYWJsZVVwZGF0ZUNoZWNrGAQgASgISANSEWVuYWJsZVVw'
-    'ZGF0ZUNoZWNriAEBEjUKE2VuYWJsZVByb2ZpbGVVcGRhdGUYBSABKAhIBFITZW5hYmxlUHJvZm'
-    'lsZVVwZGF0ZYgBARItCg9wcm9maWxlT3ZlcnJpZGUYBiABKAlIBVIPcHJvZmlsZU92ZXJyaWRl'
-    'iAEBEigKD3Byb2plY3REb3RmaWxlcxgHIAMoCVIPcHJvamVjdERvdGZpbGVzQhUKE19kZWZhdW'
-    'x0RW52aXJvbm1lbnRCEgoQX2xhc3RVcGRhdGVDaGVja0IZChdfbGFzdFVwZGF0ZU5vdGlmaWNh'
-    'dGlvbkIUChJfZW5hYmxlVXBkYXRlQ2hlY2tCFgoUX2VuYWJsZVByb2ZpbGVVcGRhdGVCEgoQX3'
-    'Byb2ZpbGVPdmVycmlkZQ==');
+    'RlTm90aWZpY2F0aW9uiAEBEkkKHWxhc3RVcGRhdGVOb3RpZmljYXRpb25Db21tYW5kGAggASgJ'
+    'SANSHWxhc3RVcGRhdGVOb3RpZmljYXRpb25Db21tYW5kiAEBEjEKEWVuYWJsZVVwZGF0ZUNoZW'
+    'NrGAQgASgISARSEWVuYWJsZVVwZGF0ZUNoZWNriAEBEjUKE2VuYWJsZVByb2ZpbGVVcGRhdGUY'
+    'BSABKAhIBVITZW5hYmxlUHJvZmlsZVVwZGF0ZYgBARItCg9wcm9maWxlT3ZlcnJpZGUYBiABKA'
+    'lIBlIPcHJvZmlsZU92ZXJyaWRliAEBEigKD3Byb2plY3REb3RmaWxlcxgHIAMoCVIPcHJvamVj'
+    'dERvdGZpbGVzQhUKE19kZWZhdWx0RW52aXJvbm1lbnRCEgoQX2xhc3RVcGRhdGVDaGVja0IZCh'
+    'dfbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkIgCh5fbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkNvbW1h'
+    'bmRCFAoSX2VuYWJsZVVwZGF0ZUNoZWNrQhYKFF9lbmFibGVQcm9maWxlVXBkYXRlQhIKEF9wcm'
+    '9maWxlT3ZlcnJpZGU=');
 
 @$core.Deprecated('Use puroEnvPrefsModelDescriptor instead')
 const PuroEnvPrefsModel$json = {
