@@ -132,3 +132,20 @@ html {
 	margin: 0;
 	line-height: 0.5;
 }
+
+/* Giscus begone */
+
+#__comments {
+	display: none;
+}
+
+.giscus {
+	margin-top: 64px;
+	position: relative;
+	margin-bottom: -64px;
+	z-index: 100;
+}
+
+.giscus-frame {
+	height: auto !important;
+}

@@ -262,7 +262,7 @@ class PuroConfig {
       }
     }
     name = name.toLowerCase();
-    ensureValidName(name);
+    ensureValidEnvName(name);
     return EnvConfig(parentConfig: this, envDir: envsDir.childDirectory(name));
   }
 
@@ -609,6 +609,11 @@ bool isValidName(String name) {
   return _nameRegex.hasMatch(name);
 }
 
+bool isValidVersion(String name) {
+  final version = tryParseVersion(name);
+  return version != null && name == '$version';
+}
+
 final _commitHashRegex = RegExp(r'^[0-9a-f]{5,40}$');
 bool isValidCommitHash(String commit) {
   return _commitHashRegex.hasMatch(commit);
@@ -623,7 +628,8 @@ Version? tryParseVersion(String text) {
   }
 }
 
-void ensureValidName(String name) {
+void ensureValidEnvName(String name) {
+  if (isValidVersion(name)) return;
   for (var i = 0; i < name.length; i++) {
     final char = name[i];
     final codeUnit = char.codeUnitAt(0);
@@ -635,7 +641,7 @@ void ensureValidName(String name) {
     }
     throw CommandError(
       'Unexpected `$char` at index $i of name `$name`\n'
-      'Names must match pattern [_\\-a-z][_\\-a-z0-9]*',
+      'Names must match pattern [_\\-a-z][_\\-a-z0-9]* or be a valid version',
     );
   }
   if (!isValidName(name)) {

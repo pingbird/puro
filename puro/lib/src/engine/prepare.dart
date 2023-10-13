@@ -5,6 +5,7 @@ import '../command_result.dart';
 import '../config.dart';
 import '../env/create.dart';
 import '../git.dart';
+import '../logger.dart';
 import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
@@ -21,6 +22,7 @@ Future<void> prepareEngine({
 }) async {
   final git = GitClient.of(scope);
   final config = PuroConfig.of(scope);
+  final log = PuroLogger.of(scope);
 
   await installDepotTools(scope: scope);
 
@@ -111,14 +113,46 @@ cache_dir = ${jsonEncode(config.sharedGClientDir.path)}
       environment: environment,
     );
 
-    await runProcess(
+    final proc = await startProcess(
       scope,
       'gclient',
-      ['sync'],
+      ['sync', '--verbose', '--verbose'],
       workingDirectory: environment.engineRootDir.path,
-      throwOnFailure: true,
       runInShell: true,
       environment: envVars,
     );
+
+    final logFile = environment.engineRootDir.childFile('gclient.log');
+    final logSink = logFile.openWrite(mode: FileMode.append);
+    final stdoutFuture = proc.stdout
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .listen(
+      (line) {
+        log.d('gclient: $line');
+        logSink.writeln(line);
+      },
+    ).asFuture();
+    final stderrFuture = proc.stderr
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .listen(
+      (line) {
+        log.d('(E) gclient: $line');
+        logSink.writeln(line);
+      },
+    ).asFuture();
+
+    final exitCode = await proc.exitCode;
+    await stdoutFuture;
+    await stderrFuture;
+    await logSink.close();
+
+    if (exitCode != 0) {
+      throw CommandError(
+        'gclient sync failed with exit code ${await proc.exitCode}\n'
+        'See ${logFile.path} for more details',
+      );
+    }
   });
 }

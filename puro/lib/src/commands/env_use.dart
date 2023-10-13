@@ -3,7 +3,6 @@ import '../command_result.dart';
 import '../config.dart';
 import '../env/create.dart';
 import '../env/default.dart';
-import '../env/releases.dart';
 import '../env/version.dart';
 import '../logger.dart';
 import '../terminal.dart';
@@ -54,7 +53,7 @@ class EnvUseCommand extends PuroCommand {
       }
       final env = config.getEnv(envName);
       if (!env.exists) {
-        if (pseudoEnvironmentNames.contains(env.name)) {
+        if (isPseudoEnvName(env.name)) {
           await createEnvironment(
             scope: scope,
             envName: env.name,

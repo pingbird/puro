@@ -290,13 +290,14 @@ Future<bool> writeWindowsRegistryValue({
   final log = PuroLogger.of(scope);
   final ProcessResult result;
   if (elevated) {
+    final startProc = 'Start-Process reg -Wait -Verb runAs -ArgumentList '
+        '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}';
     result = await runProcess(
       scope,
       'powershell',
       [
         '-command',
-        ('Start-Process reg -Wait -Verb runAs -ArgumentList '
-            '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}'),
+        startProc,
       ],
     );
   } else {
@@ -325,13 +326,14 @@ Future<bool> deleteWindowsRegistryValue({
   final log = PuroLogger.of(scope);
   final ProcessResult result;
   if (elevated) {
+    final startProc = 'Start-Process reg -Wait -Verb runAs -ArgumentList '
+        '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}';
     result = await runProcess(
       scope,
       'powershell',
       [
         '-command',
-        ('Start-Process reg -Wait -Verb runAs -ArgumentList '
-            '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}'),
+        startProc,
       ],
     );
   } else {

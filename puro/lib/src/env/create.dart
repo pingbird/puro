@@ -75,6 +75,15 @@ Future<EnvCreateResult> createEnvironment({
     );
   }
 
+  if (isValidVersion(envName) &&
+      (flutterVersion == null ||
+          flutterVersion.version == null ||
+          envName != '${flutterVersion.version}')) {
+    throw CommandError(
+      'Cannot initialize environment $envName with version ${flutterVersion?.name}',
+    );
+  }
+
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
   final git = GitClient.of(scope);
@@ -254,13 +263,12 @@ Future<void> cloneFlutterWithSharedRefs({
     alternatesFile.writeAsStringSync('${sharedObjects.path}\n');
     await git.syncRemotes(repository: repository, remotes: remotes);
 
-    // Delete the cache symlink when we switch versions so the new version
-    // doesn't accidentally corrupt the shared engine.
+    // Delete the cache when we switch versions so the new version doesn't
+    // accidentally corrupt the shared engine.
     final cacheDir = repository.childDirectory('bin').childDirectory('cache');
     if (cacheDir.existsSync()) {
-      // Not recursive because cacheDir is a symlink, if the flutter tool
-      // created one for whatever reason, this will throw.
-      cacheDir.deleteSync();
+      log.d('Deleting ${cacheDir.path} from previous version');
+      cacheDir.deleteSync(recursive: true);
     }
   }
 

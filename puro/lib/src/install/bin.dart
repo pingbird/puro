@@ -64,7 +64,6 @@ Future<void> _promoteStandalone({required Scope scope}) async {
   if (!executableIsTrampoline && trampolineFile.existsSync()) {
     trampolineFile.deleteSync();
   }
-  executableFile.deleteOrRenameSync();
   final currentExecutableFile = version.puroExecutable!;
   executableFile.parent.createSync(recursive: true);
   if (!executableFile.parent.existsSync()) {
@@ -81,12 +80,13 @@ Future<void> _promoteStandalone({required Scope scope}) async {
         CommandMessage(
           'The most likely culprit is Windows Defender, to make an exception, '
           'go to Windows Security > Protection History > Click the most recent '
-          'item > Check if it says puro.exe > Allow on device',
+          'item > Make sure it says puro.exe > Allow on device',
           type: CompletionType.info,
         ),
     ]);
   }
-  currentExecutableFile.renameSync(executableFile.path);
+  executableFile.deleteOrRenameSync();
+  currentExecutableFile.moveSync(executableFile.path);
 }
 
 Future<void> _installTrampoline({

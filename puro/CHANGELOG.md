@@ -1,3 +1,13 @@
+## 1.4.0
+
+* Bug fixes
+* Added support for versioned environments, you can now `puro use <version>` to switch to a specific version instead of
+  creating one manually
+
+## 1.3.8
+
+* Bug fixes
+
 ## 1.3.7
 
 * Bug fixes

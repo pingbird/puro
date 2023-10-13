@@ -8,6 +8,7 @@ import 'package:path/path.dart' as path;
 import 'package:typed_data/typed_buffers.dart';
 
 import 'config.dart';
+import 'env/engine.dart';
 import 'logger.dart';
 import 'provider.dart';
 
@@ -20,7 +21,29 @@ Future<Process> startProcess(
   bool includeParentEnvironment = true,
   bool runInShell = false,
   ProcessStartMode mode = ProcessStartMode.normal,
+  bool rosettaWorkaround = false,
 }) async {
+  if (rosettaWorkaround && Platform.isMacOS) {
+    final engineInfo = await scope.read(EngineBuildTarget.provider);
+    if (engineInfo.os == EngineOS.macOS &&
+        engineInfo.arch == EngineArch.arm64) {
+      return startProcess(
+        scope,
+        '/usr/bin/arch',
+        [
+          '-arch',
+          'arm64',
+          executable,
+          ...arguments,
+        ],
+        workingDirectory: workingDirectory,
+        environment: environment,
+        includeParentEnvironment: includeParentEnvironment,
+        runInShell: runInShell,
+        mode: mode,
+      );
+    }
+  }
   final log = PuroLogger.of(scope);
   final start = clock.now();
   final process = await Process.start(
@@ -159,6 +182,7 @@ Future<ProcessResult?> runProcessWithTimeout(
   Encoding? stderrEncoding = systemEncoding,
   required Duration timeout,
   ProcessSignal timeoutSignal = ProcessSignal.sigkill,
+  bool rosettaWorkaround = false,
 }) async {
   final process = await startProcess(
     scope,
@@ -168,6 +192,7 @@ Future<ProcessResult?> runProcessWithTimeout(
     environment: environment,
     includeParentEnvironment: includeParentEnvironment,
     runInShell: runInShell,
+    rosettaWorkaround: rosettaWorkaround,
   );
 
   final completer = Completer<ProcessResult?>();

@@ -1,16 +1,21 @@
 import 'dart:io';
 
+import 'package:file/file.dart';
+import 'package:process/process.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../command_result.dart';
 import '../config.dart';
 import '../downloader.dart';
+import '../extensions.dart';
+import '../file_lock.dart';
 import '../http.dart';
 import '../install/profile.dart';
 import '../logger.dart';
 import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
+import '../terminal.dart';
 
 enum EngineOS {
   windows,
@@ -24,15 +29,21 @@ enum EngineArch {
 }
 
 enum EngineBuildTarget {
-  windowsX64(zipName: 'dart-sdk-windows-x64.zip'),
-  linuxX64(zipName: 'dart-sdk-linux-x64.zip'),
-  linuxArm64(zipName: 'dart-sdk-linux-arm64.zip'),
-  macosX64(zipName: 'dart-sdk-darwin-x64.zip'),
-  macosArm64(zipName: 'dart-sdk-darwin-arm64.zip');
+  windowsX64('dart-sdk-windows-x64.zip', EngineOS.windows, EngineArch.x64),
+  linuxX64('dart-sdk-linux-x64.zip', EngineOS.linux, EngineArch.x64),
+  linuxArm64('dart-sdk-linux-arm64.zip', EngineOS.linux, EngineArch.arm64),
+  macosX64('dart-sdk-darwin-x64.zip', EngineOS.macOS, EngineArch.x64),
+  macosArm64('dart-sdk-darwin-arm64.zip', EngineOS.macOS, EngineArch.arm64);
 
-  const EngineBuildTarget({required this.zipName});
+  const EngineBuildTarget(
+    this.zipName,
+    this.os,
+    this.arch,
+  );
 
   final String zipName;
+  final EngineOS os;
+  final EngineArch arch;
 
   static EngineBuildTarget from(EngineOS os, EngineArch arch) {
     switch (os) {
@@ -110,6 +121,9 @@ enum EngineBuildTarget {
     }
     return EngineBuildTarget.from(os, arch);
   }
+
+  static final Provider<Future<EngineBuildTarget>> provider =
+      Provider((scope) => query(scope: scope));
 }
 
 Future<void> unzip({
@@ -148,6 +162,18 @@ Future<void> unzip({
       );
     }
   } else if (Platform.isLinux || Platform.isMacOS) {
+    const pm = LocalProcessManager();
+    if (!pm.canRun('unzip')) {
+      throw CommandError.list([
+        CommandMessage('unzip not found in your PATH'),
+        CommandMessage(
+          Platform.isLinux
+              ? 'Try running `sudo apt install unzip`'
+              : 'Try running `brew install unzip`',
+          type: CompletionType.info,
+        ),
+      ]);
+    }
     await runProcess(
       scope,
       'unzip',
@@ -199,7 +225,7 @@ Future<bool> downloadSharedEngine({
   if (!sharedCache.exists) {
     log.v('Downloading engine');
 
-    final target = await EngineBuildTarget.query(scope: scope);
+    final target = await scope.read(EngineBuildTarget.provider);
     final engineZipUrl = config.flutterStorageBaseUrl.append(
       path: 'flutter_infra_release/flutter/$engineVersion/${target.zipName}',
     );
@@ -267,4 +293,102 @@ Future<Version> getDartSDKVersion({
     throw AssertionError('Failed to parse `${result.stdout}`');
   }
   return Version.parse(match.group(1)!);
+}
+
+/// These files shouldn't be shared between flutter installs.
+const cacheBlacklist = {
+  'flutter_version_check.stamp',
+  'flutter.version.json',
+};
+
+/// Syncs an environment's flutter cache with the shared cache by creating
+/// symlinks to individual files / folders.
+Future<void> syncFlutterCache({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  final log = PuroLogger.of(scope);
+  final config = PuroConfig.of(scope);
+  final fs = config.fileSystem;
+  final engineVersion = environment.flutter.engineVersion;
+  if (engineVersion == null) {
+    return;
+  }
+  final sharedCacheDir = config.sharedCachesDir.childDirectory(engineVersion);
+  if (!sharedCacheDir.existsSync()) {
+    return;
+  }
+  final cacheDir = environment.flutter.cacheDir;
+
+  if (fs.isLinkSync(cacheDir.path)) {
+    // Old versions of puro used to create a symlink to the whole shared cache.
+    log.v('Deleting old symlink to shared cache');
+    cacheDir.deleteSync();
+  }
+
+  if (!cacheDir.existsSync()) {
+    cacheDir.createSync(recursive: true);
+  }
+
+  // Loop through the files in the cache dir, deleting or moving any that
+  // aren't symlinks to the shared cache.
+  final cacheDirFiles = <String>{};
+  for (final file in cacheDir.listSync()) {
+    cacheDirFiles.add(file.basename);
+    if (cacheBlacklist.contains(file.basename)) {
+      continue;
+    }
+    final sharedFile = sharedCacheDir.childFile(file.basename);
+    if (fs.isLinkSync(file.path)) {
+      // Delete the link if it doesn't point to the file we want.
+      final link = fs.link(file.path);
+      if (link.targetSync() != sharedFile.path) {
+        log.d('Deleting ${file.basename} symlink because it points to '
+            '`${link.targetSync()}` instead of `${sharedFile.path}`');
+        link.deleteSync();
+      }
+      continue;
+    }
+    final sharedPath = sharedCacheDir.childFile(file.basename).path;
+    if (fs.existsSync(sharedPath)) {
+      // Delete local copy and link to shared copy, perhaps we could
+      // merge them instead?
+      log.d('Deleting ${file.basename} because it already exists in the '
+          'shared cache');
+      file.deleteSync(recursive: true);
+    } else {
+      // Move it to the shared cache.
+      log.d('Moving ${file.basename} to the shared cache');
+      file.renameSync(sharedPath);
+    }
+  }
+
+  final paths = <Link, String>{};
+
+  // Loop through the files in the shared cache, creating symlinks to them
+  // in the cache dir.
+  for (final file in sharedCacheDir.listSync()) {
+    final cachePath = cacheDir.childFile(file.basename).path;
+    if (cacheBlacklist.contains(file.basename) || fs.existsSync(cachePath)) {
+      continue;
+    }
+    paths[fs.link(cachePath)] = file.path;
+    log.d('Creating symlink for ${file.basename}');
+  }
+
+  // We create the links all at once to avoid having to elevate multiple times
+  // on Windows.
+  await createLinks(scope: scope, paths: paths);
+}
+
+Future<void> trySyncFlutterCache({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  await runOptional(scope, 'Syncing flutter cache', () async {
+    await syncFlutterCache(
+      scope: scope,
+      environment: environment,
+    );
+  });
 }

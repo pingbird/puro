@@ -243,39 +243,63 @@ Future<void> createLink({
   required Link link,
   required String path,
 }) async {
+  return createLinks(
+    scope: scope,
+    paths: {link: path},
+  );
+}
+
+/// Creates multiple links, elevating to admin in case the user is on Windows
+/// and does not have developer mode enabled.
+Future<void> createLinks({
+  required Scope scope,
+  required Map<Link, String> paths,
+}) async {
+  if (paths.isEmpty) {
+    return;
+  }
   Future<void> createElevated() async {
     final log = PuroLogger.of(scope);
     final config = PuroConfig.of(scope);
-    final isDir = config.fileSystem.isDirectorySync(path);
     log.w(
       'Elevating to create a symlink, please enable developer mode in Windows '
       'settings to avoid this workaround',
     );
     final args = [
       '/c',
-      'mklink',
-      if (isDir) '/d',
-      link.path,
-      path,
+      for (final link in paths.keys) ...[
+        if (link != paths.keys.first) '&&',
+        'mklink',
+        if (config.fileSystem.isDirectorySync(paths[link]!)) '/d',
+        '"${escapeCmdString(link.path)}"',
+        '"${escapeCmdString(paths[link]!)}"',
+      ],
     ];
+    final startProc = 'Start-Process cmd -Wait -Verb runAs -ArgumentList '
+        '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}';
     await runProcess(
       scope,
       'powershell',
       [
         '-command',
-        ('Start-Process cmd -Wait -Verb runAs -ArgumentList '
-            '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}'),
+        startProc,
       ],
       throwOnFailure: true,
     );
-    final linkTarget = link.targetSync();
-    if (linkTarget != path) {
-      throw AssertionError('Link is `$linkTarget` but expected `$path`');
+    for (final entry in paths.entries) {
+      final linkTarget = entry.key.targetSync();
+      if (linkTarget != entry.value) {
+        throw AssertionError(
+          'Link is `$linkTarget` but expected `${entry.value}',
+        );
+      }
     }
   }
 
   try {
-    link.createSync(path);
+    for (final entry in paths.entries) {
+      entry.key.createSync(entry.value);
+    }
   } on FileSystemException catch (e) {
     if (Platform.isWindows && e.osError?.errorCode == 1314) {
       await createElevated();

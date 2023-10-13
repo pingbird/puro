@@ -51,6 +51,16 @@ class FlutterVersion {
     return false;
   }
 
+  String get name {
+    if (tag != null) {
+      return tag!;
+    } else if (version != null) {
+      return '$version';
+    } else {
+      return commit;
+    }
+  }
+
   @override
   String toString([OutputFormatter? format]) {
     format ??= const OutputFormatter();
@@ -87,14 +97,14 @@ class FlutterVersion {
     required Scope scope,
     String? version,
     String? channel,
-    String defaultChannel = 'stable',
+    String defaultVersion = 'stable',
   }) async {
     if (version == null) {
       if (channel != null) {
         version = channel;
         channel = null;
       } else {
-        version = defaultChannel;
+        version = defaultVersion;
       }
     }
 

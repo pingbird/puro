@@ -63,6 +63,15 @@ Future<EnvUpgradeResult> upgradeEnvironment({
   final git = GitClient.of(scope);
   environment.ensureExists();
 
+  if (isValidVersion(environment.name) &&
+      (toVersion.version == null ||
+          environment.name != '${toVersion.version}')) {
+    throw CommandError(
+      'Cannot upgrade environment ${environment.name} to a different version, '
+      'run `puro use ${toVersion.name}` instead to switch your project',
+    );
+  }
+
   log.v('Upgrading environment in ${environment.envDir.path}');
 
   final repository = environment.flutterDir;
