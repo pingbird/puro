@@ -126,6 +126,7 @@ enum EngineBuildTarget {
       Provider((scope) => query(scope: scope));
 }
 
+/// Unzips [zipFile] into [destination].
 Future<void> unzip({
   required Scope scope,
   required File zipFile,

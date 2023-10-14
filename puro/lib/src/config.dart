@@ -10,6 +10,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import '../models.dart';
 import 'command_result.dart';
+import 'env/dart.dart';
 import 'extensions.dart';
 import 'file_lock.dart';
 import 'http.dart';
@@ -228,6 +229,8 @@ class PuroConfig {
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedEngineDir = sharedDir.childDirectory('engine');
   late final Directory sharedDartSdkDir = sharedDir.childDirectory('dart-sdk');
+  late final Directory sharedDartReleaseDir =
+      sharedDir.childDirectory('dart-release');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
   late final Directory sharedGClientDir = sharedDir.childDirectory('gclient');
   late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
@@ -244,6 +247,8 @@ class PuroConfig {
       binDir.childFile('${buildTarget.executableName}.tmp');
   late final File cachedReleasesJsonFile =
       puroRoot.childFile(releasesJsonUrl.pathSegments.last);
+  late final File cachedDartReleasesJsonFile =
+      puroRoot.childFile('dart_releases.json');
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
   late final Link defaultEnvLink = envsDir.childLink('default');
   late final Uri puroLatestVersionUrl = puroBuildsUrl.append(path: 'latest');
@@ -302,6 +307,12 @@ class PuroConfig {
       );
     }
     return FlutterCacheConfig(sharedCachesDir.childDirectory(engineVersion));
+  }
+
+  DartSdkConfig getDartRelease(DartRelease release) {
+    return DartSdkConfig(sharedDartReleaseDir
+        .childDirectory(release.name)
+        .childDirectory('dart-sdk'));
   }
 
   Uri? tryGetFlutterGitDownloadUrl({
@@ -585,6 +596,7 @@ class DartSdkConfig {
       .childDirectory('lib')
       .childFile('libraries.dart');
   late final File revisionFile = sdkDir.childFile('revision');
+  late final File versionJsonFile = sdkDir.childFile('version.json');
   late final commitHash = revisionFile.readAsStringSync().trim();
 }
 
