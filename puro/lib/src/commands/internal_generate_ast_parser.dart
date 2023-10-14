@@ -1,3 +1,5 @@
+// This is a work in progress
+
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -93,7 +95,7 @@ class GenerateASTParserCommand extends PuroCommand {
     for (final commit in commits) {
       final result = BinaryMdGrammar().build().parse(binaryMdCommits[commit]!);
       if (result is Failure) {
-        print(result.message);
+        // print(result.message);
         return BasicMessageResult(
           'Failed to parse AST parser:\n$result',
           type: CompletionType.failure,
@@ -194,7 +196,7 @@ class GenerateASTParserCommand extends PuroCommand {
     };
 
     for (final entry in verSchema.entries) {
-      print('Processing ${entry.key} (${verCommit[entry.key]})');
+      // print('Processing ${entry.key} (${verCommit[entry.key]})');
       for (final decl in entry.value as List) {
         if (decl['type'] != null) {
           final isAbstract = decl['type'][0] as bool;
@@ -229,7 +231,7 @@ class GenerateASTParserCommand extends PuroCommand {
 
     // Second pass, fill in fields
     for (final entry in verSchema.entries) {
-      print('Processing ${entry.key} (${verCommit[entry.key]})');
+      // print('Processing ${entry.key} (${verCommit[entry.key]})');
       for (final decl in entry.value as List) {
         if (decl['type'] != null) {
           final name = fixName(decl['type'][1] as String);
@@ -570,6 +572,7 @@ class BinaryMdGrammar extends GrammarDefinition<dynamic> {
 
   Parser tpeInner() => [
         string('Uint').map((e) => 'UInt'), // lol
+        string('UInt30').map((e) => 'UInt'), // lol
         (string('List<') & ref0(tpe) & string('>'))
             .pick(1)
             .map((e) => {'list': e}),

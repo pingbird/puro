@@ -1,3 +1,5 @@
+// This is a work in progress
+
 import 'dart:typed_data';
 
 import 'package:typed_data/typed_buffers.dart';
@@ -30,7 +32,7 @@ class Reader {
     }
   }
 
-  int readUint32() {
+  int readUInt32() {
     return (readByte() << 24) |
         (readByte() << 16) |
         (readByte() << 8) |
@@ -102,12 +104,49 @@ class Reader {
     buf.addAll(value);
   }
 
-  void readType(String prefix, BinType c) {
+  void readType(String name, BinType c) {
+    final delim = name.isEmpty ? '' : '$name.';
     if (c is NamedBinType) {
-      final cl = fmt.classes[c.name]!;
-      for (final field in cl.fields.entries) {
-        readType('$prefix.${field.key}', field.value);
+      switch (c.name) {
+        case 'Bool':
+          addByte(name, readByte());
+          break;
+        case 'UInt':
+          addInt32(name, readUInt30());
+          break;
+        case 'UInt32':
+          addInt32(name, readUInt32());
+          break;
+        case 'Double':
+          addDouble(name, readDouble());
+          break;
+        default:
+          final cl = fmt.classes[c.name]!;
+          for (final field in cl.fields.entries) {
+            readType('$delim${c.name}.${field.key}', field.value);
+          }
       }
+    } else if (c is TaggedBinType) {
+      final tag = readByte();
+      addByte(name, tag);
+      final type = c.tags[tag]!;
+      readType(name, type);
+    } else if (c is ListBinType) {
+      final length = readUInt30();
+      addInt32(name, length);
+      for (var i = 0; i < length; i++) {
+        readType('${delim}element', c.elementType);
+      }
+    } else if (c is OptionalBinType) {
+      final hasValue = readByte();
+      addByte(name, hasValue);
+      if (hasValue != 0) {
+        assert(hasValue == 1);
+        readType('${delim}value', c.elementType);
+      }
+    } else if (c is PairBinType) {
+      readType('${delim}first', c.firstType);
+      readType('${delim}second', c.secondType);
     } else {
       throw UnimplementedError('Unknown type: $c');
     }
@@ -125,6 +164,11 @@ class BinClass {
 }
 
 abstract class BinType {}
+
+class TaggedBinType extends BinType {
+  TaggedBinType(this.tags);
+  final Map<int, BinType> tags;
+}
 
 class NamedBinType extends BinType {
   NamedBinType(this.name);
