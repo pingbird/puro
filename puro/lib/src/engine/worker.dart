@@ -264,6 +264,7 @@ Future<void> ensureWindowsPythonInstalled({required Scope scope}) async {
                 bold: true,
                 foregroundColor: Ansi8BitColor.red,
               )} ${e.path}').join('\n')}',
+      type: CompletionType.alert,
     ).queue(scope);
   } else if (pythonPrograms.isEmpty) {
     throw CommandError.list([
@@ -289,11 +290,8 @@ Future<void> ensureWindowsPythonInstalled({required Scope scope}) async {
 
 Future<Map<String, String>> getEngineBuildEnvVars({
   required Scope scope,
-  required EnvConfig environment,
 }) async {
   final config = PuroConfig.of(scope);
-
-  environment.engine.ensureExists();
 
   final env = <String, String>{'PURO_ENGINE_BUILD_ENV': '1'};
   final extraPaths = <String>[config.depotToolsDir.path];

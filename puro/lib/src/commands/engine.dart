@@ -1,14 +1,8 @@
-import 'dart:io';
-
-import 'package:neoansi/neoansi.dart';
-
 import '../command.dart';
 import '../command_result.dart';
 import '../config.dart';
+import '../engine/build_env.dart';
 import '../engine/prepare.dart';
-import '../engine/worker.dart';
-import '../process.dart';
-import '../terminal.dart';
 
 class EngineCommand extends PuroCommand {
   EngineCommand() {
@@ -79,10 +73,10 @@ class EnginePrepareCommand extends PuroCommand {
 
 class EngineBuildEnvCommand extends PuroCommand {
   @override
-  final name = 'build-env';
+  final name = 'build-shell';
 
   @override
-  List<String> get aliases => ['buildenv'];
+  List<String> get aliases => ['build-env', 'buildenv'];
 
   @override
   final description =
@@ -94,73 +88,15 @@ class EngineBuildEnvCommand extends PuroCommand {
   @override
   Future<CommandResult> run() async {
     final config = PuroConfig.of(scope);
-    final terminal = Terminal.of(scope);
 
     final env = config.getEnv(unwrapArguments(atLeast: 1)[0]);
-    env.ensureExists();
+    final command = unwrapArguments(startingAt: 1);
 
-    if (Platform.environment['PURO_ENGINE_BUILD_ENV'] != null) {
-      throw CommandError('Already inside an engine build environment');
-    }
-
-    final buildEnv = await getEngineBuildEnvVars(
+    final exitCode = await runBuildEnvShell(
       scope: scope,
+      command: command,
       environment: env,
     );
-
-    var command = unwrapArguments(startingAt: 1);
-    final defaultShell = command.isEmpty;
-    if (defaultShell) {
-      if (Platform.isWindows) {
-        final processTree = await getParentProcesses(scope: scope);
-        command = ['cmd.exe'];
-        for (final process in processTree) {
-          if (process.name == 'powershell.exe' || process.name == 'cmd.exe') {
-            command = [process.name];
-            break;
-          }
-        }
-      } else {
-        final shell = Platform.environment['SHELL'];
-        if (shell != null && shell.isNotEmpty) {
-          command = [shell];
-        } else {
-          command = [if (Platform.isMacOS) '/bin/zsh' else '/bin/bash'];
-        }
-      }
-
-      terminal
-        ..flushStatus()
-        ..writeln(terminal.format.color(
-          '[ Running ${command[0]} with engine build environment,\n'
-          '  type `exit` to return to the normal shell ]\n',
-          bold: true,
-          foregroundColor: Ansi8BitColor.blue,
-        ));
-    }
-
-    final process = await startProcess(
-      scope,
-      command.first,
-      command.skip(1).toList(),
-      runInShell: true,
-      environment: buildEnv,
-      mode: ProcessStartMode.inheritStdio,
-      workingDirectory: defaultShell ? env.engine.srcDir.path : null,
-      rosettaWorkaround: true,
-    );
-
-    final exitCode = await process.exitCode;
-
-    if (defaultShell) {
-      terminal
-        ..flushStatus()
-        ..writeln(terminal.format.color(
-          '\n[ Returning from engine build shell ]',
-          bold: true,
-          foregroundColor: Ansi8BitColor.blue,
-        ));
-    }
 
     await runner.exitPuro(exitCode);
   }

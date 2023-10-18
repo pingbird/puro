@@ -4,6 +4,7 @@ import 'package:args/command_runner.dart';
 
 import 'command.dart';
 import 'command_result.dart';
+import 'commands/build_shell.dart';
 import 'commands/clean.dart';
 import 'commands/dart.dart';
 import 'commands/engine.dart';
@@ -241,7 +242,8 @@ void main(List<String> args) async {
     ..addCommand(EngineCommand())
     ..addCommand(PrefsCommand())
     ..addCommand(EvalCommand())
-    ..addCommand(ReplCommand());
+    ..addCommand(ReplCommand())
+    ..addCommand(BuildShellCommand());
   try {
     final result = await runner.run(args);
     if (result == null) {

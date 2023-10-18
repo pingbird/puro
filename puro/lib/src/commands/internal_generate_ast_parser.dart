@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:file/file.dart';
 import 'package:petitparser/petitparser.dart';
 
+import '../ast/binary.dart';
 import '../ast/grammar.dart';
 import '../command.dart';
 import '../command_result.dart';
@@ -61,7 +62,7 @@ class GenerateASTParserCommand extends PuroCommand {
         );
         final major = RegExp(r'MAJOR (\d+)')
             .firstMatch(utf8.decode(versionContents))![1]!;
-        if (major == '2') break;
+        if (major == '1') continue;
         final contents = await git.cat(
           repository: sharedRepository,
           path: 'pkg/kernel/binary.md',
@@ -94,8 +95,25 @@ class GenerateASTParserCommand extends PuroCommand {
     final verCommit = <int, String>{};
     final verSchema = <int, dynamic>{};
 
+    final astsJsonDir = workingDir.childDirectory('asts-json');
+    if (!astsJsonDir.existsSync()) {
+      astsJsonDir.createSync(recursive: true);
+    }
+
     for (final commit in commits) {
-      final result = BinaryMdGrammar().build().parse(binaryMdCommits[commit]!);
+      // Uncomment enums
+      var source = binaryMdCommits[commit]!;
+      source = source.replaceAllMapped(
+        RegExp('/\\*(\nenum[\\s\\S]+?)\\*/', multiLine: true),
+        (match) => match.group(1)!,
+      );
+
+      source.replaceAll(
+        'enum LogicalOperator { &&, || }',
+        'enum LogicalOperator { logicalAnd, logicalOr }',
+      );
+
+      final result = BinaryMdGrammar().build().parse(source);
       if (result is Failure) {
         // print(result.message);
         return BasicMessageResult(
@@ -113,18 +131,26 @@ class GenerateASTParserCommand extends PuroCommand {
 
       verCommit[version] = commit;
       verSchema[version] = result.value;
+
+      astsJsonDir.childFile('v$version.json').writeAsStringSync(
+            prettyJsonEncoder.convert(result.value),
+          );
     }
 
     commits.removeWhere((e) => !verCommit.values.contains(e));
 
-    print('first: ${commits.first}');
-    print('last: ${commits.last}');
+    // print('first: ${commits.first}');
+    // print('last: ${commits.last}');
 
+    // Generate separate ASTs for every version (for debugging)
     final astsDir = workingDir.childDirectory('asts');
     if (astsDir.existsSync()) astsDir.deleteSync(recursive: true);
     astsDir.createSync(recursive: true);
     for (final entry in verSchema.entries) {
-      final ast = generateAstForSchemas({entry.key: entry.value});
+      final ast = generateAstForSchemas(
+        {entry.key: entry.value},
+        comment: 'For schema ${verCommit[entry.key]}',
+      );
       astsDir.childFile('v${entry.key}.dart').writeAsStringSync(ast);
     }
 
@@ -178,12 +204,12 @@ class GenerateASTParserCommand extends PuroCommand {
     allReleases.removeWhere(
         (e) => '${e.version}' == '1.24.0' && e.channel == DartChannel.dev);
 
-    print('releases: ${allReleases.length}');
-    print('releases: ${allReleases.map((e) => e.name).join(',')}');
+    // print('releases: ${allReleases.length}');
+    // print('releases: ${allReleases.map((e) => e.name).join(',')}');
 
     for (final release in allReleases) {
-      final i = allReleases.indexOf(release);
-      print('progress: ${(100 * i / allReleases.length).toStringAsFixed(2)}%');
+      // final i = allReleases.indexOf(release);
+      // print('progress: ${(100 * i / allReleases.length).toStringAsFixed(2)}%');
       await downloadSharedDartRelease(
         scope: scope,
         release: release,
@@ -191,9 +217,44 @@ class GenerateASTParserCommand extends PuroCommand {
       );
     }
 
+    // Generate binary formats for each version
+    final formats = <int, BinFormat>{};
+    for (final entry in verSchema.entries) {
+      formats[entry.key] = BinFormat.fromSchema(entry.value);
+    }
+
+    // String toHex(List<int> bytes) =>
+    //     bytes.map((e) => e.toRadixString(16).padLeft(2, '0')).join(' ');
+
+    // Read snapshots
+    for (final release in allReleases) {
+      if (release.version.major < 2) continue;
+      final snapshotFile = config
+          .getDartRelease(release)
+          .binDir
+          .childDirectory('snapshots')
+          .childFile('kernel-service.dart.snapshot');
+      if (!snapshotFile.existsSync()) {
+        // print('no snapshot: ${release.name}');
+        continue;
+      }
+      final bytes = snapshotFile.readAsBytesSync();
+      if (bytes.buffer.asByteData().getUint32(0) != 0x90ABCDEF) {
+        // print('invalid header: ${release.name}');
+        continue;
+      }
+      // print('release: ${release.name}');
+      // print('header: ${toHex(bytes.sublist(0, 32))}');
+      final reader = BinReader(formats, bytes);
+      reader.read();
+    }
+
     // final versionSizes = <Version, int>{};
+    // final versionDates = <Version, String>{};
     //
     // for (final release in allReleases) {
+    //   final i = allReleases.indexOf(release);
+    //   print('progress: ${(100 * i / allReleases.length).toStringAsFixed(2)}%');
     //   // if (release.version < Version.parse('2.1.0')) continue;
     //   final sdk = config.getDartRelease(release);
     //   var size = 0;
@@ -222,6 +283,9 @@ class GenerateASTParserCommand extends PuroCommand {
     //     assert(versionSizes[release.version] == size);
     //   }
     //   versionSizes[release.version] = size;
+    //   final date =
+    //       jsonDecode(sdk.versionJsonFile.readAsStringSync())['date'] as String;
+    //   versionDates[release.version] = date;
     // }
     //
     // final allVersions = versionSizes.keys.toSet().toList()..sort();
@@ -230,7 +294,8 @@ class GenerateASTParserCommand extends PuroCommand {
     // sizesCsv.writeln('version,size');
     // var lastVersion = allVersions.first;
     // for (final version in allVersions) {
-    //   sizesCsv.writeln('$version,${versionSizes[version]}');
+    //   sizesCsv.writeln(
+    //       '${versionDates[version]},$version,${versionSizes[version]}');
     //   // if (version.isPreRelease || version.patch != 0) {
     //   //   sizesCsv.writeln('$lastVersion,${versionSizes[version]}');
     //   // } else {
@@ -244,7 +309,7 @@ class GenerateASTParserCommand extends PuroCommand {
   }
 }
 
-String generateAstForSchemas(Map<int, dynamic> schemas) {
+String generateAstForSchemas(Map<int, dynamic> schemas, {String? comment}) {
   String fixName(String name, {bool lower = false}) {
     var out = const {
           'VariableDeclarationPlain': 'VariableDeclaration',
@@ -379,6 +444,7 @@ String generateAstForSchemas(Map<int, dynamic> schemas) {
             if (hasDefault ||
                 fieldName == 'tag' ||
                 fieldName == '_unused_' ||
+                fieldName == '8bitAlignment' ||
                 (name == 'ComponentFile' &&
                     (fieldName == 'constants' || fieldName == 'strings'))) {
               continue;
@@ -423,6 +489,10 @@ String generateAstForSchemas(Map<int, dynamic> schemas) {
   }
 
   final outAst = StringBuffer();
+
+  if (comment != null) {
+    outAst.writeln(comment.split('\n').map((e) => '// $e').join('\n') + '\n');
+  }
 
   for (final tpe in types.values) {
     if (tpe is ClassType) {
@@ -552,7 +622,21 @@ class UnionType extends DartType {
   late DartType first;
   late DartType second;
   @override
-  String get name => '${first.name} | ${second.name}';
+  String get name {
+    final firstName = first is UnionType
+        ? first.name
+        : (first is ClassType
+            ? (first as ClassType).parent!.name
+            : throw AssertionError());
+    final secondName = second is UnionType
+        ? second.name
+        : (second is ClassType
+            ? (second as ClassType).parent!.name
+            : throw AssertionError());
+    assert(firstName == secondName);
+    return firstName;
+  }
+
   @override
   DartType merge(DartType other) {
     if (name ==

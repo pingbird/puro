@@ -108,10 +108,7 @@ cache_dir = ${jsonEncode(config.sharedGClientDir.path)}
   await ProgressNode.of(scope).wrap((scope, node) async {
     node.description = 'Running gclient sync (this may take awhile)';
 
-    final envVars = await getEngineBuildEnvVars(
-      scope: scope,
-      environment: environment,
-    );
+    final envVars = await getEngineBuildEnvVars(scope: scope);
 
     final proc = await startProcess(
       scope,

@@ -102,11 +102,13 @@ class BinaryMdGrammar extends GrammarDefinition<dynamic> {
   Parser enumDecl() => (string('enum') &
           ref0(identifier) &
           string('{') &
-          (ref0(identifier) &
-                  string('=').trim(space()) &
-                  digit().star().flatten().trim(space()) &
-                  string(',').trim(space()).optional())
-              .map((e) => [e[0], e[2]])
+          ((ref0(identifier) &
+                          string('=').trim(space()) &
+                          digit().star().flatten().trim(space()) &
+                          string(',').trim(space()).optional())
+                      .map((e) => [e[0], e[2]]) |
+                  (ref0(identifier) & string(',').trim(space()).optional())
+                      .map((e) => [e[0], null]))
               .star() &
           string('}'))
       .map((e) => {
@@ -160,6 +162,25 @@ class BinaryMdGrammar extends GrammarDefinition<dynamic> {
       );
 
   Parser fieldDecl() => [
+        (string('Byte') &
+                ref0(identifier) &
+                ((string('; // Index into') &
+                            string(' the').optional() &
+                            ref0(identifier) &
+                            string(' above.'))
+                        .pick(2) |
+                    (string('; // Index into') &
+                            string(' the').optional() &
+                            ref0(identifier) &
+                            string('enum above.'))
+                        .pick(2)))
+            .map((e) => {
+                  'field': [
+                    e[2],
+                    e[1],
+                    null,
+                  ]
+                }),
         (ref0(tpe) &
                 (ref0(space).optional() & ref0(identifier)).pick(1) &
                 ((string('=') & space() & any().plusLazy(string(';')).flatten())

@@ -2,17 +2,25 @@
 
 import 'dart:typed_data';
 
-import 'package:typed_data/typed_buffers.dart';
-
 class Reader {
   Reader(this._bytes);
 
   final Uint8List _bytes;
-  var _byteOffset = 0;
-  int get byteOffset => _byteOffset;
-  int readByte() => _bytes[_byteOffset++];
-  int peekByte() => _bytes[_byteOffset];
-  final fields = <String, Uint8Buffer>{};
+  late final byteData =
+      _bytes.buffer.asByteData(_bytes.offsetInBytes, _bytes.lengthInBytes);
+  var byteOffset = 0;
+  int readByte() => _bytes[byteOffset++];
+  int peekByte() => _bytes[byteOffset];
+
+  late final componentFileSize = byteData.getUint32(_bytes.length - 4);
+  late final libraryCount = byteData.getUint32(_bytes.length - 8) + 1;
+  late final libraryOffsetsStartOffset = _bytes.length - 8 - libraryCount * 4;
+  late final List<int> libraryOffsets = List.generate(
+    libraryCount,
+    (i) => byteData.getUint32(libraryOffsetsStartOffset + i * 4),
+  );
+  late final magic = byteData.getUint32(0);
+  late final formatVersion = byteData.getUint32(4);
 
   int readUInt30() {
     final int byte = readByte();
@@ -57,8 +65,8 @@ class Reader {
 
   Uint8List readBytes(int length) {
     final bytes = Uint8List(length);
-    bytes.setRange(0, bytes.length, _bytes, _byteOffset);
-    _byteOffset += bytes.length;
+    bytes.setRange(0, bytes.length, _bytes, byteOffset);
+    byteOffset += bytes.length;
     return bytes;
   }
 
@@ -69,9 +77,11 @@ class Reader {
   Uint8List readOrViewByteList() {
     final length = readUInt30();
     final source = _bytes;
-    final Uint8List view =
-        source.buffer.asUint8List(source.offsetInBytes + _byteOffset, length);
-    _byteOffset += length;
+    final Uint8List view = source.buffer.asUint8List(
+      source.offsetInBytes + byteOffset,
+      length,
+    );
+    byteOffset += length;
     return view;
   }
 }
