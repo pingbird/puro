@@ -92,6 +92,8 @@ class EngineBuildEnvCommand extends PuroCommand {
     final env = config.getEnv(unwrapArguments(atLeast: 1)[0]);
     final command = unwrapArguments(startingAt: 1);
 
+    await prepareEngineSystemDeps(scope: scope);
+
     final exitCode = await runBuildEnvShell(
       scope: scope,
       command: command,

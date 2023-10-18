@@ -1,6 +1,7 @@
 import '../command.dart';
 import '../command_result.dart';
 import '../engine/build_env.dart';
+import '../engine/prepare.dart';
 
 class BuildShellCommand extends PuroCommand {
   @override
@@ -18,7 +19,9 @@ class BuildShellCommand extends PuroCommand {
 
   @override
   Future<CommandResult> run() async {
-    final command = unwrapArguments(startingAt: 0);
+    final command = unwrapArguments();
+
+    await prepareEngineSystemDeps(scope: scope);
 
     final exitCode = await runBuildEnvShell(
       scope: scope,

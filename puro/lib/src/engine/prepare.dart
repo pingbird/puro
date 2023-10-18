@@ -12,6 +12,20 @@ import '../provider.dart';
 import 'depot_tools.dart';
 import 'worker.dart';
 
+Future<void> prepareEngineSystemDeps({
+  required Scope scope,
+}) async {
+  await installDepotTools(scope: scope);
+
+  if (Platform.isLinux) {
+    await installLinuxWorkerPackages(scope: scope);
+  } else if (Platform.isWindows) {
+    await ensureWindowsPythonInstalled(scope: scope);
+  } else {
+    throw UnsupportedOSError();
+  }
+}
+
 /// Checks out and prepares the engine for building.
 Future<void> prepareEngine({
   required Scope scope,
@@ -24,15 +38,7 @@ Future<void> prepareEngine({
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
 
-  await installDepotTools(scope: scope);
-
-  if (Platform.isLinux) {
-    await installLinuxWorkerPackages(scope: scope);
-  } else if (Platform.isWindows) {
-    await ensureWindowsPythonInstalled(scope: scope);
-  } else {
-    throw UnsupportedOSError();
-  }
+  await prepareEngineSystemDeps(scope: scope);
 
   ref ??= environment.flutter.engineVersion;
   ref ??= await getEngineVersionOfCommit(
