@@ -154,7 +154,10 @@ class FlutterVersion {
             arg: version,
           );
           if (commit != null) {
-            return FlutterVersion(commit: commit);
+            return FlutterVersion(
+              commit: commit,
+              version: parsedVersion,
+            );
           }
           throw CommandError(
             'Could not find version $version',

@@ -90,6 +90,7 @@ const EnvironmentInfoModel$json = {
       '10': 'version',
       '17': true
     },
+    {'1': 'projects', '3': 4, '4': 3, '5': 9, '10': 'projects'},
   ],
   '8': [
     {'1': '_version'},
@@ -100,7 +101,7 @@ const EnvironmentInfoModel$json = {
 final $typed_data.Uint8List environmentInfoModelDescriptor = $convert.base64Decode(
     'ChRFbnZpcm9ubWVudEluZm9Nb2RlbBISCgRuYW1lGAEgASgJUgRuYW1lEhIKBHBhdGgYAiABKA'
     'lSBHBhdGgSMwoHdmVyc2lvbhgDIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIHdmVyc2lv'
-    'bogBAUIKCghfdmVyc2lvbg==');
+    'bogBARIaCghwcm9qZWN0cxgEIAMoCVIIcHJvamVjdHNCCgoIX3ZlcnNpb24=');
 
 @$core.Deprecated('Use environmentListModelDescriptor instead')
 const EnvironmentListModel$json = {

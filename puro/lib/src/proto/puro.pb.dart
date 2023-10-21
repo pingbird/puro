@@ -317,6 +317,7 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
     $core.String? name,
     $core.String? path,
     FlutterVersionModel? version,
+    $core.Iterable<$core.String>? projects,
   }) {
     final $result = create();
     if (name != null) {
@@ -327,6 +328,9 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
     }
     if (version != null) {
       $result.version = version;
+    }
+    if (projects != null) {
+      $result.projects.addAll(projects);
     }
     return $result;
   }
@@ -345,6 +349,7 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'path')
     ..aOM<FlutterVersionModel>(3, _omitFieldNames ? '' : 'version',
         subBuilder: FlutterVersionModel.create)
+    ..pPS(4, _omitFieldNames ? '' : 'projects')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -408,6 +413,9 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
   void clearVersion() => clearField(3);
   @$pb.TagNumber(3)
   FlutterVersionModel ensureVersion() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  $core.List<$core.String> get projects => $_getList(3);
 }
 
 class EnvironmentListModel extends $pb.GeneratedMessage {

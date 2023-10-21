@@ -23,6 +23,7 @@ message EnvironmentInfoModel {
   string name = 1;
   string path = 2;
   optional FlutterVersionModel version = 3;
+  repeated string projects = 4;
 }
 
 message EnvironmentListModel {

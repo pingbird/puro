@@ -335,6 +335,13 @@ class PuroConfig {
     return null;
   }
 
+  String shortenHome(String path) {
+    if (path.startsWith(homeDir.path)) {
+      return '~' + path.substring(homeDir.path.length);
+    }
+    return path;
+  }
+
   @override
   String toString() {
     return 'PuroConfig(\n'
@@ -740,11 +747,12 @@ Future<void> registerDotfile({
   required File dotfile,
 }) async {
   final prefs = await readGlobalPrefs(scope: scope);
-  if (!prefs.projectDotfiles.contains(dotfile.path)) {
+  final canonical = dotfile.resolve().path;
+  if (!prefs.projectDotfiles.contains(canonical)) {
     await updateGlobalPrefs(
       scope: scope,
       fn: (prefs) {
-        prefs.projectDotfiles.add(dotfile.path);
+        prefs.projectDotfiles.add(canonical);
       },
     );
   }
@@ -756,23 +764,26 @@ Future<void> cleanDotfiles({required Scope scope}) {
     scope: scope,
     fn: (prefs) {
       for (final path in prefs.projectDotfiles.toList()) {
+        final canonical = config.fileSystem.file(path).resolve().path;
         if (config.fileSystem.statSync(path).type ==
             FileSystemEntityType.notFound) {
           prefs.projectDotfiles.remove(path);
+        } else if (canonical != path) {
+          prefs.projectDotfiles.remove(path);
+          prefs.projectDotfiles.add(canonical);
         }
       }
     },
   );
 }
 
-Future<List<File>> getDotfilesUsingEnv({
+Future<Map<String, List<File>>> getAllDotfiles({
   required Scope scope,
-  required EnvConfig environment,
 }) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final prefs = await readGlobalPrefs(scope: scope);
-  final result = <File>[];
+  final result = <String, Set<String>>{};
   var needsClean = false;
   for (final path in prefs.projectDotfiles) {
     final dotfile = config.fileSystem.file(path);
@@ -784,18 +795,33 @@ Future<List<File>> getDotfilesUsingEnv({
       final data = jsonDecode(dotfile.readAsStringSync());
       final model = PuroDotfileModel.create();
       model.mergeFromProto3Json(data);
-      if (model.hasEnv() && model.env == environment.name) {
-        result.add(dotfile);
+      if (model.hasEnv()) {
+        result.putIfAbsent(model.env, () => {}).add(
+              dotfile.resolveSymbolicLinksSync(),
+            );
       }
     } catch (exception, stackTrace) {
       log.w('Error while reading $path');
       log.w('$exception\n$stackTrace');
     }
   }
+  log.d(() => 'all dotfiles: $result');
   if (needsClean) {
     await cleanDotfiles(scope: scope);
   }
-  return result;
+  return result.map(
+    (key, value) => MapEntry(
+      key,
+      value.map((e) => config.fileSystem.file(e)).toList(),
+    ),
+  );
+}
+
+Future<List<File>> getDotfilesUsingEnv({
+  required Scope scope,
+  required EnvConfig environment,
+}) async {
+  return (await getAllDotfiles(scope: scope))[environment.name] ?? [];
 }
 
 class PuroInternalPrefsVars {

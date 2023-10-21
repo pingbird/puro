@@ -252,42 +252,49 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
 
   var _exiting = false;
   Future<Never> writeResultAndExit(CommandResult result) async {
-    if (_exiting) await Completer<void>().future;
-    _exiting = true;
-    final model = result.toModel();
-    if (isJson) {
-      final resultJson = model.toProto3Json();
-      stdout.writeln(
-        prettyJsonEncoder.convert(<String, dynamic>{
-          ...resultJson as Map<String, dynamic>,
-          'logs': [
-            for (final entry in logEntries)
-              LogEntryModel(
-                timestamp: entry.timestamp.toIso8601String(),
-                level: entry.level.index,
-                message: entry.message,
-              ).toProto3Json(),
-          ],
-        }),
-      );
-    } else {
-      if (model.success) {
-        terminal.resetStatus();
+    try {
+      if (_exiting) await Completer<void>().future;
+      _exiting = true;
+      final model = result.toModel();
+      if (isJson) {
+        final resultJson = model.toProto3Json();
+        stdout.writeln(
+          prettyJsonEncoder.convert(<String, dynamic>{
+            ...resultJson as Map<String, dynamic>,
+            'logs': [
+              for (final entry in logEntries)
+                LogEntryModel(
+                  timestamp: entry.timestamp.toIso8601String(),
+                  level: entry.level.index,
+                  message: entry.message,
+                ).toProto3Json(),
+            ],
+          }),
+        );
       } else {
-        terminal.preserveStatus();
+        if (model.success) {
+          terminal.resetStatus();
+        } else {
+          terminal.preserveStatus();
+        }
+        terminal.enableStatus = false;
+        await stderr.flush();
+        stdout.writeln(
+          CommandMessage.formatMessages(
+            messages: messages.followedBy(result.messages),
+            format: terminal.format,
+            success: model.success,
+          ),
+        );
+        messages.clear();
       }
-      terminal.enableStatus = false;
-      await stderr.flush();
-      stdout.writeln(
-        CommandMessage.formatMessages(
-          messages: messages.followedBy(result.messages),
-          format: terminal.format,
-          success: model.success,
-        ),
+      await exitPuro(model.success ? 0 : 1);
+    } catch (exception, stackTrace) {
+      stderr.writeln(
+        'Exception while writing result:\n$exception\n$stackTrace',
       );
-      messages.clear();
+      exit(1);
     }
-    await exitPuro(model.success ? 0 : 1);
   }
 
   @override

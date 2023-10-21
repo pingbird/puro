@@ -2,6 +2,15 @@ import '../command.dart';
 import '../env/list.dart';
 
 class EnvLsCommand extends PuroCommand {
+  EnvLsCommand() {
+    argParser.addFlag(
+      'projects',
+      abbr: 'p',
+      help: 'Whether to show projects using each environment',
+      negatable: false,
+    );
+  }
+
   @override
   final name = 'ls';
 
@@ -11,6 +20,9 @@ class EnvLsCommand extends PuroCommand {
 
   @override
   Future<ListEnvironmentResult> run() async {
-    return listEnvironments(scope: scope);
+    return listEnvironments(
+      scope: scope,
+      showProjects: argResults!['projects'] as bool,
+    );
   }
 }
