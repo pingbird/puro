@@ -7,8 +7,8 @@ import '../provider.dart';
 
 Future<int> collectGarbage({
   required Scope scope,
-  int maxUnusedCaches = 0,
-  int maxUnusedFlutterTools = 0,
+  int maxUnusedCaches = 5,
+  int maxUnusedFlutterTools = 5,
 }) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);

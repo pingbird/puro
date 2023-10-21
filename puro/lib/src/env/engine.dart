@@ -16,6 +16,7 @@ import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
 import '../terminal.dart';
+import 'gc.dart';
 
 enum EngineOS {
   windows,
@@ -272,6 +273,10 @@ Future<bool> downloadSharedEngine({
     zipFile.deleteSync();
 
     didDownloadEngine = true;
+  }
+
+  if (didDownloadEngine) {
+    await collectGarbage(scope: scope);
   }
 
   return didDownloadEngine;

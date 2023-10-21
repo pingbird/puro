@@ -1,3 +1,7 @@
+## 1.4.2
+
+* Unused caches are now cleaned up automatically
+
 ## 1.4.1
 
 * Bug fixes
