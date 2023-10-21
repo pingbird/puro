@@ -1,3 +1,9 @@
+## 1.4.1
+
+* Bug fixes
+* Added the `build-shell` command to open a shell for building the Flutter engine manually
+* Added the `--projects`/`-p` flag to `ls` to show which projects are using each environment
+
 ## 1.4.0
 
 * Bug fixes

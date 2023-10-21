@@ -10,6 +10,7 @@ Future<void> ensureNoProjectsUsingEnv({
   required Scope scope,
   required EnvConfig environment,
 }) async {
+  final config = PuroConfig.of(scope);
   final dotfiles = await getDotfilesUsingEnv(
     scope: scope,
     environment: environment,
@@ -19,7 +20,7 @@ Future<void> ensureNoProjectsUsingEnv({
       [
         CommandMessage(
           'Environment `${environment.name}` is currently used by the following '
-          'projects:\n${dotfiles.map((p) => '* ${p.parent.path}').join('\n')}',
+          'projects:\n${dotfiles.map((p) => '* ${config.shortenHome(p.parent.path)}').join('\n')}',
         ),
         CommandMessage(
           'Pass `-f` to ignore this warning',

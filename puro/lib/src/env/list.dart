@@ -87,7 +87,7 @@ class ListEnvironmentResult extends CommandResult {
           }
           if (showProjects && result.projects.isNotEmpty) {
             for (final project in result.projects) {
-              resultLines.add('    ${config.shortenHome(project.path)}');
+              resultLines.add('  | ${config.shortenHome(project.path)}');
             }
           }
           lines.add(resultLines);
