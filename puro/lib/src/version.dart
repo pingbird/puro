@@ -293,15 +293,19 @@ Future<CommandMessage?> checkIfUpdateAvailable({
     // Don't bother telling a bot to update.
     return null;
   }
+  final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final prefs = await readGlobalPrefs(scope: scope);
   if (prefs.hasEnableUpdateCheck() && !prefs.enableUpdateCheck) {
+    log.d('Update check disabled');
     return null;
   }
   final puroVersion = await PuroVersion.of(scope);
   if (puroVersion.type != PuroInstallationType.distribution) {
+    log.v('Not a distribution, skipping update check');
     return null;
   }
+  log.v('Checking if update is available');
   final lastVersionCheck =
       prefs.hasLastUpdateCheck() ? DateTime.parse(prefs.lastUpdateCheck) : null;
   final lastNotification = prefs.hasLastUpdateNotification()
@@ -321,6 +325,12 @@ Future<CommandMessage?> checkIfUpdateAvailable({
   final shouldVersionCheck = !isOutOfDate &&
       (lastVersionCheck == null ||
           now.difference(lastVersionCheck) > _kUpdateVersionCheckThreshold);
+  log.d('lastNotification: $lastNotification');
+  log.d('latestVersion: $latestVersion');
+  log.d('isOutOfDate: $isOutOfDate');
+  log.d('willNotify: $willNotify');
+  log.d('shouldVersionCheck: $shouldVersionCheck');
+  log.d('lastVersionCheck: $lastVersionCheck');
   if (willNotify) {
     await updateGlobalPrefs(
       scope: scope,
