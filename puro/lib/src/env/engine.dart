@@ -276,7 +276,9 @@ Future<bool> downloadSharedEngine({
   }
 
   if (didDownloadEngine) {
-    await collectGarbage(scope: scope);
+    await runOptional(scope, 'Collecting garbage', () async {
+      await collectGarbage(scope: scope);
+    });
   }
 
   return didDownloadEngine;

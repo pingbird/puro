@@ -13,8 +13,12 @@ Future<int> collectGarbage({
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final git = GitClient.of(scope);
-  final sharedCacheDirs = config.sharedCachesDir.listSync();
-  final flutterToolDirs = config.sharedFlutterToolsDir.listSync();
+  final sharedCacheDirs = config.sharedCachesDir.existsSync()
+      ? config.sharedCachesDir.listSync()
+      : [];
+  final flutterToolDirs = config.sharedFlutterToolsDir.existsSync()
+      ? config.sharedFlutterToolsDir.listSync()
+      : [];
   if (sharedCacheDirs.length < maxUnusedCaches &&
       flutterToolDirs.length < maxUnusedFlutterTools) {
     // Don't bother cleaning up if there are less than maxUnusedCaches
