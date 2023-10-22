@@ -1,3 +1,7 @@
+## 1.4.3
+
+* Absolutely nothing, the `+1` of the previous release broke CloudFront lol
+
 ## 1.4.2+1
 
 * Bug fixes
