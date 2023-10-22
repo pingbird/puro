@@ -639,6 +639,10 @@ bool isValidVersion(String name) {
   return version != null && name == '$version';
 }
 
+bool isValidEnvName(String name) {
+  return isValidName(name) || isValidVersion(name);
+}
+
 final _commitHashRegex = RegExp(r'^[0-9a-f]{5,40}$');
 bool isValidCommitHash(String commit) {
   return _commitHashRegex.hasMatch(commit);

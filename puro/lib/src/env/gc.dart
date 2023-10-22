@@ -23,7 +23,7 @@ Future<int> collectGarbage({
   final usedCaches = <String>{};
   final usedCommits = <String>{};
   for (final dir in config.envsDir.listSync()) {
-    if (dir is! Directory || !isValidName(dir.basename)) {
+    if (dir is! Directory || !isValidEnvName(dir.basename)) {
       continue;
     }
     final environment = config.getEnv(dir.basename);
