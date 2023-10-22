@@ -218,6 +218,14 @@ void main(List<String> args) async {
       'version',
       help: 'Prints version information, same as the `version` command',
       negatable: false,
+    )
+    ..addFlag(
+      'no-update-check',
+      help: 'Skip update check',
+      negatable: false,
+      callback: runner.wrapCallback((flag) {
+        runner.allowUpdateCheckOverride = !flag;
+      }),
     );
   runner
     ..addCommand(VersionCommand())

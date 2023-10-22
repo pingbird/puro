@@ -11,6 +11,7 @@ import 'package:yaml/yaml.dart';
 import 'command.dart';
 import 'command_result.dart';
 import 'config.dart';
+import 'extensions.dart';
 import 'file_lock.dart';
 import 'git.dart';
 import 'http.dart';
@@ -107,7 +108,11 @@ class PuroVersion {
         path.equals(
           scriptPath,
           path.join(path.current, 'puro'),
-        )) {
+        ) ||
+        config.fileSystem
+            .file(executablePath)
+            .parent
+            .pathEquals(config.binDir)) {
       // A bug in dart gives an incorrect Platform.script :/
       // https://github.com/dart-lang/sdk/issues/45005
       scriptPath = executablePath;

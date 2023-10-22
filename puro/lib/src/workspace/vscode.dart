@@ -52,6 +52,7 @@ class VSCodeConfig extends IdeConfig {
       changedDotfile = true;
     }
     if (dartSdkDir != null &&
+        dartSdkDir!.existsSync() &&
         !dartSdkDir!
             .resolve()
             .parent

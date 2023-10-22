@@ -141,14 +141,14 @@ Future<ListEnvironmentResult> listEnvironments({
   for (final name in pseudoEnvironmentNames) {
     final environment = config.getEnv(name);
     FlutterVersion? version;
-    final projects =
-        (allDotfiles[environment.name] ?? []).map((e) => e.parent).toList();
     if (environment.exists) {
       version = await getEnvironmentFlutterVersion(
         scope: scope,
         environment: environment,
       );
     }
+    final projects =
+        (allDotfiles[environment.name] ?? []).map((e) => e.parent).toList();
     results.add(EnvironmentInfoResult(environment, version, projects));
   }
 
@@ -166,7 +166,9 @@ Future<ListEnvironmentResult> listEnvironments({
         scope: scope,
         environment: environment,
       );
-      results.add(EnvironmentInfoResult(environment, version, []));
+      final projects =
+          (allDotfiles[environment.name] ?? []).map((e) => e.parent).toList();
+      results.add(EnvironmentInfoResult(environment, version, projects));
     }
   }
 

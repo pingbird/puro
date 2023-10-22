@@ -156,6 +156,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   String? flutterStorageBaseUrlOverride;
   String? environmentOverride;
   bool? shouldInstallOverride;
+  bool? allowUpdateCheckOverride;
 
   late List<String> args;
   ArgResults? results;
@@ -337,7 +338,9 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
 
       final commandName = topLevelResults.command?.name;
       final command = commandName == null ? null : commands[commandName];
-      if (command is PuroCommand && command.allowUpdateCheck) {
+      if (command is PuroCommand &&
+          command.allowUpdateCheck &&
+          (allowUpdateCheckOverride ?? true)) {
         final message = await checkIfUpdateAvailable(
           scope: scope,
           runner: this,

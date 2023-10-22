@@ -747,7 +747,7 @@ Future<void> registerDotfile({
   required File dotfile,
 }) async {
   final prefs = await readGlobalPrefs(scope: scope);
-  final canonical = dotfile.resolve().path;
+  final canonical = dotfile.resolveIfExists().path;
   if (!prefs.projectDotfiles.contains(canonical)) {
     await updateGlobalPrefs(
       scope: scope,
@@ -764,7 +764,7 @@ Future<void> cleanDotfiles({required Scope scope}) {
     scope: scope,
     fn: (prefs) {
       for (final path in prefs.projectDotfiles.toList()) {
-        final canonical = config.fileSystem.file(path).resolve().path;
+        final canonical = config.fileSystem.file(path).resolveIfExists().path;
         if (config.fileSystem.statSync(path).type ==
             FileSystemEntityType.notFound) {
           prefs.projectDotfiles.remove(path);

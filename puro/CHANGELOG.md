@@ -1,6 +1,6 @@
 ## 1.4.2
 
-* Fixed update check
+* Bug fixes
 * Unused caches are now cleaned up automatically
 
 ## 1.4.1
