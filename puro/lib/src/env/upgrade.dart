@@ -128,6 +128,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
       final toolInfo = await setUpFlutterTool(
         scope: scope,
         environment: environment,
+        environmentPrefs: prefs,
       );
 
       return EnvUpgradeResult(

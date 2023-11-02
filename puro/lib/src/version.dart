@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:clock/clock.dart';
 import 'package:file/file.dart';
@@ -52,11 +53,18 @@ class PuroVersion {
 
   static const _fs = LocalFileSystem();
 
-  static Directory? _getRootFromPackageConfig({
+  static Future<Directory?> _getRootFromPackageConfig({
     required Scope scope,
-  }) {
+  }) async {
     final log = PuroLogger.of(scope);
-    final packageConfig = Platform.packageConfig;
+    var packageConfig = Platform.packageConfig;
+    if (packageConfig == null) {
+      final uri = await Isolate.packageConfig;
+      if (uri != null) {
+        packageConfig = '$uri';
+        log.d('Using Isolate.packageConfig: $packageConfig');
+      }
+    }
     if (packageConfig == null) {
       log.d('No package root: Platform.packageConfig is null');
       return null;
@@ -128,7 +136,7 @@ class PuroVersion {
     final scriptFile = config.fileSystem.file(scriptPath);
     final scriptExtension = path.extension(scriptPath);
     final scriptIsExecutable = path.equals(scriptPath, executablePath);
-    var packageRoot = _getRootFromPackageConfig(scope: scope);
+    var packageRoot = await _getRootFromPackageConfig(scope: scope);
 
     if (!scriptIsExecutable && packageRoot == null) {
       final pubInstallBinDir = scriptFile.parent;

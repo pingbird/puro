@@ -1030,6 +1030,7 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
     $core.String? forkRemoteUrl,
     $core.String? engineForkRemoteUrl,
     $core.bool? precompileTool,
+    $core.bool? patched,
   }) {
     final $result = create();
     if (desiredVersion != null) {
@@ -1043,6 +1044,9 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
     }
     if (precompileTool != null) {
       $result.precompileTool = precompileTool;
+    }
+    if (patched != null) {
+      $result.patched = patched;
     }
     return $result;
   }
@@ -1064,6 +1068,7 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
         protoName: 'engineForkRemoteUrl')
     ..aOB(4, _omitFieldNames ? '' : 'precompileTool',
         protoName: 'precompileTool')
+    ..aOB(5, _omitFieldNames ? '' : 'patched')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -1138,6 +1143,18 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   $core.bool hasPrecompileTool() => $_has(3);
   @$pb.TagNumber(4)
   void clearPrecompileTool() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get patched => $_getBF(4);
+  @$pb.TagNumber(5)
+  set patched($core.bool v) {
+    $_setBool(4, v);
+  }
+
+  @$pb.TagNumber(5)
+  $core.bool hasPatched() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPatched() => clearField(5);
 }
 
 class PuroDotfileModel extends $pb.GeneratedMessage {

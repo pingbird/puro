@@ -135,7 +135,7 @@ Future<EnvCreateResult> createEnvironment({
         }
         await downloadSharedEngine(
           scope: scope,
-          engineVersion: engineVersion,
+          engineCommit: engineVersion,
         );
         cacheEngineTime = clock.now();
       },
@@ -309,7 +309,8 @@ Future<void> cloneFlutterWithSharedRefs({
 
       await git.fetch(repository: repository);
 
-      forkRef ??= 'master';
+      forkRef ??= await git.getDefaultBranch(repository: repository);
+
       node.description = 'Checking out $forkRef';
 
       await guardCheckout(() async {

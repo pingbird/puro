@@ -793,6 +793,19 @@ class GitClient {
     }
   }
 
+  /// Gets the name of the default branch for the provided repository.
+  Future<String> getDefaultBranch({
+    required Directory repository,
+    String remote = 'origin',
+  }) async {
+    final fullName = await revParseSingle(
+      repository: repository,
+      arg: '$remote/HEAD',
+      abbreviation: true,
+    );
+    return fullName.split('/').last;
+  }
+
   /// https://git-scm.com/docs/git-update-index
   Future<void> assumeUnchanged({
     required Directory repository,

@@ -4,6 +4,7 @@ import 'package:file/file.dart';
 import 'package:process/process.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+import '../../models.dart';
 import '../command_result.dart';
 import '../config.dart';
 import '../downloader.dart';
@@ -196,11 +197,11 @@ Future<void> unzip({
 
 Future<bool> downloadSharedEngine({
   required Scope scope,
-  required String engineVersion,
+  required String engineCommit,
 }) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
-  final sharedCache = config.getFlutterCache(engineVersion);
+  final sharedCache = config.getFlutterCache(engineCommit, patched: false);
   var didDownloadEngine = false;
 
   // Delete the current cache if it's corrupt
@@ -229,10 +230,10 @@ Future<bool> downloadSharedEngine({
 
     final target = await scope.read(EngineBuildTarget.provider);
     final engineZipUrl = config.flutterStorageBaseUrl.append(
-      path: 'flutter_infra_release/flutter/$engineVersion/${target.zipName}',
+      path: 'flutter_infra_release/flutter/$engineCommit/${target.zipName}',
     );
     sharedCache.cacheDir.createSync(recursive: true);
-    final zipFile = config.sharedCachesDir.childFile('$engineVersion.zip');
+    final zipFile = config.sharedCachesDir.childFile('$engineCommit.zip');
     try {
       await downloadFile(
         scope: scope,
@@ -246,7 +247,7 @@ Future<bool> downloadSharedEngine({
       // of shared.sh or the git tree, but this is much simpler.
       if (e.statusCode == 404 && target == EngineBuildTarget.macosArm64) {
         final engineZipUrl = config.flutterStorageBaseUrl.append(
-          path: 'flutter_infra_release/flutter/$engineVersion/'
+          path: 'flutter_infra_release/flutter/$engineCommit/'
               '${EngineBuildTarget.macosX64.zipName}',
         );
         await downloadFile(
@@ -309,11 +310,16 @@ const cacheBlacklist = {
   'flutter.version.json',
 };
 
+extension EnvPrefsModelExtension on PuroEnvPrefsModel {
+  bool get isPatched => hasPatched() && patched;
+}
+
 /// Syncs an environment's flutter cache with the shared cache by creating
 /// symlinks to individual files / folders.
 Future<void> syncFlutterCache({
   required Scope scope,
   required EnvConfig environment,
+  PuroEnvPrefsModel? environmentPrefs,
 }) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
@@ -322,7 +328,13 @@ Future<void> syncFlutterCache({
   if (engineVersion == null) {
     return;
   }
-  final sharedCacheDir = config.sharedCachesDir.childDirectory(engineVersion);
+  environmentPrefs ??= await environment.readPrefs(scope: scope);
+  final sharedCacheDir = config
+      .getFlutterCache(
+        engineVersion,
+        patched: environmentPrefs.isPatched,
+      )
+      .cacheDir;
   if (!sharedCacheDir.existsSync()) {
     return;
   }

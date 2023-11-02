@@ -99,6 +99,10 @@ class FlutterVersion {
     String? channel,
     String defaultVersion = 'stable',
   }) async {
+    final config = PuroConfig.of(scope);
+    final git = GitClient.of(scope);
+    final log = PuroLogger.of(scope);
+
     if (version == null) {
       if (channel != null) {
         version = channel;
@@ -108,8 +112,10 @@ class FlutterVersion {
       }
     }
 
-    final config = PuroConfig.of(scope);
-    final git = GitClient.of(scope);
+    if (channel == 'master') {
+      channel = 'main';
+      log.w('The master channel has been renamed to main, using main instead');
+    }
 
     FlutterChannel? parsedChannel;
 

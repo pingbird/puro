@@ -69,6 +69,7 @@ message PuroEnvPrefsModel {
   optional string forkRemoteUrl = 2;
   optional string engineForkRemoteUrl = 3;
   optional bool precompileTool = 4;
+  optional bool patched = 5;
 }
 
 message PuroDotfileModel {

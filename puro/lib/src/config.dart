@@ -298,15 +298,24 @@ class PuroConfig {
     return dir;
   }
 
-  FlutterCacheConfig getFlutterCache(String engineVersion) {
-    if (!isValidCommitHash(engineVersion)) {
+  FlutterCacheConfig getFlutterCache(
+    String engineCommit, {
+    required bool patched,
+  }) {
+    if (!isValidCommitHash(engineCommit)) {
       throw ArgumentError.value(
-        engineVersion,
+        engineCommit,
         'engineVersion',
         'Invalid commit hash',
       );
     }
-    return FlutterCacheConfig(sharedCachesDir.childDirectory(engineVersion));
+    if (patched) {
+      return FlutterCacheConfig(sharedCachesDir.childDirectory(
+        '${engineCommit}_patched',
+      ));
+    } else {
+      return FlutterCacheConfig(sharedCachesDir.childDirectory(engineCommit));
+    }
   }
 
   DartSdkConfig getDartRelease(DartRelease release) {
@@ -329,6 +338,26 @@ class PuroConfig {
         '${flutterGitUrl.substring(
           isHttp ? httpPrefix.length : sshPrefix.length,
           flutterGitUrl.length - 4,
+        )}/$commit/$path',
+      );
+    }
+    return null;
+  }
+
+  Uri? tryGetEngineGitDownloadUrl({
+    required String commit,
+    required String path,
+  }) {
+    const httpPrefix = 'https://github.com/';
+    const sshPrefix = 'git@github.com:';
+    final isHttp = engineGitUrl.startsWith(httpPrefix);
+    if ((isHttp || engineGitUrl.startsWith(sshPrefix)) &&
+        engineGitUrl.endsWith('.git')) {
+      return Uri.https(
+        'raw.githubusercontent.com',
+        '${engineGitUrl.substring(
+          isHttp ? httpPrefix.length : sshPrefix.length,
+          engineGitUrl.length - 4,
         )}/$commit/$path',
       );
     }

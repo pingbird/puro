@@ -113,9 +113,13 @@ Future<FlutterToolInfo> setUpFlutterTool({
       log.v('Engine out of date');
       didUpdateEngine = await downloadSharedEngine(
         scope: scope,
-        engineVersion: desiredEngineVersion,
+        engineCommit: desiredEngineVersion,
       );
-      final sharedCache = config.getFlutterCache(desiredEngineVersion);
+      environmentPrefs ??= await environment.readPrefs(scope: scope);
+      final sharedCache = config.getFlutterCache(
+        desiredEngineVersion,
+        patched: environmentPrefs!.isPatched,
+      );
       sharedCache.engineVersionFile.writeAsStringSync(desiredEngineVersion);
       await trySyncFlutterCache(scope: scope, environment: environment);
     },
@@ -131,8 +135,8 @@ Future<FlutterToolInfo> setUpFlutterTool({
   var didUpdateTool = false;
 
   environmentPrefs ??= await environment.readPrefs(scope: scope);
-  final shouldPrecompile =
-      !environmentPrefs.hasPrecompileTool() || environmentPrefs.precompileTool;
+  final shouldPrecompile = !environmentPrefs!.hasPrecompileTool() ||
+      environmentPrefs!.precompileTool;
 
   Future<void> updateTool({required ToolQuirks toolQuirks}) async {
     await ProgressNode.of(scope).wrap((scope, node) async {

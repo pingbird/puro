@@ -393,12 +393,22 @@ const PuroEnvPrefsModel$json = {
       '10': 'precompileTool',
       '17': true
     },
+    {
+      '1': 'patched',
+      '3': 5,
+      '4': 1,
+      '5': 8,
+      '9': 4,
+      '10': 'patched',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_desiredVersion'},
     {'1': '_forkRemoteUrl'},
     {'1': '_engineForkRemoteUrl'},
     {'1': '_precompileTool'},
+    {'1': '_patched'},
   ],
 };
 
@@ -408,8 +418,9 @@ final $typed_data.Uint8List puroEnvPrefsModelDescriptor = $convert.base64Decode(
     'JzaW9uTW9kZWxIAFIOZGVzaXJlZFZlcnNpb26IAQESKQoNZm9ya1JlbW90ZVVybBgCIAEoCUgB'
     'Ug1mb3JrUmVtb3RlVXJsiAEBEjUKE2VuZ2luZUZvcmtSZW1vdGVVcmwYAyABKAlIAlITZW5naW'
     '5lRm9ya1JlbW90ZVVybIgBARIrCg5wcmVjb21waWxlVG9vbBgEIAEoCEgDUg5wcmVjb21waWxl'
-    'VG9vbIgBAUIRCg9fZGVzaXJlZFZlcnNpb25CEAoOX2ZvcmtSZW1vdGVVcmxCFgoUX2VuZ2luZU'
-    'ZvcmtSZW1vdGVVcmxCEQoPX3ByZWNvbXBpbGVUb29s');
+    'VG9vbIgBARIdCgdwYXRjaGVkGAUgASgISARSB3BhdGNoZWSIAQFCEQoPX2Rlc2lyZWRWZXJzaW'
+    '9uQhAKDl9mb3JrUmVtb3RlVXJsQhYKFF9lbmdpbmVGb3JrUmVtb3RlVXJsQhEKD19wcmVjb21w'
+    'aWxlVG9vbEIKCghfcGF0Y2hlZA==');
 
 @$core.Deprecated('Use puroDotfileModelDescriptor instead')
 const PuroDotfileModel$json = {
