@@ -133,6 +133,23 @@ Future<int> runDartCommand({
     mode: mode,
     rosettaWorkaround: true,
   );
+
+  // Capture SIGINT and SIGTERM signals. If we don't capture them, the parent
+  // process will exit, so the dart command won't have a chance to handle them.
+  // Some CLI apps might want to behave differently when they receive these
+  // signals.
+  StreamSubscription<ProcessSignal>? sigIntSub, sigTermSub;
+  if (mode == ProcessStartMode.normal ||
+      mode == ProcessStartMode.inheritStdio) {
+    sigIntSub = ProcessSignal.sigint.watch().listen((_) {});
+
+    // SIGTERM is not supported on Windows. Attempting to register a SIGTERM
+    // handler raises an exception.
+    if (!Platform.isWindows) {
+      sigTermSub = ProcessSignal.sigterm.watch().listen((_) {});
+    }
+  }
+
   if (stdin != null) {
     unawaited(dartProcess.stdin.addStream(stdin));
   }
@@ -145,5 +162,10 @@ Future<int> runDartCommand({
   final exitCode = await dartProcess.exitCode;
   await stdoutFuture;
   await stderrFuture;
+
+  // cleanup signal subscriptions
+  await sigIntSub?.cancel();
+  await sigTermSub?.cancel();
+
   return exitCode;
 }
