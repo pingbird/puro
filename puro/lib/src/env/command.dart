@@ -66,6 +66,9 @@ Future<int> runFlutterCommand({
     mode: mode,
     rosettaWorkaround: true,
   );
+
+  final disposeExitSignals = _setupExitSignals(mode);
+
   if (stdin != null) {
     unawaited(flutterProcess.stdin.addStream(stdin));
   }
@@ -78,6 +81,9 @@ Future<int> runFlutterCommand({
   final exitCode = await flutterProcess.exitCode;
   await stdoutFuture;
   await stderrFuture;
+
+  await disposeExitSignals();
+
   if (syncCache) {
     await trySyncFlutterCache(scope: scope, environment: environment);
   }
@@ -134,21 +140,7 @@ Future<int> runDartCommand({
     rosettaWorkaround: true,
   );
 
-  // Capture SIGINT and SIGTERM signals. If we don't capture them, the parent
-  // process will exit, so the dart command won't have a chance to handle them.
-  // Some CLI apps might want to behave differently when they receive these
-  // signals.
-  StreamSubscription<ProcessSignal>? sigIntSub, sigTermSub;
-  if (mode == ProcessStartMode.normal ||
-      mode == ProcessStartMode.inheritStdio) {
-    sigIntSub = ProcessSignal.sigint.watch().listen((_) {});
-
-    // SIGTERM is not supported on Windows. Attempting to register a SIGTERM
-    // handler raises an exception.
-    if (!Platform.isWindows) {
-      sigTermSub = ProcessSignal.sigterm.watch().listen((_) {});
-    }
-  }
+  final disposeExitSignals = _setupExitSignals(mode);
 
   if (stdin != null) {
     unawaited(dartProcess.stdin.addStream(stdin));
@@ -163,9 +155,33 @@ Future<int> runDartCommand({
   await stdoutFuture;
   await stderrFuture;
 
-  // cleanup signal subscriptions
-  await sigIntSub?.cancel();
-  await sigTermSub?.cancel();
+  await disposeExitSignals();
 
   return exitCode;
+}
+
+/// Capture SIGINT and SIGTERM signals. If we don't capture them, the parent
+/// process will exit, so the dart command won't have a chance to handle them.
+/// Some CLI apps might want to behave differently when they receive these
+/// signals.
+Future<void> Function() _setupExitSignals(ProcessStartMode mode) {
+  StreamSubscription<ProcessSignal>? sigIntSub, sigTermSub;
+
+  if (mode == ProcessStartMode.normal ||
+      mode == ProcessStartMode.inheritStdio) {
+    sigIntSub = ProcessSignal.sigint.watch().listen((_) {});
+
+    // SIGTERM is not supported on Windows. Attempting to register a SIGTERM
+    // handler raises an exception.
+    if (!Platform.isWindows) {
+      sigTermSub = ProcessSignal.sigterm.watch().listen((_) {});
+    }
+  }
+
+  // Cleanup function
+  return () async {
+    // cleanup signal subscriptions
+    await sigIntSub?.cancel();
+    await sigTermSub?.cancel();
+  };
 }
