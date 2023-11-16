@@ -69,25 +69,27 @@ Future<int> runFlutterCommand({
 
   final disposeExitSignals = _setupExitSignals(mode);
 
-  if (stdin != null) {
-    unawaited(flutterProcess.stdin.addStream(stdin));
-  }
-  final stdoutFuture = onStdout == null
-      ? null
-      : flutterProcess.stdout.listen(onStdout).asFuture<void>();
-  final stderrFuture = onStderr == null
-      ? null
-      : flutterProcess.stderr.listen(onStderr).asFuture<void>();
-  final exitCode = await flutterProcess.exitCode;
-  await stdoutFuture;
-  await stderrFuture;
+  try {
+    if (stdin != null) {
+      unawaited(flutterProcess.stdin.addStream(stdin));
+    }
+    final stdoutFuture = onStdout == null
+        ? null
+        : flutterProcess.stdout.listen(onStdout).asFuture<void>();
+    final stderrFuture = onStderr == null
+        ? null
+        : flutterProcess.stderr.listen(onStderr).asFuture<void>();
+    final exitCode = await flutterProcess.exitCode;
+    await stdoutFuture;
+    await stderrFuture;
 
-  await disposeExitSignals();
-
-  if (syncCache) {
-    await trySyncFlutterCache(scope: scope, environment: environment);
+    if (syncCache) {
+      await trySyncFlutterCache(scope: scope, environment: environment);
+    }
+    return exitCode;
+  } finally {
+    await disposeExitSignals();
   }
-  return exitCode;
 }
 
 Future<int> runDartCommand({
@@ -142,22 +144,24 @@ Future<int> runDartCommand({
 
   final disposeExitSignals = _setupExitSignals(mode);
 
-  if (stdin != null) {
-    unawaited(dartProcess.stdin.addStream(stdin));
+  try {
+    if (stdin != null) {
+      unawaited(dartProcess.stdin.addStream(stdin));
+    }
+    final stdoutFuture = onStdout == null
+        ? null
+        : dartProcess.stdout.listen(onStdout).asFuture<void>();
+    final stderrFuture = onStderr == null
+        ? null
+        : dartProcess.stderr.listen(onStderr).asFuture<void>();
+    final exitCode = await dartProcess.exitCode;
+    await stdoutFuture;
+    await stderrFuture;
+
+    return exitCode;
+  } finally {
+    await disposeExitSignals();
   }
-  final stdoutFuture = onStdout == null
-      ? null
-      : dartProcess.stdout.listen(onStdout).asFuture<void>();
-  final stderrFuture = onStderr == null
-      ? null
-      : dartProcess.stderr.listen(onStderr).asFuture<void>();
-  final exitCode = await dartProcess.exitCode;
-  await stdoutFuture;
-  await stderrFuture;
-
-  await disposeExitSignals();
-
-  return exitCode;
 }
 
 /// Capture SIGINT and SIGTERM signals. If we don't capture them, the parent
