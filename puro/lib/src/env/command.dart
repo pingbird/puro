@@ -171,8 +171,7 @@ Future<int> runDartCommand({
 Future<void> Function() _setupExitSignals(ProcessStartMode mode) {
   StreamSubscription<ProcessSignal>? sigIntSub, sigTermSub;
 
-  if (mode == ProcessStartMode.normal ||
-      mode == ProcessStartMode.inheritStdio) {
+  if (mode == ProcessStartMode.inheritStdio) {
     sigIntSub = ProcessSignal.sigint.watch().listen((_) {});
 
     // SIGTERM is not supported on Windows. Attempting to register a SIGTERM
