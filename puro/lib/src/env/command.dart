@@ -66,22 +66,30 @@ Future<int> runFlutterCommand({
     mode: mode,
     rosettaWorkaround: true,
   );
-  if (stdin != null) {
-    unawaited(flutterProcess.stdin.addStream(stdin));
+
+  final disposeExitSignals = _setupExitSignals(mode);
+
+  try {
+    if (stdin != null) {
+      unawaited(flutterProcess.stdin.addStream(stdin));
+    }
+    final stdoutFuture = onStdout == null
+        ? null
+        : flutterProcess.stdout.listen(onStdout).asFuture<void>();
+    final stderrFuture = onStderr == null
+        ? null
+        : flutterProcess.stderr.listen(onStderr).asFuture<void>();
+    final exitCode = await flutterProcess.exitCode;
+    await stdoutFuture;
+    await stderrFuture;
+
+    if (syncCache) {
+      await trySyncFlutterCache(scope: scope, environment: environment);
+    }
+    return exitCode;
+  } finally {
+    await disposeExitSignals();
   }
-  final stdoutFuture = onStdout == null
-      ? null
-      : flutterProcess.stdout.listen(onStdout).asFuture<void>();
-  final stderrFuture = onStderr == null
-      ? null
-      : flutterProcess.stderr.listen(onStderr).asFuture<void>();
-  final exitCode = await flutterProcess.exitCode;
-  await stdoutFuture;
-  await stderrFuture;
-  if (syncCache) {
-    await trySyncFlutterCache(scope: scope, environment: environment);
-  }
-  return exitCode;
 }
 
 Future<int> runDartCommand({
@@ -133,17 +141,50 @@ Future<int> runDartCommand({
     mode: mode,
     rosettaWorkaround: true,
   );
-  if (stdin != null) {
-    unawaited(dartProcess.stdin.addStream(stdin));
+
+  final disposeExitSignals = _setupExitSignals(mode);
+
+  try {
+    if (stdin != null) {
+      unawaited(dartProcess.stdin.addStream(stdin));
+    }
+    final stdoutFuture = onStdout == null
+        ? null
+        : dartProcess.stdout.listen(onStdout).asFuture<void>();
+    final stderrFuture = onStderr == null
+        ? null
+        : dartProcess.stderr.listen(onStderr).asFuture<void>();
+    final exitCode = await dartProcess.exitCode;
+    await stdoutFuture;
+    await stderrFuture;
+
+    return exitCode;
+  } finally {
+    await disposeExitSignals();
   }
-  final stdoutFuture = onStdout == null
-      ? null
-      : dartProcess.stdout.listen(onStdout).asFuture<void>();
-  final stderrFuture = onStderr == null
-      ? null
-      : dartProcess.stderr.listen(onStderr).asFuture<void>();
-  final exitCode = await dartProcess.exitCode;
-  await stdoutFuture;
-  await stderrFuture;
-  return exitCode;
+}
+
+/// Capture SIGINT and SIGTERM signals. If we don't capture them, the parent
+/// process will exit, so the dart command won't have a chance to handle them.
+/// Some CLI apps might want to behave differently when they receive these
+/// signals.
+Future<void> Function() _setupExitSignals(ProcessStartMode mode) {
+  StreamSubscription<ProcessSignal>? sigIntSub, sigTermSub;
+
+  if (mode == ProcessStartMode.inheritStdio) {
+    sigIntSub = ProcessSignal.sigint.watch().listen((_) {});
+
+    // SIGTERM is not supported on Windows. Attempting to register a SIGTERM
+    // handler raises an exception.
+    if (!Platform.isWindows) {
+      sigTermSub = ProcessSignal.sigterm.watch().listen((_) {});
+    }
+  }
+
+  // Cleanup function
+  return () async {
+    // cleanup signal subscriptions
+    await sigIntSub?.cancel();
+    await sigTermSub?.cancel();
+  };
 }
