@@ -23,28 +23,39 @@ Future<Process> startProcess(
   ProcessStartMode mode = ProcessStartMode.normal,
   bool rosettaWorkaround = false,
 }) async {
+  final log = PuroLogger.of(scope);
   if (rosettaWorkaround && Platform.isMacOS) {
     final engineInfo = await scope.read(EngineBuildTarget.provider);
     if (engineInfo.os == EngineOS.macOS &&
         engineInfo.arch == EngineArch.arm64) {
-      return startProcess(
+      log.d('querying arch of $executable');
+      final fileResult = await runProcess(
         scope,
-        '/usr/bin/arch',
-        [
-          '-arch',
-          'arm64',
-          executable,
-          ...arguments,
-        ],
-        workingDirectory: workingDirectory,
-        environment: environment,
-        includeParentEnvironment: includeParentEnvironment,
-        runInShell: runInShell,
-        mode: mode,
+        'file',
+        [executable],
+        throwOnFailure: true,
       );
+      log.d('file result: ${fileResult.stdout}');
+      if ((fileResult.stdout as String)
+          .contains('Mach-O 64-bit executable arm64')) {
+        return startProcess(
+          scope,
+          '/usr/bin/arch',
+          [
+            '-arch',
+            'arm64',
+            executable,
+            ...arguments,
+          ],
+          workingDirectory: workingDirectory,
+          environment: environment,
+          includeParentEnvironment: includeParentEnvironment,
+          runInShell: runInShell,
+          mode: mode,
+        );
+      }
     }
   }
-  final log = PuroLogger.of(scope);
   final start = clock.now();
   final process = await Process.start(
     executable,
