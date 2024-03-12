@@ -59,7 +59,7 @@ Future<void> installIdeConfigs({
         projectConfig: projectConfig,
       );
       log.d('vscode exists: ${ideConfig.exists}');
-      if ((ideConfig.exists || vscode == true) ||
+      if ((ideConfig.exists || vscode == true) &&
           (replaceOnly == null ||
               (ideConfig.dartSdkDir?.absolute
                       .pathEquals(replaceOnly.flutter.cache.dartSdkDir) ==

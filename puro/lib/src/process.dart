@@ -339,7 +339,7 @@ Future<List<PsInfo>> getParentProcesses({
           RegExp(r'^\s*(\d+)\s+(.+)$').firstMatch(result.stdout as String);
       if (resultMatch == null) break;
       final ppid = int.tryParse(resultMatch.group(1) ?? '');
-      final name = resultMatch.group(2);
+      final name = resultMatch.group(2)?.split(' ').first.split('/').last;
       if (ppid == null || name == null) break;
       stack.add(PsInfo(pid, name));
       pid = ppid;
