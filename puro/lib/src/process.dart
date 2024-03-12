@@ -336,14 +336,11 @@ Future<List<PsInfo>> getParentProcesses({
         '$pid',
       ]);
       if (result.exitCode != 0) break;
-      print('==== result: ${result.stdout}');
       final resultMatch = RegExp(r'^\s*(\d+)\s+(.+)$')
           .firstMatch((result.stdout as String).trim());
       if (resultMatch == null) break;
       final ppid = int.tryParse(resultMatch.group(1) ?? '');
-      print('==== ppid: $ppid');
       final name = resultMatch.group(2)?.split(' ').first.split('/').last;
-      print('==== name: $name');
       if (ppid == null || name == null) break;
       stack.add(PsInfo(pid, name));
       pid = ppid;
