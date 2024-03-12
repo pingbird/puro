@@ -293,10 +293,16 @@ class IntelliJConfig extends IdeConfig {
       final classElements = xml.findAllElements('root');
       if (classElements.isNotEmpty) {
         final classElement = classElements.first;
-        final urlPath = Uri.parse(classElement.getAttribute('url')!.replaceAll(
-              RegExp(r'\$USER_HOME\$', caseSensitive: false),
-              config.homeDir.path,
-            )).toFilePath().replaceAll(RegExp(r'^\\\\'), '');
+        final urlPath = Uri.parse(classElement
+                .getAttribute('url')!
+                .replaceAll(
+                  RegExp(r'\$USER_HOME\$', caseSensitive: false),
+                  config.homeDir.path,
+                )
+                .replaceAll(RegExp(r'\$PROJECT_DIR\$', caseSensitive: false),
+                    workspaceDir.path))
+            .toFilePath()
+            .replaceAll(RegExp(r'^\\\\'), '');
         final dartSdkDir =
             config.fileSystem.directory(urlPath).absolute.parent.parent;
         if (dartSdkDir.childDirectory('bin').existsSync()) {
