@@ -172,5 +172,10 @@ Future<bool> isRunningInVscode({
   required Scope scope,
 }) async {
   final processes = await getParentProcesses(scope: scope);
-  return processes.any((e) => e.name == 'Code.exe' || e.name == 'code');
+  return processes.any((e) =>
+      e.name == 'Code.exe' ||
+      e.name == 'VSCode.exe' ||
+      e.name == 'VSCodium.exe' ||
+      e.name == 'code' ||
+      e.name == 'codium');
 }
