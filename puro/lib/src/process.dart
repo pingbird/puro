@@ -330,14 +330,13 @@ Future<List<PsInfo>> getParentProcesses({
     for (;;) {
       final result = await runProcess(scope, 'ps', [
         '-o',
-        'ppid,cmd',
-        '--no-header',
+        'ppid,command',
         '-p',
         '$pid',
       ]);
       if (result.exitCode != 0) break;
       final resultMatch = RegExp(r'^\s*(\d+)\s+(.+)$')
-          .firstMatch((result.stdout as String).trim());
+          .firstMatch((result.stdout as String).trim().split('\n').last);
       if (resultMatch == null) break;
       final ppid = int.tryParse(resultMatch.group(1) ?? '');
       final name = resultMatch.group(2)?.split(' ').first.split('/').last;
