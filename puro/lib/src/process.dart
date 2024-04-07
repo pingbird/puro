@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:io' as io;
+import 'dart:io';
 
 import 'package:clock/clock.dart';
 import 'package:path/path.dart' as path;
@@ -330,16 +330,17 @@ Future<List<PsInfo>> getParentProcesses({
     for (;;) {
       final result = await runProcess(scope, 'ps', [
         '-o',
-        '%P\n%c',
+        'ppid,command',
         '-p',
         '$pid',
       ]);
       if (result.exitCode != 0) break;
-      final lines = (result.stdout as String).trim().split('\n');
-      if (lines.length != 4) break;
-      final ppid = int.tryParse(lines[2].trim());
-      final name = lines[3].trim();
-      if (ppid == null || name.isEmpty) break;
+      final resultMatch = RegExp(r'^\s*(\d+)\s+(.+)$')
+          .firstMatch((result.stdout as String).trim().split('\n').last);
+      if (resultMatch == null) break;
+      final ppid = int.tryParse(resultMatch.group(1) ?? '');
+      final name = resultMatch.group(2)?.split(' ').first.split('/').last;
+      if (ppid == null || name == null) break;
       stack.add(PsInfo(pid, name));
       pid = ppid;
     }

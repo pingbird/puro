@@ -212,7 +212,7 @@ jobs:
       - pub_get
       - add_ssh_keys:
           fingerprints:
-            - "b2:23:ce:56:3e:ef:20:5a:5a:4a:8d:04:4d:b7:cb:a7"
+            - "8d:f9:cd:2a:73:47:38:2d:f6:71:24:0b:82:ab:35:d7"
       - run: |-
           git clone https://github.com/PixelToast/mkdocs-material-insiders.git
           pip install ./mkdocs-material-insiders
