@@ -214,7 +214,7 @@ jobs:
           fingerprints:
             - "8d:f9:cd:2a:73:47:38:2d:f6:71:24:0b:82:ab:35:d7"
       - run: |-
-          git clone https://github.com/PixelToast/mkdocs-material-insiders.git
+          git clone https://github.com/pingbird/mkdocs-material-insiders.git
           pip install ./mkdocs-material-insiders
           dart puro/bin/puro.dart _generate-docs --deploy
           cd website
