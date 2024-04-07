@@ -147,7 +147,6 @@ Future<void> unzip({
           '-o${destination.path}',
           zipFile.path,
         ],
-        runInShell: true,
         throwOnFailure: true,
       );
     } else {
@@ -160,7 +159,6 @@ Future<void> unzip({
           '-DestinationPath',
           destination.path,
         ],
-        runInShell: true,
         throwOnFailure: true,
       );
     }

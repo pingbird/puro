@@ -59,7 +59,6 @@ Future<int> runBuildEnvShell({
     scope,
     command.first,
     command.skip(1).toList(),
-    runInShell: true,
     environment: buildEnv,
     mode: ProcessStartMode.inheritStdio,
     workingDirectory: defaultShell ? environment?.engine.srcDir.path : null,
