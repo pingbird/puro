@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:clock/clock.dart';
+import 'package:collection/collection.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:path/path.dart' as path;
@@ -80,8 +81,8 @@ class PuroVersion {
       final packages = packageData['packages'] as List<dynamic>;
       final puroPackage = packages
           .cast<Map<String, dynamic>>()
-          .firstWhere((e) => e['name'] == 'puro');
-      final rootUri = Uri.parse(puroPackage['rootUri'] as String);
+          .firstWhereOrNull((e) => e['name'] == 'puro');
+      final rootUri = Uri.parse(puroPackage?['rootUri'] as String);
       var rootPath = rootUri.toFilePath();
       if (path.isRelative(rootPath)) {
         path.isRelative(rootPath);
