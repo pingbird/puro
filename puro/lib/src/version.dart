@@ -82,6 +82,9 @@ class PuroVersion {
       final puroPackage = packages
           .cast<Map<String, dynamic>>()
           .firstWhereOrNull((e) => e['name'] == 'puro');
+      if (puroPackage == null && puroPackage?['rootUri'] == null) {
+        return null;
+      }
       final rootUri = Uri.parse(puroPackage?['rootUri'] as String);
       var rootPath = rootUri.toFilePath();
       if (path.isRelative(rootPath)) {
