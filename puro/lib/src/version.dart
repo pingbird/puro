@@ -85,7 +85,7 @@ class PuroVersion {
       if (puroPackage == null) {
         return null;
       }
-      final rootUri = Uri.parse(puroPackage?['rootUri'] as String);
+      final rootUri = Uri.parse(puroPackage['rootUri'] as String);
       var rootPath = rootUri.toFilePath();
       if (path.isRelative(rootPath)) {
         path.isRelative(rootPath);
