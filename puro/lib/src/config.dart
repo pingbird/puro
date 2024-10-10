@@ -136,16 +136,39 @@ class PuroConfig {
     resultProjectDir ??= parentProjectDir;
 
     final envPuroRoot = Platform.environment['PURO_ROOT'];
+    log.d('envPuroRoot: $envPuroRoot');
 
-    var puroRootDir = puroRoot != null
-        ? fileSystem.directory(puroRoot)
-        : envPuroRoot?.isNotEmpty ?? false
-            ? fileSystem.directory(envPuroRoot)
-            : fileSystem.directory(homeDir).childDirectory('.puro');
+    final Directory? binPuroRoot = () {
+      final flutterBin = Platform.environment['PURO_FLUTTER_BIN'];
+      if (flutterBin == null) {
+        return null;
+      }
+      final flutterBinDir = fileSystem.directory(flutterBin).absolute;
+      final flutterSdkDir = flutterBinDir.parent;
+      final envDir = flutterSdkDir.parent;
+      final envsDir = envDir.parent;
+      return envsDir.parent;
+    }();
+    log.d('binPuroRoot: $binPuroRoot');
 
+    Directory puroRootDir = () {
+      if (puroRoot != null) {
+        log.d('puroRoot: $puroRoot');
+        return fileSystem.directory(puroRoot);
+      }
+      if (binPuroRoot != null) {
+        return binPuroRoot;
+      }
+      if (envPuroRoot?.isNotEmpty ?? false) {
+        return fileSystem.directory(envPuroRoot);
+      }
+      return fileSystem.directory(homeDir).childDirectory('.puro');
+    }();
+    log.d('puroRootDir: $puroRootDir');
     puroRootDir.createSync(recursive: true);
     puroRootDir =
         fileSystem.directory(puroRootDir.resolveSymbolicLinksSync()).absolute;
+    log.d('puroRootDir (resolved): $puroRootDir');
 
     if (environmentOverride == null) {
       final flutterBin = Platform.environment['PURO_FLUTTER_BIN'];
