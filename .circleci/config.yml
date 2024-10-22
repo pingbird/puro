@@ -12,12 +12,18 @@ commands:
           command: |-
             cd ~/
             if [[ $OSTYPE == 'darwin'* ]]; then
-            curl https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-x64-release.zip -o dart-sdk.zip
-            unzip dart-sdk.zip
-            sudo ln -s `pwd`/dart-sdk/bin/dart /usr/local/bin/dart
+              if [[ $(uname -m) == 'arm64' ]]; then
+                echo "Running on ARM64 (Apple Silicon)"
+                curl https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-arm64-release.zip -o dart-sdk.zip
+              else
+                echo "Running on Intel x64"
+                curl https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-x64-release.zip -o dart-sdk.zip
+              fi
+              unzip dart-sdk.zip
+              sudo ln -s `pwd`/dart-sdk/bin/dart /usr/local/bin/dart
             else
-            wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/linux_packages/dart_${DART_VERSION}-1_amd64.deb
-            sudo dpkg -i dart_${DART_VERSION}-1_amd64.deb
+              wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/linux_packages/dart_${DART_VERSION}-1_amd64.deb
+              sudo dpkg -i dart_${DART_VERSION}-1_amd64.deb
             fi
             dart --version
 
@@ -157,7 +163,7 @@ jobs:
       - install_dart
       - test_all
       - build_puro:
-          os_name: darwin-x64
+          os_name: darwin
           build_args: << parameters.build_args >>
 
   windows_build:
