@@ -62,6 +62,15 @@ message PuroGlobalPrefsModel {
   optional bool enableProfileUpdate = 5;
   optional string profileOverride = 6;
   repeated string projectDotfiles = 7;
+  optional string pubCacheDir = 9;
+  optional string flutterGitUrl = 10;
+  optional string engineGitUrl = 11;
+  optional string dartSdkGitUrl = 12;
+  optional string releasesJsonUrl = 13;
+  optional string flutterStorageBaseUrl = 14;
+  optional string puroBuildsUrl = 15;
+  optional string puroBuildTarget = 16;
+  optional bool shouldInstall = 18;
 }
 
 message PuroEnvPrefsModel {

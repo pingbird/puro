@@ -315,11 +315,19 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       callbackQueue.clear();
 
       // Initialize config
+
+      final homeDir =
+          PuroConfig.getHomeDir(scope: scope, fileSystem: fileSystem);
+      final puroRoot = PuroConfig.getPuroRoot(
+          scope: scope, fileSystem: fileSystem, homeDir: homeDir);
+      scope.add(globalPrefsJsonFileProvider, puroRoot.childFile('prefs.json'));
+
       final config = PuroConfig.fromCommandLine(
         scope: scope,
         fileSystem: fileSystem,
         gitExecutable: gitExecutableOverride,
-        puroRoot: rootDirOverride,
+        puroRoot: puroRoot,
+        homeDir: homeDir,
         workingDir: workingDirOverride,
         projectDir: projectDirOverride,
         flutterGitUrl: flutterGitUrlOverride,

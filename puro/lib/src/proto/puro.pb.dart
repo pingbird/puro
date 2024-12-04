@@ -855,6 +855,15 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     $core.String? profileOverride,
     $core.Iterable<$core.String>? projectDotfiles,
     $core.String? lastUpdateNotificationCommand,
+    $core.String? pubCacheDir,
+    $core.String? flutterGitUrl,
+    $core.String? engineGitUrl,
+    $core.String? dartSdkGitUrl,
+    $core.String? releasesJsonUrl,
+    $core.String? flutterStorageBaseUrl,
+    $core.String? puroBuildsUrl,
+    $core.String? puroBuildTarget,
+    $core.bool? shouldInstall,
   }) {
     final $result = create();
     if (defaultEnvironment != null) {
@@ -880,6 +889,33 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     }
     if (lastUpdateNotificationCommand != null) {
       $result.lastUpdateNotificationCommand = lastUpdateNotificationCommand;
+    }
+    if (pubCacheDir != null) {
+      $result.pubCacheDir = pubCacheDir;
+    }
+    if (flutterGitUrl != null) {
+      $result.flutterGitUrl = flutterGitUrl;
+    }
+    if (engineGitUrl != null) {
+      $result.engineGitUrl = engineGitUrl;
+    }
+    if (dartSdkGitUrl != null) {
+      $result.dartSdkGitUrl = dartSdkGitUrl;
+    }
+    if (releasesJsonUrl != null) {
+      $result.releasesJsonUrl = releasesJsonUrl;
+    }
+    if (flutterStorageBaseUrl != null) {
+      $result.flutterStorageBaseUrl = flutterStorageBaseUrl;
+    }
+    if (puroBuildsUrl != null) {
+      $result.puroBuildsUrl = puroBuildsUrl;
+    }
+    if (puroBuildTarget != null) {
+      $result.puroBuildTarget = puroBuildTarget;
+    }
+    if (shouldInstall != null) {
+      $result.shouldInstall = shouldInstall;
     }
     return $result;
   }
@@ -910,6 +946,22 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
         protoName: 'projectDotfiles')
     ..aOS(8, _omitFieldNames ? '' : 'lastUpdateNotificationCommand',
         protoName: 'lastUpdateNotificationCommand')
+    ..aOS(9, _omitFieldNames ? '' : 'pubCacheDir', protoName: 'pubCacheDir')
+    ..aOS(10, _omitFieldNames ? '' : 'flutterGitUrl',
+        protoName: 'flutterGitUrl')
+    ..aOS(11, _omitFieldNames ? '' : 'engineGitUrl', protoName: 'engineGitUrl')
+    ..aOS(12, _omitFieldNames ? '' : 'dartSdkGitUrl',
+        protoName: 'dartSdkGitUrl')
+    ..aOS(13, _omitFieldNames ? '' : 'releasesJsonUrl',
+        protoName: 'releasesJsonUrl')
+    ..aOS(14, _omitFieldNames ? '' : 'flutterStorageBaseUrl',
+        protoName: 'flutterStorageBaseUrl')
+    ..aOS(15, _omitFieldNames ? '' : 'puroBuildsUrl',
+        protoName: 'puroBuildsUrl')
+    ..aOS(16, _omitFieldNames ? '' : 'puroBuildTarget',
+        protoName: 'puroBuildTarget')
+    ..aOB(18, _omitFieldNames ? '' : 'shouldInstall',
+        protoName: 'shouldInstall')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -1022,6 +1074,114 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   $core.bool hasLastUpdateNotificationCommand() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastUpdateNotificationCommand() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get pubCacheDir => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set pubCacheDir($core.String v) {
+    $_setString(8, v);
+  }
+
+  @$pb.TagNumber(9)
+  $core.bool hasPubCacheDir() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPubCacheDir() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get flutterGitUrl => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set flutterGitUrl($core.String v) {
+    $_setString(9, v);
+  }
+
+  @$pb.TagNumber(10)
+  $core.bool hasFlutterGitUrl() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearFlutterGitUrl() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get engineGitUrl => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set engineGitUrl($core.String v) {
+    $_setString(10, v);
+  }
+
+  @$pb.TagNumber(11)
+  $core.bool hasEngineGitUrl() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearEngineGitUrl() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get dartSdkGitUrl => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set dartSdkGitUrl($core.String v) {
+    $_setString(11, v);
+  }
+
+  @$pb.TagNumber(12)
+  $core.bool hasDartSdkGitUrl() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearDartSdkGitUrl() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get releasesJsonUrl => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set releasesJsonUrl($core.String v) {
+    $_setString(12, v);
+  }
+
+  @$pb.TagNumber(13)
+  $core.bool hasReleasesJsonUrl() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearReleasesJsonUrl() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get flutterStorageBaseUrl => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set flutterStorageBaseUrl($core.String v) {
+    $_setString(13, v);
+  }
+
+  @$pb.TagNumber(14)
+  $core.bool hasFlutterStorageBaseUrl() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearFlutterStorageBaseUrl() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get puroBuildsUrl => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set puroBuildsUrl($core.String v) {
+    $_setString(14, v);
+  }
+
+  @$pb.TagNumber(15)
+  $core.bool hasPuroBuildsUrl() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearPuroBuildsUrl() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get puroBuildTarget => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set puroBuildTarget($core.String v) {
+    $_setString(15, v);
+  }
+
+  @$pb.TagNumber(16)
+  $core.bool hasPuroBuildTarget() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearPuroBuildTarget() => clearField(16);
+
+  @$pb.TagNumber(18)
+  $core.bool get shouldInstall => $_getBF(16);
+  @$pb.TagNumber(18)
+  set shouldInstall($core.bool v) {
+    $_setBool(16, v);
+  }
+
+  @$pb.TagNumber(18)
+  $core.bool hasShouldInstall() => $_has(16);
+  @$pb.TagNumber(18)
+  void clearShouldInstall() => clearField(18);
 }
 
 class PuroEnvPrefsModel extends $pb.GeneratedMessage {

@@ -255,6 +255,19 @@ enum PuroBuildTarget {
     this.scriptSuffix,
   );
 
+  factory PuroBuildTarget.fromString(String str) {
+    switch (str) {
+      case 'windows-x64':
+        return PuroBuildTarget.windowsX64;
+      case 'linux-x64':
+        return PuroBuildTarget.linuxX64;
+      case 'darwin-x64':
+        return PuroBuildTarget.macosX64;
+      default:
+        throw ArgumentError('Unknown target: $str');
+    }
+  }
+
   final String name;
   final String exeSuffix;
   final String scriptSuffix;

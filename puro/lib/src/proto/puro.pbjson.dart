@@ -325,6 +325,87 @@ const PuroGlobalPrefsModel$json = {
       '17': true
     },
     {'1': 'projectDotfiles', '3': 7, '4': 3, '5': 9, '10': 'projectDotfiles'},
+    {
+      '1': 'pubCacheDir',
+      '3': 9,
+      '4': 1,
+      '5': 9,
+      '9': 7,
+      '10': 'pubCacheDir',
+      '17': true
+    },
+    {
+      '1': 'flutterGitUrl',
+      '3': 10,
+      '4': 1,
+      '5': 9,
+      '9': 8,
+      '10': 'flutterGitUrl',
+      '17': true
+    },
+    {
+      '1': 'engineGitUrl',
+      '3': 11,
+      '4': 1,
+      '5': 9,
+      '9': 9,
+      '10': 'engineGitUrl',
+      '17': true
+    },
+    {
+      '1': 'dartSdkGitUrl',
+      '3': 12,
+      '4': 1,
+      '5': 9,
+      '9': 10,
+      '10': 'dartSdkGitUrl',
+      '17': true
+    },
+    {
+      '1': 'releasesJsonUrl',
+      '3': 13,
+      '4': 1,
+      '5': 9,
+      '9': 11,
+      '10': 'releasesJsonUrl',
+      '17': true
+    },
+    {
+      '1': 'flutterStorageBaseUrl',
+      '3': 14,
+      '4': 1,
+      '5': 9,
+      '9': 12,
+      '10': 'flutterStorageBaseUrl',
+      '17': true
+    },
+    {
+      '1': 'puroBuildsUrl',
+      '3': 15,
+      '4': 1,
+      '5': 9,
+      '9': 13,
+      '10': 'puroBuildsUrl',
+      '17': true
+    },
+    {
+      '1': 'puroBuildTarget',
+      '3': 16,
+      '4': 1,
+      '5': 9,
+      '9': 14,
+      '10': 'puroBuildTarget',
+      '17': true
+    },
+    {
+      '1': 'shouldInstall',
+      '3': 18,
+      '4': 1,
+      '5': 8,
+      '9': 15,
+      '10': 'shouldInstall',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_defaultEnvironment'},
@@ -334,6 +415,15 @@ const PuroGlobalPrefsModel$json = {
     {'1': '_enableUpdateCheck'},
     {'1': '_enableProfileUpdate'},
     {'1': '_profileOverride'},
+    {'1': '_pubCacheDir'},
+    {'1': '_flutterGitUrl'},
+    {'1': '_engineGitUrl'},
+    {'1': '_dartSdkGitUrl'},
+    {'1': '_releasesJsonUrl'},
+    {'1': '_flutterStorageBaseUrl'},
+    {'1': '_puroBuildsUrl'},
+    {'1': '_puroBuildTarget'},
+    {'1': '_shouldInstall'},
   ],
 };
 
@@ -347,10 +437,20 @@ final $typed_data.Uint8List puroGlobalPrefsModelDescriptor = $convert.base64Deco
     'NrGAQgASgISARSEWVuYWJsZVVwZGF0ZUNoZWNriAEBEjUKE2VuYWJsZVByb2ZpbGVVcGRhdGUY'
     'BSABKAhIBVITZW5hYmxlUHJvZmlsZVVwZGF0ZYgBARItCg9wcm9maWxlT3ZlcnJpZGUYBiABKA'
     'lIBlIPcHJvZmlsZU92ZXJyaWRliAEBEigKD3Byb2plY3REb3RmaWxlcxgHIAMoCVIPcHJvamVj'
-    'dERvdGZpbGVzQhUKE19kZWZhdWx0RW52aXJvbm1lbnRCEgoQX2xhc3RVcGRhdGVDaGVja0IZCh'
-    'dfbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkIgCh5fbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkNvbW1h'
-    'bmRCFAoSX2VuYWJsZVVwZGF0ZUNoZWNrQhYKFF9lbmFibGVQcm9maWxlVXBkYXRlQhIKEF9wcm'
-    '9maWxlT3ZlcnJpZGU=');
+    'dERvdGZpbGVzEiUKC3B1YkNhY2hlRGlyGAkgASgJSAdSC3B1YkNhY2hlRGlyiAEBEikKDWZsdX'
+    'R0ZXJHaXRVcmwYCiABKAlICFINZmx1dHRlckdpdFVybIgBARInCgxlbmdpbmVHaXRVcmwYCyAB'
+    'KAlICVIMZW5naW5lR2l0VXJsiAEBEikKDWRhcnRTZGtHaXRVcmwYDCABKAlIClINZGFydFNka0'
+    'dpdFVybIgBARItCg9yZWxlYXNlc0pzb25VcmwYDSABKAlIC1IPcmVsZWFzZXNKc29uVXJsiAEB'
+    'EjkKFWZsdXR0ZXJTdG9yYWdlQmFzZVVybBgOIAEoCUgMUhVmbHV0dGVyU3RvcmFnZUJhc2VVcm'
+    'yIAQESKQoNcHVyb0J1aWxkc1VybBgPIAEoCUgNUg1wdXJvQnVpbGRzVXJsiAEBEi0KD3B1cm9C'
+    'dWlsZFRhcmdldBgQIAEoCUgOUg9wdXJvQnVpbGRUYXJnZXSIAQESKQoNc2hvdWxkSW5zdGFsbB'
+    'gSIAEoCEgPUg1zaG91bGRJbnN0YWxsiAEBQhUKE19kZWZhdWx0RW52aXJvbm1lbnRCEgoQX2xh'
+    'c3RVcGRhdGVDaGVja0IZChdfbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkIgCh5fbGFzdFVwZGF0ZU'
+    '5vdGlmaWNhdGlvbkNvbW1hbmRCFAoSX2VuYWJsZVVwZGF0ZUNoZWNrQhYKFF9lbmFibGVQcm9m'
+    'aWxlVXBkYXRlQhIKEF9wcm9maWxlT3ZlcnJpZGVCDgoMX3B1YkNhY2hlRGlyQhAKDl9mbHV0dG'
+    'VyR2l0VXJsQg8KDV9lbmdpbmVHaXRVcmxCEAoOX2RhcnRTZGtHaXRVcmxCEgoQX3JlbGVhc2Vz'
+    'SnNvblVybEIYChZfZmx1dHRlclN0b3JhZ2VCYXNlVXJsQhAKDl9wdXJvQnVpbGRzVXJsQhIKEF'
+    '9wdXJvQnVpbGRUYXJnZXRCEAoOX3Nob3VsZEluc3RhbGw=');
 
 @$core.Deprecated('Use puroEnvPrefsModelDescriptor instead')
 const PuroEnvPrefsModel$json = {

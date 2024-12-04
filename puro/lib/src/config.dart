@@ -37,6 +37,7 @@ class PuroConfig {
   PuroConfig({
     required this.fileSystem,
     required this.gitExecutable,
+    required this.globalPrefsJsonFile,
     required Directory puroRoot,
     required this.pubCacheDir,
     required this.homeDir,
@@ -54,13 +55,15 @@ class PuroConfig {
     required this.shouldInstall,
   }) : puroRoot = puroRoot.absolute;
 
-  factory PuroConfig.fromCommandLine({
+  static Future<PuroConfig> fromCommandLine({
     required Scope scope,
     required FileSystem fileSystem,
     required String? gitExecutable,
-    required String? puroRoot,
+    required Directory puroRoot,
+    required Directory homeDir,
     required String? workingDir,
     required String? projectDir,
+    required String? pubCache,
     required String? flutterGitUrl,
     required String? engineGitUrl,
     required String? dartSdkGitUrl,
@@ -70,8 +73,9 @@ class PuroConfig {
     required bool? shouldInstall,
     // Global shims break IDE auto-detection, we use symlinks now instead
     bool enableShims = false,
-  }) {
+  }) async {
     final log = PuroLogger.of(scope);
+    final globalPrefs = await readGlobalPrefs(scope: scope);
 
     final currentDir = workingDir == null
         ? fileSystem.currentDirectory
@@ -94,13 +98,6 @@ class PuroConfig {
       throw CommandError(
         'Could not find git executable, consider $instructions',
       );
-    }
-
-    final String homeDir;
-    if (Platform.isWindows) {
-      homeDir = Platform.environment['UserProfile']!;
-    } else {
-      homeDir = Platform.environment['HOME']!;
     }
 
     final absoluteProjectDir =
@@ -135,6 +132,111 @@ class PuroConfig {
 
     resultProjectDir ??= parentProjectDir;
 
+    log.d('puroRootDir: $puroRoot');
+    puroRoot.createSync(recursive: true);
+    puroRoot =
+        fileSystem.directory(puroRoot.resolveSymbolicLinksSync()).absolute;
+    log.d('puroRoot (resolved): $puroRoot');
+
+    if (environmentOverride == null) {
+      final flutterBin = Platform.environment['PURO_FLUTTER_BIN'];
+      log.d('PURO_FLUTTER_BIN: $flutterBin');
+      if (flutterBin != null) {
+        final flutterBinDir = fileSystem.directory(flutterBin).absolute;
+        final flutterSdkDir = flutterBinDir.parent;
+        final envDir = flutterSdkDir.parent;
+        final envsDir = envDir.parent;
+        final otherPuroRoot = envsDir.parent;
+        log.d('otherPuroRoot: $otherPuroRoot');
+        log.d('puroRoot: $puroRoot');
+        if (otherPuroRoot.pathEquals(puroRoot)) {
+          environmentOverride = envDir.basename.toLowerCase();
+          log.d('environmentOverride: $environmentOverride');
+        }
+      }
+    }
+
+    if (flutterStorageBaseUrl == null) {
+      final override = Platform.environment['FLUTTER_STORAGE_BASE_URL'];
+      if (override != null && override.isNotEmpty) {
+        flutterStorageBaseUrl = override;
+      }
+    }
+
+    final pubCacheOverride = Platform.environment['PUB_CACHE'];
+    if (pubCacheOverride != null && pubCacheOverride.isNotEmpty) {
+      pubCache ??= pubCacheOverride;
+    }
+    pubCache ??= globalPrefs.hasPubCacheDir() ? globalPrefs.pubCacheDir : null;
+    pubCache ??=
+        puroRoot.childDirectory('shared').childDirectory('pub_cache').path;
+
+    return PuroConfig(
+        fileSystem: fileSystem,
+        gitExecutable: fileSystem.file(gitExecutable),
+        globalPrefsJsonFile: scope.read(globalPrefsJsonFileProvider),
+        puroRoot: puroRoot,
+        pubCacheDir: fileSystem.directory(pubCache).absolute,
+        homeDir: fileSystem.directory(homeDir),
+        projectDir: resultProjectDir,
+        parentProjectDir: parentProjectDir,
+        flutterGitUrl: flutterGitUrl ??
+            (globalPrefs.hasFlutterGitUrl()
+                ? globalPrefs.flutterGitUrl
+                : null) ??
+            'https://github.com/flutter/flutter.git',
+        engineGitUrl: engineGitUrl ??
+            (globalPrefs.hasEngineGitUrl() ? globalPrefs.engineGitUrl : null) ??
+            'https://github.com/flutter/engine.git',
+        dartSdkGitUrl: dartSdkGitUrl ??
+            (globalPrefs.hasDartSdkGitUrl()
+                ? globalPrefs.dartSdkGitUrl
+                : null) ??
+            'https://github.com/dart-lang/sdk.git',
+        releasesJsonUrl: Uri.parse(
+          releasesJsonUrl ??
+              (globalPrefs.hasReleasesJsonUrl()
+                  ? globalPrefs.releasesJsonUrl
+                  : null) ??
+              '$flutterStorageBaseUrl/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
+        ),
+        flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl ??
+            (globalPrefs.hasFlutterStorageBaseUrl()
+                ? globalPrefs.flutterStorageBaseUrl
+                : null) ??
+            'https://storage.googleapis.com'),
+        environmentOverride: environmentOverride,
+        puroBuildsUrl: Uri.parse((globalPrefs.hasPuroBuildsUrl()
+                ? globalPrefs.puroBuildsUrl
+                : null) ??
+            'https://puro.dev/builds'),
+        buildTarget: globalPrefs.hasPuroBuildTarget()
+            ? PuroBuildTarget.fromString(globalPrefs.puroBuildTarget)
+            : PuroBuildTarget.query(),
+        enableShims: enableShims,
+        shouldInstall: shouldInstall ??
+            (!globalPrefs.hasShouldInstall() || globalPrefs.shouldInstall));
+  }
+
+  static Directory getHomeDir({
+    required Scope scope,
+    required FileSystem fileSystem,
+  }) {
+    final String homeDir;
+    if (Platform.isWindows) {
+      homeDir = Platform.environment['UserProfile']!;
+    } else {
+      homeDir = Platform.environment['HOME']!;
+    }
+    return fileSystem.directory(homeDir);
+  }
+
+  static Directory getPuroRoot({
+    required Scope scope,
+    required FileSystem fileSystem,
+    required Directory homeDir,
+  }) {
+    final log = PuroLogger.of(scope);
     final envPuroRoot = Platform.environment['PURO_ROOT'];
     log.d('envPuroRoot: $envPuroRoot');
 
@@ -151,85 +253,18 @@ class PuroConfig {
     }();
     log.d('binPuroRoot: $binPuroRoot');
 
-    Directory puroRootDir = () {
-      if (puroRoot != null) {
-        log.d('puroRoot: $puroRoot');
-        return fileSystem.directory(puroRoot);
-      }
-      if (binPuroRoot != null) {
-        return binPuroRoot;
-      }
-      if (envPuroRoot?.isNotEmpty ?? false) {
-        return fileSystem.directory(envPuroRoot);
-      }
-      return fileSystem.directory(homeDir).childDirectory('.puro');
-    }();
-    log.d('puroRootDir: $puroRootDir');
-    puroRootDir.createSync(recursive: true);
-    puroRootDir =
-        fileSystem.directory(puroRootDir.resolveSymbolicLinksSync()).absolute;
-    log.d('puroRootDir (resolved): $puroRootDir');
-
-    if (environmentOverride == null) {
-      final flutterBin = Platform.environment['PURO_FLUTTER_BIN'];
-      log.d('PURO_FLUTTER_BIN: $flutterBin');
-      if (flutterBin != null) {
-        final flutterBinDir = fileSystem.directory(flutterBin).absolute;
-        final flutterSdkDir = flutterBinDir.parent;
-        final envDir = flutterSdkDir.parent;
-        final envsDir = envDir.parent;
-        final otherPuroRootDir = envsDir.parent;
-        log.d('otherPuroRootDir: $otherPuroRootDir');
-        log.d('puroRootDir: $puroRootDir');
-        if (otherPuroRootDir.pathEquals(puroRootDir)) {
-          environmentOverride = envDir.basename.toLowerCase();
-          log.d('environmentOverride: $environmentOverride');
-        }
-      }
+    if (binPuroRoot != null) {
+      return binPuroRoot;
     }
-
-    if (flutterStorageBaseUrl == null) {
-      final override = Platform.environment['FLUTTER_STORAGE_BASE_URL'];
-      if (override != null && override.isNotEmpty) {
-        flutterStorageBaseUrl = override;
-      }
+    if (envPuroRoot?.isNotEmpty ?? false) {
+      return fileSystem.directory(envPuroRoot);
     }
-
-    final pubCacheOverride = Platform.environment['PUB_CACHE'];
-    var pubCache =
-        puroRootDir.childDirectory('shared').childDirectory('pub_cache');
-    if (pubCacheOverride != null && pubCacheOverride.isNotEmpty) {
-      pubCache = fileSystem.directory(pubCacheOverride).absolute;
-    }
-
-    flutterStorageBaseUrl ??= 'https://storage.googleapis.com';
-
-    return PuroConfig(
-      fileSystem: fileSystem,
-      gitExecutable: fileSystem.file(gitExecutable),
-      puroRoot: puroRootDir,
-      pubCacheDir: pubCache,
-      homeDir: fileSystem.directory(homeDir),
-      projectDir: resultProjectDir,
-      parentProjectDir: parentProjectDir,
-      flutterGitUrl: flutterGitUrl ?? 'https://github.com/flutter/flutter.git',
-      engineGitUrl: engineGitUrl ?? 'https://github.com/flutter/engine.git',
-      dartSdkGitUrl: dartSdkGitUrl ?? 'https://github.com/dart-lang/sdk.git',
-      releasesJsonUrl: Uri.parse(
-        releasesJsonUrl ??
-            '$flutterStorageBaseUrl/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
-      ),
-      flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl),
-      environmentOverride: environmentOverride,
-      puroBuildsUrl: Uri.parse('https://puro.dev/builds'),
-      buildTarget: PuroBuildTarget.query(),
-      enableShims: enableShims,
-      shouldInstall: shouldInstall ?? true,
-    );
+    return homeDir.childDirectory('.puro');
   }
 
   final FileSystem fileSystem;
   final File gitExecutable;
+  final File globalPrefsJsonFile;
   final Directory puroRoot;
   final Directory pubCacheDir;
   final Directory homeDir;
@@ -275,7 +310,6 @@ class PuroConfig {
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
   late final Link defaultEnvLink = envsDir.childLink('default');
   late final Uri puroLatestVersionUrl = puroBuildsUrl.append(path: 'latest');
-  late final File globalPrefsJsonFile = puroRoot.childFile('prefs.json');
   late final File puroLatestVersionFile = puroRoot.childFile('latest_version');
   late final Directory depotToolsDir = puroRoot.childDirectory('depot_tools');
 
@@ -736,8 +770,7 @@ Future<PuroGlobalPrefsModel> _readGlobalPrefs({
   required Scope scope,
 }) async {
   final model = PuroGlobalPrefsModel();
-  final config = PuroConfig.of(scope);
-  final file = config.globalPrefsJsonFile;
+  final file = scope.read(globalPrefsJsonFileProvider);
   if (file.existsSync()) {
     final contents = await readAtomic(scope: scope, file: file);
     model.mergeFromProto3Json(jsonDecode(contents));
@@ -750,11 +783,11 @@ Future<PuroGlobalPrefsModel> _updateGlobalPrefs({
   required FutureOr<void> Function(PuroGlobalPrefsModel prefs) fn,
   bool background = false,
 }) {
-  final config = PuroConfig.of(scope);
-  config.globalPrefsJsonFile.parent.createSync(recursive: true);
+  final file = scope.read(globalPrefsJsonFileProvider);
+  file.parent.createSync(recursive: true);
   return lockFile(
     scope,
-    config.globalPrefsJsonFile,
+    file,
     (handle) async {
       final model = PuroGlobalPrefsModel();
       String? contents;
@@ -773,6 +806,7 @@ Future<PuroGlobalPrefsModel> _updateGlobalPrefs({
   );
 }
 
+final globalPrefsJsonFileProvider = Provider<File>.late();
 final globalPrefsProvider = Provider<Future<PuroGlobalPrefsModel>>(
   (scope) => _readGlobalPrefs(scope: scope),
 );
