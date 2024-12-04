@@ -154,6 +154,7 @@ jobs:
     macos:
       xcode: 14.1.0
     steps:
+      - macos/install-rosetta
       - install_dart
       - test_all
       - build_puro:
