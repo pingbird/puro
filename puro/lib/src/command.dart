@@ -145,6 +145,8 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   final bool isJson;
 
   // CLI args
+  String? pubCacheOverride;
+  bool? legacyPubCache;
   String? gitExecutableOverride;
   String? rootDirOverride;
   String? projectDirOverride;
@@ -322,12 +324,14 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
           scope: scope, fileSystem: fileSystem, homeDir: homeDir);
       scope.add(globalPrefsJsonFileProvider, puroRoot.childFile('prefs.json'));
 
-      final config = PuroConfig.fromCommandLine(
+      final config = await PuroConfig.fromCommandLine(
         scope: scope,
         fileSystem: fileSystem,
         gitExecutable: gitExecutableOverride,
         puroRoot: puroRoot,
         homeDir: homeDir,
+        pubCache: pubCacheOverride,
+        legacyPubCache: legacyPubCache,
         workingDir: workingDirOverride,
         projectDir: projectDirOverride,
         flutterGitUrl: flutterGitUrlOverride,

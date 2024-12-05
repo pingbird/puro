@@ -64,6 +64,21 @@ void main(List<String> args) async {
 
   runner.argParser
     ..addOption(
+      'pub-cache-dir',
+      help: 'Overrides the pub cache directory',
+      valueHelp: 'dir',
+      callback: runner.wrapCallback((dir) {
+        runner.pubCacheOverride = dir;
+      }),
+    )
+    ..addFlag(
+      'legacy-pub-cache',
+      help: 'Whether to use the legacy pub cache directory',
+      callback: runner.wrapCallback((flag) {
+        runner.legacyPubCache = flag;
+      }),
+    )
+    ..addOption(
       'git-executable',
       help: 'Overrides the path to the git executable',
       valueHelp: 'exe',

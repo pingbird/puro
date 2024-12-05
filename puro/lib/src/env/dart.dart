@@ -193,7 +193,7 @@ Future<void> downloadSharedDartRelease({
           ['--version'],
           throwOnFailure: true,
           environment: {
-            'PUB_CACHE': config.pubCacheDir.path,
+            'PUB_CACHE': config.legacyPubCacheDir.path,
           },
         );
       });

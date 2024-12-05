@@ -406,6 +406,15 @@ const PuroGlobalPrefsModel$json = {
       '10': 'shouldInstall',
       '17': true
     },
+    {
+      '1': 'legacyPubCache',
+      '3': 19,
+      '4': 1,
+      '5': 8,
+      '9': 16,
+      '10': 'legacyPubCache',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_defaultEnvironment'},
@@ -424,6 +433,7 @@ const PuroGlobalPrefsModel$json = {
     {'1': '_puroBuildsUrl'},
     {'1': '_puroBuildTarget'},
     {'1': '_shouldInstall'},
+    {'1': '_legacyPubCache'},
   ],
 };
 
@@ -444,13 +454,14 @@ final $typed_data.Uint8List puroGlobalPrefsModelDescriptor = $convert.base64Deco
     'EjkKFWZsdXR0ZXJTdG9yYWdlQmFzZVVybBgOIAEoCUgMUhVmbHV0dGVyU3RvcmFnZUJhc2VVcm'
     'yIAQESKQoNcHVyb0J1aWxkc1VybBgPIAEoCUgNUg1wdXJvQnVpbGRzVXJsiAEBEi0KD3B1cm9C'
     'dWlsZFRhcmdldBgQIAEoCUgOUg9wdXJvQnVpbGRUYXJnZXSIAQESKQoNc2hvdWxkSW5zdGFsbB'
-    'gSIAEoCEgPUg1zaG91bGRJbnN0YWxsiAEBQhUKE19kZWZhdWx0RW52aXJvbm1lbnRCEgoQX2xh'
-    'c3RVcGRhdGVDaGVja0IZChdfbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkIgCh5fbGFzdFVwZGF0ZU'
-    '5vdGlmaWNhdGlvbkNvbW1hbmRCFAoSX2VuYWJsZVVwZGF0ZUNoZWNrQhYKFF9lbmFibGVQcm9m'
-    'aWxlVXBkYXRlQhIKEF9wcm9maWxlT3ZlcnJpZGVCDgoMX3B1YkNhY2hlRGlyQhAKDl9mbHV0dG'
-    'VyR2l0VXJsQg8KDV9lbmdpbmVHaXRVcmxCEAoOX2RhcnRTZGtHaXRVcmxCEgoQX3JlbGVhc2Vz'
-    'SnNvblVybEIYChZfZmx1dHRlclN0b3JhZ2VCYXNlVXJsQhAKDl9wdXJvQnVpbGRzVXJsQhIKEF'
-    '9wdXJvQnVpbGRUYXJnZXRCEAoOX3Nob3VsZEluc3RhbGw=');
+    'gSIAEoCEgPUg1zaG91bGRJbnN0YWxsiAEBEisKDmxlZ2FjeVB1YkNhY2hlGBMgASgISBBSDmxl'
+    'Z2FjeVB1YkNhY2hliAEBQhUKE19kZWZhdWx0RW52aXJvbm1lbnRCEgoQX2xhc3RVcGRhdGVDaG'
+    'Vja0IZChdfbGFzdFVwZGF0ZU5vdGlmaWNhdGlvbkIgCh5fbGFzdFVwZGF0ZU5vdGlmaWNhdGlv'
+    'bkNvbW1hbmRCFAoSX2VuYWJsZVVwZGF0ZUNoZWNrQhYKFF9lbmFibGVQcm9maWxlVXBkYXRlQh'
+    'IKEF9wcm9maWxlT3ZlcnJpZGVCDgoMX3B1YkNhY2hlRGlyQhAKDl9mbHV0dGVyR2l0VXJsQg8K'
+    'DV9lbmdpbmVHaXRVcmxCEAoOX2RhcnRTZGtHaXRVcmxCEgoQX3JlbGVhc2VzSnNvblVybEIYCh'
+    'ZfZmx1dHRlclN0b3JhZ2VCYXNlVXJsQhAKDl9wdXJvQnVpbGRzVXJsQhIKEF9wdXJvQnVpbGRU'
+    'YXJnZXRCEAoOX3Nob3VsZEluc3RhbGxCEQoPX2xlZ2FjeVB1YkNhY2hl');
 
 @$core.Deprecated('Use puroEnvPrefsModelDescriptor instead')
 const PuroEnvPrefsModel$json = {

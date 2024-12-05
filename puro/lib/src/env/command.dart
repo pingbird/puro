@@ -60,7 +60,7 @@ Future<int> runFlutterCommand({
     ],
     environment: {
       'FLUTTER_ROOT': flutterConfig.sdkDir.path,
-      'PUB_CACHE': config.pubCacheDir.path,
+      'PUB_CACHE': config.legacyPubCacheDir.path,
     },
     workingDirectory: workingDirectory,
     mode: mode,
@@ -135,7 +135,7 @@ Future<int> runDartCommand({
     args,
     environment: {
       'FLUTTER_ROOT': flutterConfig.sdkDir.path,
-      'PUB_CACHE': config.pubCacheDir.path,
+      'PUB_CACHE': config.legacyPubCacheDir.path,
     },
     workingDirectory: workingDirectory,
     mode: mode,

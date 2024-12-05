@@ -164,7 +164,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
           ],
           environment: {
             'PUB_ENVIRONMENT': pubEnvironment,
-            'PUB_CACHE': config.pubCacheDir.path,
+            'PUB_CACHE': config.legacyPubCacheDir.path,
           },
           workingDirectory: flutterConfig.flutterToolsDir.path,
         );
@@ -240,7 +240,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
               flutterConfig.flutterToolsScriptFile.path,
             ],
             environment: {
-              'PUB_CACHE': config.pubCacheDir.path,
+              'PUB_CACHE': config.legacyPubCacheDir.path,
             },
             throwOnFailure: true,
           );

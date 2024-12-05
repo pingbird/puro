@@ -864,6 +864,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     $core.String? puroBuildsUrl,
     $core.String? puroBuildTarget,
     $core.bool? shouldInstall,
+    $core.bool? legacyPubCache,
   }) {
     final $result = create();
     if (defaultEnvironment != null) {
@@ -917,6 +918,9 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
     if (shouldInstall != null) {
       $result.shouldInstall = shouldInstall;
     }
+    if (legacyPubCache != null) {
+      $result.legacyPubCache = legacyPubCache;
+    }
     return $result;
   }
   PuroGlobalPrefsModel._() : super();
@@ -962,6 +966,8 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
         protoName: 'puroBuildTarget')
     ..aOB(18, _omitFieldNames ? '' : 'shouldInstall',
         protoName: 'shouldInstall')
+    ..aOB(19, _omitFieldNames ? '' : 'legacyPubCache',
+        protoName: 'legacyPubCache')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -1182,6 +1188,18 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   $core.bool hasShouldInstall() => $_has(16);
   @$pb.TagNumber(18)
   void clearShouldInstall() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.bool get legacyPubCache => $_getBF(17);
+  @$pb.TagNumber(19)
+  set legacyPubCache($core.bool v) {
+    $_setBool(17, v);
+  }
+
+  @$pb.TagNumber(19)
+  $core.bool hasLegacyPubCache() => $_has(17);
+  @$pb.TagNumber(19)
+  void clearLegacyPubCache() => clearField(19);
 }
 
 class PuroEnvPrefsModel extends $pb.GeneratedMessage {

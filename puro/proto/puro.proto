@@ -71,6 +71,7 @@ message PuroGlobalPrefsModel {
   optional string puroBuildsUrl = 15;
   optional string puroBuildTarget = 16;
   optional bool shouldInstall = 18;
+  optional bool legacyPubCache = 19;
 }
 
 message PuroEnvPrefsModel {

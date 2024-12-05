@@ -72,6 +72,32 @@ class PuroInstallCommand extends PuroCommand {
         fn: (prefs) {
           if (profileOverride != null) prefs.profileOverride = profileOverride;
           if (updatePath != null) prefs.enableProfileUpdate = updatePath;
+          if (runner.pubCacheOverride != null) {
+            prefs.pubCacheDir = runner.pubCacheOverride!;
+          }
+          if (runner.flutterGitUrlOverride != null) {
+            prefs.flutterGitUrl = runner.flutterGitUrlOverride!;
+          }
+          if (runner.engineGitUrlOverride != null) {
+            prefs.engineGitUrl = runner.engineGitUrlOverride!;
+          }
+          if (runner.dartSdkGitUrlOverride != null) {
+            prefs.dartSdkGitUrl = runner.dartSdkGitUrlOverride!;
+          }
+          if (runner.versionsJsonUrlOverride != null) {
+            prefs.releasesJsonUrl = runner.versionsJsonUrlOverride!;
+          }
+          if (runner.flutterStorageBaseUrlOverride != null) {
+            prefs.flutterStorageBaseUrl = runner.flutterStorageBaseUrlOverride!;
+          }
+          if (runner.shouldInstallOverride != null) {
+            prefs.shouldInstall = runner.shouldInstallOverride!;
+          }
+          if (runner.legacyPubCache != null) {
+            prefs.legacyPubCache = runner.legacyPubCache!;
+          } else if (!prefs.hasLegacyPubCache()) {
+            prefs.legacyPubCache = config.legacyPubCache;
+          }
         },
       );
     } else {
@@ -94,7 +120,10 @@ class PuroInstallCommand extends PuroCommand {
           profileOverride:
               prefs.hasProfileOverride() ? prefs.profileOverride : null,
         );
-        profilePath = profile?.path.replaceAll(homeDir, '~');
+        profilePath = profile?.path;
+        if (profilePath != null && profilePath.startsWith(homeDir)) {
+          profilePath = '~' + profilePath.substring(homeDir.length);
+        }
       } else if (Platform.isWindows) {
         updatedWindowsRegistry = await tryUpdateWindowsPath(
           scope: scope,

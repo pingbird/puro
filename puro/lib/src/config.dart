@@ -39,7 +39,8 @@ class PuroConfig {
     required this.gitExecutable,
     required this.globalPrefsJsonFile,
     required Directory puroRoot,
-    required this.pubCacheDir,
+    required this.legacyPubCacheDir,
+    required this.legacyPubCache,
     required this.homeDir,
     required this.projectDir,
     required this.parentProjectDir,
@@ -64,6 +65,7 @@ class PuroConfig {
     required String? workingDir,
     required String? projectDir,
     required String? pubCache,
+    required bool? legacyPubCache,
     required String? flutterGitUrl,
     required String? engineGitUrl,
     required String? dartSdkGitUrl,
@@ -176,7 +178,8 @@ class PuroConfig {
         gitExecutable: fileSystem.file(gitExecutable),
         globalPrefsJsonFile: scope.read(globalPrefsJsonFileProvider),
         puroRoot: puroRoot,
-        pubCacheDir: fileSystem.directory(pubCache).absolute,
+        legacyPubCacheDir: fileSystem.directory(pubCache).absolute,
+        legacyPubCache: legacyPubCache ?? true,
         homeDir: fileSystem.directory(homeDir),
         projectDir: resultProjectDir,
         parentProjectDir: parentProjectDir,
@@ -266,7 +269,7 @@ class PuroConfig {
   final File gitExecutable;
   final File globalPrefsJsonFile;
   final Directory puroRoot;
-  final Directory pubCacheDir;
+  final Directory legacyPubCacheDir;
   final Directory homeDir;
   final Directory? projectDir;
   final Directory? parentProjectDir;
@@ -280,6 +283,7 @@ class PuroConfig {
   final PuroBuildTarget buildTarget;
   final bool enableShims;
   final bool shouldInstall;
+  final bool legacyPubCache;
 
   late final Directory envsDir = puroRoot.childDirectory('envs');
   late final Directory binDir = puroRoot.childDirectory('bin');
@@ -291,7 +295,7 @@ class PuroConfig {
       sharedDir.childDirectory('dart-release');
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
   late final Directory sharedGClientDir = sharedDir.childDirectory('gclient');
-  late final Directory pubCacheBinDir = pubCacheDir.childDirectory('bin');
+  late final Directory pubCacheBinDir = legacyPubCacheDir.childDirectory('bin');
   late final Directory sharedFlutterToolsDir =
       sharedDir.childDirectory('flutter_tools');
   late final File puroExecutableFile =
@@ -433,7 +437,7 @@ class PuroConfig {
     return 'PuroConfig(\n'
         '  gitExecutable: $gitExecutable,\n'
         '  puroRoot: $puroRoot,\n'
-        '  pubCacheDir: $pubCacheDir,\n'
+        '  pubCacheDir: $legacyPubCacheDir,\n'
         '  homeDir: $homeDir,\n'
         '  projectDir: $projectDir,\n'
         '  parentProjectDir: $parentProjectDir,\n'
@@ -796,6 +800,9 @@ Future<PuroGlobalPrefsModel> _updateGlobalPrefs({
         model.mergeFromProto3Json(jsonDecode(contents));
       }
       await fn(model);
+      if (!model.hasLegacyPubCache()) {
+        model.legacyPubCache = true;
+      }
       final newContents = prettyJsonEncoder.convert(model.toProto3Json());
       if (contents != newContents) {
         handle.writeAllStringSync(newContents);
