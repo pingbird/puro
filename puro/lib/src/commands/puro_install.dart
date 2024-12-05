@@ -93,8 +93,6 @@ class PuroInstallCommand extends PuroCommand {
         }
         if (runner.legacyPubCache != null) {
           prefs.legacyPubCache = runner.legacyPubCache!;
-        } else if (!prefs.hasLegacyPubCache()) {
-          prefs.legacyPubCache = config.legacyPubCache;
         }
       },
     );

@@ -322,7 +322,12 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
           PuroConfig.getHomeDir(scope: scope, fileSystem: fileSystem);
       final puroRoot = PuroConfig.getPuroRoot(
           scope: scope, fileSystem: fileSystem, homeDir: homeDir);
-      scope.add(globalPrefsJsonFileProvider, puroRoot.childFile('prefs.json'));
+      final prefsJson = puroRoot.childFile('prefs.json');
+      scope.add(globalPrefsJsonFileProvider, prefsJson);
+      final firstRun = !prefsJson.existsSync();
+      scope.add(isFirstRunProvider, firstRun);
+      log.d("firstRun: $firstRun");
+      log.d("legacyPubCache: $legacyPubCache");
 
       final config = await PuroConfig.fromCommandLine(
         scope: scope,
@@ -341,6 +346,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
         environmentOverride: environmentOverride,
         shouldInstall: shouldInstallOverride,
+        firstRun: firstRun,
       );
       scope.add(
         PuroConfig.provider,

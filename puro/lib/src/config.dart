@@ -73,6 +73,7 @@ class PuroConfig {
     required String? flutterStorageBaseUrl,
     required String? environmentOverride,
     required bool? shouldInstall,
+    required bool firstRun,
     // Global shims break IDE auto-detection, we use symlinks now instead
     bool enableShims = false,
   }) async {
@@ -174,51 +175,47 @@ class PuroConfig {
         puroRoot.childDirectory('shared').childDirectory('pub_cache').path;
 
     return PuroConfig(
-        fileSystem: fileSystem,
-        gitExecutable: fileSystem.file(gitExecutable),
-        globalPrefsJsonFile: scope.read(globalPrefsJsonFileProvider),
-        puroRoot: puroRoot,
-        legacyPubCacheDir: fileSystem.directory(pubCache).absolute,
-        legacyPubCache: legacyPubCache ?? true,
-        homeDir: fileSystem.directory(homeDir),
-        projectDir: resultProjectDir,
-        parentProjectDir: parentProjectDir,
-        flutterGitUrl: flutterGitUrl ??
-            (globalPrefs.hasFlutterGitUrl()
-                ? globalPrefs.flutterGitUrl
+      fileSystem: fileSystem,
+      gitExecutable: fileSystem.file(gitExecutable),
+      globalPrefsJsonFile: scope.read(globalPrefsJsonFileProvider),
+      puroRoot: puroRoot,
+      legacyPubCacheDir: fileSystem.directory(pubCache).absolute,
+      legacyPubCache: legacyPubCache ?? !firstRun,
+      homeDir: fileSystem.directory(homeDir),
+      projectDir: resultProjectDir,
+      parentProjectDir: parentProjectDir,
+      flutterGitUrl: flutterGitUrl ??
+          (globalPrefs.hasFlutterGitUrl() ? globalPrefs.flutterGitUrl : null) ??
+          'https://github.com/flutter/flutter.git',
+      engineGitUrl: engineGitUrl ??
+          (globalPrefs.hasEngineGitUrl() ? globalPrefs.engineGitUrl : null) ??
+          'https://github.com/flutter/engine.git',
+      dartSdkGitUrl: dartSdkGitUrl ??
+          (globalPrefs.hasDartSdkGitUrl() ? globalPrefs.dartSdkGitUrl : null) ??
+          'https://github.com/dart-lang/sdk.git',
+      releasesJsonUrl: Uri.parse(
+        releasesJsonUrl ??
+            (globalPrefs.hasReleasesJsonUrl()
+                ? globalPrefs.releasesJsonUrl
                 : null) ??
-            'https://github.com/flutter/flutter.git',
-        engineGitUrl: engineGitUrl ??
-            (globalPrefs.hasEngineGitUrl() ? globalPrefs.engineGitUrl : null) ??
-            'https://github.com/flutter/engine.git',
-        dartSdkGitUrl: dartSdkGitUrl ??
-            (globalPrefs.hasDartSdkGitUrl()
-                ? globalPrefs.dartSdkGitUrl
-                : null) ??
-            'https://github.com/dart-lang/sdk.git',
-        releasesJsonUrl: Uri.parse(
-          releasesJsonUrl ??
-              (globalPrefs.hasReleasesJsonUrl()
-                  ? globalPrefs.releasesJsonUrl
-                  : null) ??
-              '$flutterStorageBaseUrl/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
-        ),
-        flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl ??
-            (globalPrefs.hasFlutterStorageBaseUrl()
-                ? globalPrefs.flutterStorageBaseUrl
-                : null) ??
-            'https://storage.googleapis.com'),
-        environmentOverride: environmentOverride,
-        puroBuildsUrl: Uri.parse((globalPrefs.hasPuroBuildsUrl()
-                ? globalPrefs.puroBuildsUrl
-                : null) ??
-            'https://puro.dev/builds'),
-        buildTarget: globalPrefs.hasPuroBuildTarget()
-            ? PuroBuildTarget.fromString(globalPrefs.puroBuildTarget)
-            : PuroBuildTarget.query(),
-        enableShims: enableShims,
-        shouldInstall: shouldInstall ??
-            (!globalPrefs.hasShouldInstall() || globalPrefs.shouldInstall));
+            '$flutterStorageBaseUrl/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
+      ),
+      flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl ??
+          (globalPrefs.hasFlutterStorageBaseUrl()
+              ? globalPrefs.flutterStorageBaseUrl
+              : null) ??
+          'https://storage.googleapis.com'),
+      environmentOverride: environmentOverride,
+      puroBuildsUrl: Uri.parse(
+          (globalPrefs.hasPuroBuildsUrl() ? globalPrefs.puroBuildsUrl : null) ??
+              'https://puro.dev/builds'),
+      buildTarget: globalPrefs.hasPuroBuildTarget()
+          ? PuroBuildTarget.fromString(globalPrefs.puroBuildTarget)
+          : PuroBuildTarget.query(),
+      enableShims: enableShims,
+      shouldInstall: shouldInstall ??
+          (!globalPrefs.hasShouldInstall() || globalPrefs.shouldInstall),
+    );
   }
 
   static Directory getHomeDir({
@@ -450,6 +447,8 @@ class PuroConfig {
         '  puroBuildsUrl: $puroBuildsUrl,\n'
         '  buildTarget: $buildTarget,\n'
         '  enableShims: $enableShims,\n'
+        '  shouldInstall: $shouldInstall,\n'
+        '  legacyPubCache: $legacyPubCache,\n'
         ')';
   }
 
@@ -801,7 +800,7 @@ Future<PuroGlobalPrefsModel> _updateGlobalPrefs({
       }
       await fn(model);
       if (!model.hasLegacyPubCache()) {
-        model.legacyPubCache = true;
+        model.legacyPubCache = !scope.read(isFirstRunProvider);
       }
       final newContents = prettyJsonEncoder.convert(model.toProto3Json());
       if (contents != newContents) {
@@ -814,6 +813,7 @@ Future<PuroGlobalPrefsModel> _updateGlobalPrefs({
 }
 
 final globalPrefsJsonFileProvider = Provider<File>.late();
+final isFirstRunProvider = Provider<bool>.late();
 final globalPrefsProvider = Provider<Future<PuroGlobalPrefsModel>>(
   (scope) => _readGlobalPrefs(scope: scope),
 );

@@ -59,6 +59,12 @@ void main(List<String> args) async {
       terminal: terminal,
       level: LogLevel.warning,
     );
+    if (Platform.environment.containsKey('PURO_LOG_LEVEL')) {
+      final logLevel = int.tryParse(Platform.environment['PURO_LOG_LEVEL']!);
+      if (logLevel != null) {
+        log.level = LogLevel.values[logLevel];
+      }
+    }
   }
   scope.add(PuroLogger.provider, log);
 
@@ -75,7 +81,9 @@ void main(List<String> args) async {
       'legacy-pub-cache',
       help: 'Whether to use the legacy pub cache directory',
       callback: runner.wrapCallback((flag) {
-        runner.legacyPubCache = flag;
+        if (runner.results!.wasParsed('legacy-pub-cache')) {
+          runner.legacyPubCache = flag;
+        }
       }),
     )
     ..addOption(

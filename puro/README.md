@@ -17,13 +17,15 @@ instructions at https://puro.dev/
 
 ## Quick start
 
+After installing Puro you can run `puro flutter doctor` to install the latest stable version of Flutter, if you want to
+switch to beta you can run `puro use -g beta` and then `puro flutter doctor` again.
+
+And that's it, you're ready to go!
+
 Puro uses the concept of "environments" to manage Flutter versions, these can either be tied to a specific version /
 release channel, or a named environment that can be upgraded independently.
 
 Environments can be set globally or per-project, the global environment is set to `stable` by default.
-
-After installing Puro you can run `puro flutter doctor` to install the latest stable version of Flutter, if you want to
-switch to beta you can run `puro use -g beta` and then `puro flutter doctor` again.
 
 Cheat sheet:
 
