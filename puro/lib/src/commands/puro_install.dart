@@ -65,44 +65,39 @@ class PuroInstallCommand extends PuroCommand {
       promote: promote,
     );
 
-    final PuroGlobalPrefsModel prefs;
-    if (profileOverride != null || updatePath != null) {
-      prefs = await updateGlobalPrefs(
-        scope: scope,
-        fn: (prefs) {
-          if (profileOverride != null) prefs.profileOverride = profileOverride;
-          if (updatePath != null) prefs.enableProfileUpdate = updatePath;
-          if (runner.pubCacheOverride != null) {
-            prefs.pubCacheDir = runner.pubCacheOverride!;
-          }
-          if (runner.flutterGitUrlOverride != null) {
-            prefs.flutterGitUrl = runner.flutterGitUrlOverride!;
-          }
-          if (runner.engineGitUrlOverride != null) {
-            prefs.engineGitUrl = runner.engineGitUrlOverride!;
-          }
-          if (runner.dartSdkGitUrlOverride != null) {
-            prefs.dartSdkGitUrl = runner.dartSdkGitUrlOverride!;
-          }
-          if (runner.versionsJsonUrlOverride != null) {
-            prefs.releasesJsonUrl = runner.versionsJsonUrlOverride!;
-          }
-          if (runner.flutterStorageBaseUrlOverride != null) {
-            prefs.flutterStorageBaseUrl = runner.flutterStorageBaseUrlOverride!;
-          }
-          if (runner.shouldInstallOverride != null) {
-            prefs.shouldInstall = runner.shouldInstallOverride!;
-          }
-          if (runner.legacyPubCache != null) {
-            prefs.legacyPubCache = runner.legacyPubCache!;
-          } else if (!prefs.hasLegacyPubCache()) {
-            prefs.legacyPubCache = config.legacyPubCache;
-          }
-        },
-      );
-    } else {
-      prefs = await readGlobalPrefs(scope: scope);
-    }
+    final PuroGlobalPrefsModel prefs = await updateGlobalPrefs(
+      scope: scope,
+      fn: (prefs) {
+        if (profileOverride != null) prefs.profileOverride = profileOverride;
+        if (updatePath != null) prefs.enableProfileUpdate = updatePath;
+        if (runner.pubCacheOverride != null) {
+          prefs.pubCacheDir = runner.pubCacheOverride!;
+        }
+        if (runner.flutterGitUrlOverride != null) {
+          prefs.flutterGitUrl = runner.flutterGitUrlOverride!;
+        }
+        if (runner.engineGitUrlOverride != null) {
+          prefs.engineGitUrl = runner.engineGitUrlOverride!;
+        }
+        if (runner.dartSdkGitUrlOverride != null) {
+          prefs.dartSdkGitUrl = runner.dartSdkGitUrlOverride!;
+        }
+        if (runner.versionsJsonUrlOverride != null) {
+          prefs.releasesJsonUrl = runner.versionsJsonUrlOverride!;
+        }
+        if (runner.flutterStorageBaseUrlOverride != null) {
+          prefs.flutterStorageBaseUrl = runner.flutterStorageBaseUrlOverride!;
+        }
+        if (runner.shouldInstallOverride != null) {
+          prefs.shouldInstall = runner.shouldInstallOverride!;
+        }
+        if (runner.legacyPubCache != null) {
+          prefs.legacyPubCache = runner.legacyPubCache!;
+        } else if (!prefs.hasLegacyPubCache()) {
+          prefs.legacyPubCache = config.legacyPubCache;
+        }
+      },
+    );
 
     log.d(() => 'prefs: ${prettyJsonEncoder.convert(prefs.toProto3Json())}');
 

@@ -147,7 +147,8 @@ Future<File?> installProfileEnv({
       for (final path in config.desiredEnvPaths)
         'export PATH="\$PATH:${path.replaceAll(home, '\$HOME')}"',
       'export PURO_ROOT="${config.puroRoot.path}"',
-      'export PUB_CACHE="${config.legacyPubCacheDir.path}"'
+      if (config.legacyPubCache)
+        'export PUB_CACHE="${config.legacyPubCacheDir.path}"'
     ],
   );
   return result ? file : null;
@@ -400,7 +401,7 @@ Future<bool> tryUpdateWindowsPath({
 
   final env = <String, String>{
     'PURO_ROOT': config.puroRoot.path,
-    'PUB_CACHE': config.legacyPubCacheDir.path,
+    if (config.legacyPubCache) 'PUB_CACHE': config.legacyPubCacheDir.path,
   };
 
   final currentPath = await readWindowsRegistryValue(
@@ -416,10 +417,25 @@ Future<bool> tryUpdateWindowsPath({
     env['Path'] = paths.join(';');
   }
 
-  return await tryUpdateWindowsEnv(
+  var result = false;
+
+  if (await tryUpdateWindowsEnv(
     scope: scope,
     env: env,
-  );
+  )) {
+    result = true;
+  }
+
+  if (!config.legacyPubCache &&
+      await tryDeleteWindowsEnv(
+        scope: scope,
+        name: 'PUB_CACHE',
+        value: config.legacyPubCacheDir.path,
+      )) {
+    result = true;
+  }
+
+  return result;
 }
 
 Future<bool> tryCleanWindowsPath({
