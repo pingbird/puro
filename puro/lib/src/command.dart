@@ -324,7 +324,8 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
           scope: scope, fileSystem: fileSystem, homeDir: homeDir);
       final prefsJson = puroRoot.childFile('prefs.json');
       scope.add(globalPrefsJsonFileProvider, prefsJson);
-      final firstRun = !prefsJson.existsSync();
+      final firstRun =
+          !prefsJson.existsSync() || prefsJson.statSync().size == 0;
       scope.add(isFirstRunProvider, firstRun);
       log.d("firstRun: $firstRun");
       log.d("legacyPubCache: $legacyPubCache");
