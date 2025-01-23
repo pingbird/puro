@@ -327,8 +327,8 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
       final firstRun =
           !prefsJson.existsSync() || prefsJson.statSync().size == 0;
       scope.add(isFirstRunProvider, firstRun);
-      log.d("firstRun: $firstRun");
-      log.d("legacyPubCache: $legacyPubCache");
+      log.d('firstRun: $firstRun');
+      log.d('legacyPubCache: $legacyPubCache');
 
       final config = await PuroConfig.fromCommandLine(
         scope: scope,

@@ -45,7 +45,6 @@ Future<void> updateEngineVersionFile({
     return;
   }
 
-  final config = PuroConfig.of(scope);
   final git = GitClient.of(scope);
   final remotes = await git.getRemotes(repository: flutterConfig.sdkDir);
 
