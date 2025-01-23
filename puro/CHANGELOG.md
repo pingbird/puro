@@ -1,3 +1,8 @@
+## 1.4.8
+
+* Bug fixes
+* Support for newer versions of Flutter that use the monorepo
+
 ## 1.4.7
 
 * Bug fixes
