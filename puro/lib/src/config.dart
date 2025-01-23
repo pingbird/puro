@@ -166,6 +166,11 @@ class PuroConfig {
       }
     }
 
+    flutterStorageBaseUrl ??= (globalPrefs.hasFlutterStorageBaseUrl()
+            ? globalPrefs.flutterStorageBaseUrl
+            : null) ??
+        'https://storage.googleapis.com';
+
     final pubCacheOverride = Platform.environment['PUB_CACHE'];
     if (pubCacheOverride != null && pubCacheOverride.isNotEmpty) {
       pubCache ??= pubCacheOverride;
@@ -200,11 +205,7 @@ class PuroConfig {
                 : null) ??
             '$flutterStorageBaseUrl/flutter_infra_release/releases/releases_${Platform.operatingSystem}.json',
       ),
-      flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl ??
-          (globalPrefs.hasFlutterStorageBaseUrl()
-              ? globalPrefs.flutterStorageBaseUrl
-              : null) ??
-          'https://storage.googleapis.com'),
+      flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl),
       environmentOverride: environmentOverride,
       puroBuildsUrl: Uri.parse(
           (globalPrefs.hasPuroBuildsUrl() ? globalPrefs.puroBuildsUrl : null) ??
@@ -644,6 +645,12 @@ class FlutterConfig {
   String? get engineVersion => engineVersionFile.existsSync()
       ? engineVersionFile.readAsStringSync().trim()
       : null;
+
+  bool get hasEngine => sdkDir
+      .childDirectory('engine')
+      .childDirectory('src')
+      .childFile('.gn')
+      .existsSync();
 }
 
 class FlutterCacheConfig {

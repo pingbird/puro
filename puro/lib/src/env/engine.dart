@@ -17,6 +17,7 @@ import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
 import '../terminal.dart';
+import 'create.dart';
 import 'gc.dart';
 
 enum EngineOS {
@@ -322,7 +323,7 @@ Future<void> syncFlutterCache({
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final fs = config.fileSystem;
-  final engineVersion = environment.flutter.engineVersion;
+  final engineVersion = await getEngineVersion(scope: scope, flutterConfig: environment.flutter);
   if (engineVersion == null) {
     return;
   }

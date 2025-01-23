@@ -34,11 +34,91 @@ class EnvCreateResult extends CommandResult {
       );
 }
 
-/// Attempts to get the engine version of a flutter commit.
+/// Updates the engine version file, to replicate the functionality of
+/// https://github.com/flutter/flutter/blob/master/bin/internal/update_engine_version.sh
+Future<void> updateEngineVersionFile({
+  required Scope scope,
+  required FlutterConfig flutterConfig,
+}) async {
+  if (!flutterConfig.hasEngine) {
+    // Not a monolithic engine, nothing to do.
+    return;
+  }
+
+  final config = PuroConfig.of(scope);
+  final git = GitClient.of(scope);
+  final remotes = await git.getRemotes(repository: flutterConfig.sdkDir);
+
+  final String commit;
+
+  // Check if this is a fork (has an upstream)
+  if (remotes.containsKey('upstream')) {
+    commit = await git.mergeBase(
+        repository: flutterConfig.sdkDir, ref1: 'HEAD', ref2: 'upstream/master');
+  } else {
+    commit = await git.mergeBase(
+        repository: flutterConfig.sdkDir, ref1: 'HEAD', ref2: 'origin/master');
+  }
+
+  flutterConfig.engineVersionFile.writeAsStringSync('$commit\n');
+}
+
+Future<String?> getEngineVersion({
+  required Scope scope,
+  required FlutterConfig flutterConfig,
+}) async {
+  await updateEngineVersionFile(scope: scope, flutterConfig: flutterConfig);
+  return flutterConfig.engineVersion;
+}
+
+/// Checks if a framework commit is a monorepo and has the engine in it.
+Future<bool?> isCommitMonolithicEngine({
+  required Scope scope,
+  required String commit,
+}) async {
+  final config = PuroConfig.of(scope);
+  final git = GitClient.of(scope);
+  final http = scope.read(clientProvider);
+  final sharedRepository = config.sharedFlutterDir;
+  final result = await git.exists(
+    repository: sharedRepository,
+    path: 'engine/src/.gn',
+    ref: commit,
+  );
+  if (result) return true;
+  // 'exists' can return false if git show failed for some reason, so we also
+  // check if the repository has a README.md to rule that out.
+  if (await git.exists(
+    repository: sharedRepository,
+    path: 'README.md',
+    ref: commit,
+  )) {
+    return false;
+  }
+  // Fall back to checking with HTTP
+  final url = config.tryGetFlutterGitDownloadUrl(
+    commit: commit,
+    path: 'engine/src/.gn',
+  );
+  if (url == null) return null;
+  final response = await http.head(url);
+  if (response.statusCode == 200) return true;
+  if (response.statusCode == 404) return false;
+  HttpException.ensureSuccess(response);
+  return null;
+}
+
+/// Attempts to get the engine version of a flutter commit. This is only used
+/// for precaching the engine before cloning flutter. For an existing checkout
+/// use [FlutterConfig.engineVersion] instead.
 Future<String?> getEngineVersionOfCommit({
   required Scope scope,
   required String commit,
 }) async {
+  if (await isCommitMonolithicEngine(scope: scope, commit: commit) ?? false) {
+    return commit;
+  }
+
   final config = PuroConfig.of(scope);
   final git = GitClient.of(scope);
   final http = scope.read(clientProvider);

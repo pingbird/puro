@@ -27,7 +27,7 @@ With Puro you can:
     Invoke-WebRequest -Uri "https://puro.dev/builds/master/windows-x64/puro.exe" -OutFile "$env:temp\puro.exe"; &"$env:temp\puro.exe" install-puro --promote
     ```
 
-    It also has a standalone executable:
+    Or as a standalone executable (not recommended):
 
     [:material-console: Standalone](https://puro.dev/builds/master/windows-x64/puro.exe){ .md-button }
 
@@ -43,7 +43,7 @@ With Puro you can:
     curl -o- https://puro.dev/install.sh | PURO_VERSION="master" bash
     ```
 
-    Or as a standalone executable:
+    Or as a standalone executable (not recommended):
 
     [:material-console: Standalone](https://puro.dev/builds/master/linux-x64/puro){ .md-button }
 
@@ -63,7 +63,7 @@ With Puro you can:
     curl -o- https://puro.dev/install.sh | PURO_VERSION="master" bash
     ```
 
-    Or as a standalone executable:
+    Or as a standalone executable (not recommended):
 
     [:material-console: Standalone](https://puro.dev/builds/master/darwin-x64/puro){ .md-button }
 

@@ -399,6 +399,26 @@ class GitClient {
     return result?.single;
   }
 
+  /// Finds the best common ancestor between two commits.
+  ///
+  /// https://git-scm.com/docs/git-merge-base
+  Future<String> mergeBase({
+    required Directory repository,
+    required String ref1,
+    required String ref2,
+  }) async {
+    final result = await raw(
+      [
+        'merge-base',
+        ref1,
+        ref2,
+      ],
+      directory: repository,
+    );
+    _ensureSuccess(result);
+    return (result.stdout as String).trim();
+  }
+
   /// Returns true if the repository has uncomitted changes.
   Future<bool> hasUncomittedChanges({
     required Directory repository,
