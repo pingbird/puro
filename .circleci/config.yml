@@ -210,7 +210,6 @@ jobs:
       - image: cimg/python:3.9
     steps:
       - checkout
-      - run: cat ~/.ssh/config
       - add_ssh_keys:
           fingerprints:
             - "SHA256:r3sT9kplOgCIZEFdao11ZwLA8d5wieD5HSS5jwy5aFw"
