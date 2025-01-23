@@ -217,7 +217,7 @@ jobs:
       - install_dart
       - pub_get
       - run: |-
-          git clone https://github.com/pingbird/mkdocs-material-insiders.git
+          git clone git@github.com:pingbird/mkdocs-material-insiders.git
           pip install ./mkdocs-material-insiders
           dart puro/bin/puro.dart _generate-docs --deploy
           cd website
