@@ -86,7 +86,8 @@ Future<FlutterToolInfo> setUpFlutterTool({
   final log = PuroLogger.of(scope);
   final flutterConfig = environment.flutter;
   final flutterCache = flutterConfig.cache;
-  final desiredEngineVersion = await getEngineVersion(scope: scope, flutterConfig: flutterConfig);
+  final desiredEngineVersion =
+      await getEngineVersion(scope: scope, flutterConfig: flutterConfig);
 
   if (config.project.parentPuroDotfile != null) {
     await registerDotfile(

@@ -54,7 +54,9 @@ Future<void> updateEngineVersionFile({
   // Check if this is a fork (has an upstream)
   if (remotes.containsKey('upstream')) {
     commit = await git.mergeBase(
-        repository: flutterConfig.sdkDir, ref1: 'HEAD', ref2: 'upstream/master');
+        repository: flutterConfig.sdkDir,
+        ref1: 'HEAD',
+        ref2: 'upstream/master');
   } else {
     commit = await git.mergeBase(
         repository: flutterConfig.sdkDir, ref1: 'HEAD', ref2: 'origin/master');

@@ -323,7 +323,8 @@ Future<void> syncFlutterCache({
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final fs = config.fileSystem;
-  final engineVersion = await getEngineVersion(scope: scope, flutterConfig: environment.flutter);
+  final engineVersion =
+      await getEngineVersion(scope: scope, flutterConfig: environment.flutter);
   if (engineVersion == null) {
     return;
   }
