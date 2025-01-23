@@ -212,7 +212,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "SHA256:r3sT9kplOgCIZEFdao11ZwLA8d5wieD5HSS5jwy5aFw"
+            - "SHA256:1YbB9MVvwbM84Dqz29ZFCNJyw6CMFRzugT9sWoah1cA"
       - run: cat ~/.ssh/config
       - install_dart
       - pub_get
