@@ -49,9 +49,14 @@ Future<void> deleteEnvironment({
   if (env.updateLockFile.existsSync()) {
     await env.updateLockFile.delete();
   }
+
   try {
     await env.envDir.delete(recursive: true);
   } catch (e) {
+    if (!env.flutter.cache.dartSdk.dartExecutable.existsSync()) {
+      rethrow;
+    }
+
     // Try killing dart processes that might be preventing us from deleting the
     // environment.
     if (Platform.isWindows) {
@@ -79,7 +84,7 @@ Future<void> deleteEnvironment({
     }
 
     // Wait a bit for the handles to be released.
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 2));
 
     // Try deleting again.
     await env.envDir.delete(recursive: true);
