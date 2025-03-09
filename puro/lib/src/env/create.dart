@@ -36,6 +36,7 @@ class EnvCreateResult extends CommandResult {
 
 /// Updates the engine version file, to replicate the functionality of
 /// https://github.com/flutter/flutter/blob/master/bin/internal/update_engine_version.sh
+/// See script details at https://github.com/flutter/flutter/issues/163896
 Future<void> updateEngineVersionFile({
   required Scope scope,
   required FlutterConfig flutterConfig,
@@ -68,7 +69,16 @@ Future<String?> getEngineVersion({
   required Scope scope,
   required FlutterConfig flutterConfig,
 }) async {
-  await updateEngineVersionFile(scope: scope, flutterConfig: flutterConfig);
+  final git = GitClient.of(scope);
+  final result = await git.tryCat(
+    repository: flutterConfig.sdkDir,
+    path: 'bin/internal/engine.version',
+    ref: 'HEAD',
+  );
+  if (result == null) {
+    await updateEngineVersionFile(scope: scope, flutterConfig: flutterConfig);
+  }
+  
   return flutterConfig.engineVersion;
 }
 
