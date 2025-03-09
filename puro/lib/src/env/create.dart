@@ -47,17 +47,6 @@ Future<void> updateEngineVersionFile({
   }
 
   final git = GitClient.of(scope);
-
-  final result = await git.tryCat(
-    repository: flutterConfig.sdkDir,
-    path: 'bin/internal/engine.version',
-    ref: 'HEAD',
-  );
-  if (result != null) {
-    // We have an actively tracked engine version already, don't upgrade it.
-    return;
-  }
-  
   final remotes = await git.getRemotes(repository: flutterConfig.sdkDir);
 
   final String commit;
@@ -80,7 +69,17 @@ Future<String?> getEngineVersion({
   required Scope scope,
   required FlutterConfig flutterConfig,
 }) async {
-  await updateEngineVersionFile(scope: scope, flutterConfig: flutterConfig);
+  
+  final git = GitClient.of(scope);
+  final result = await git.tryCat(
+    repository: flutterConfig.sdkDir,
+    path: 'bin/internal/engine.version',
+    ref: 'HEAD',
+  );
+  if (result == null) {
+    await updateEngineVersionFile(scope: scope, flutterConfig: flutterConfig);
+  }
+  
   return flutterConfig.engineVersion;
 }
 
