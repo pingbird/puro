@@ -69,7 +69,6 @@ Future<String?> getEngineVersion({
   required Scope scope,
   required FlutterConfig flutterConfig,
 }) async {
-  
   final git = GitClient.of(scope);
   final result = await git.tryCat(
     repository: flutterConfig.sdkDir,
