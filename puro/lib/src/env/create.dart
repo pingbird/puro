@@ -78,7 +78,7 @@ Future<String?> getEngineVersion({
   if (result == null) {
     await updateEngineVersionFile(scope: scope, flutterConfig: flutterConfig);
   }
-  
+
   return flutterConfig.engineVersion;
 }
 
