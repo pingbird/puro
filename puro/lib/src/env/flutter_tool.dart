@@ -122,6 +122,7 @@ Future<FlutterToolInfo> setUpFlutterTool({
         desiredEngineVersion,
         patched: environmentPrefs!.isPatched,
       );
+      sharedCache.engineStampFile.writeAsStringSync(desiredEngineVersion);
       sharedCache.engineVersionFile.writeAsStringSync(desiredEngineVersion);
       await trySyncFlutterCache(scope: scope, environment: environment);
     },
