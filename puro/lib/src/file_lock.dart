@@ -215,6 +215,10 @@ Future<bool> compareFileAtomic({
 ///
 /// If [onFail] is provided and [condition] returns false, this function
 /// acquires an exclusive lock which is released when [onFail] completes.
+///
+/// [condition] is first checked without a lock, and if it returns false, the
+/// lock is acquired and [onFail] is called. This makes checking the condition
+/// faster in the common case where the condition is already met.
 Future<bool> checkAtomic({
   required Scope scope,
   required File file,
