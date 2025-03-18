@@ -110,7 +110,9 @@ Future<FlutterToolInfo> setUpFlutterTool({
   await checkAtomic(
     scope: scope,
     file: environment.updateLockFile,
-    condition: () async => flutterCache.engineStampFile.existsSync() && flutterCache.engineVersion == desiredEngineVersion,
+    condition: () async =>
+        flutterCache.engineStampFile.existsSync() &&
+        flutterCache.engineVersion == desiredEngineVersion,
     onFail: () async {
       log.v('Engine out of date');
       didUpdateEngine = await downloadSharedEngine(
