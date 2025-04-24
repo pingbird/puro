@@ -140,16 +140,32 @@ Future<File?> installProfileEnv({
     return null;
   }
   final home = config.homeDir.path;
+
+  final shell = Platform.environment['SHELL'] ?? '';
+
+  final isFish = shell.endsWith('/fish');
+
+  final List<String> lines = [
+    for (final path in config.desiredEnvPaths)
+      if (isFish)
+        'set --export PATH \$PATH ${path.replaceAll(home, '\$HOME')}'
+      else
+        'export PATH="\$PATH:${path.replaceAll(home, '\$HOME')}"',
+    if (isFish)
+      'set --export PURO_ROOT "${config.puroRoot.path}"'
+    else
+      'export PURO_ROOT="${config.puroRoot.path}"',
+    if (config.legacyPubCache)
+      if (isFish)
+        'set --export PUB_CACHE "${config.legacyPubCacheDir.path}"'
+      else
+        'export PUB_CACHE="${config.legacyPubCacheDir.path}"'
+  ];
+
   final result = await updateProfile(
     scope: scope,
     file: file,
-    lines: [
-      for (final path in config.desiredEnvPaths)
-        'export PATH="\$PATH:${path.replaceAll(home, '\$HOME')}"',
-      'export PURO_ROOT="${config.puroRoot.path}"',
-      if (config.legacyPubCache)
-        'export PUB_CACHE="${config.legacyPubCacheDir.path}"'
-    ],
+    lines: lines,
   );
   return result ? file : null;
 }
@@ -193,6 +209,9 @@ Future<File?> detectProfile({required Scope scope}) async {
     path.join(home, '.zprofile'),
     path.join(home, '.zshrc'),
   };
+  final fishProfiles = {
+    path.join(home, '.config', 'fish', 'config.fish'),
+  };
   final profiles = <String>{};
   final shell = Platform.environment['SHELL'] ?? '';
   if (shell.endsWith('/bash')) {
@@ -201,6 +220,8 @@ Future<File?> detectProfile({required Scope scope}) async {
   } else if (shell.endsWith('/zsh')) {
     profiles.addAll(zshProfiles);
     profiles.addAll(bashProfiles);
+  } else if (shell.endsWith('/fish')) {
+    profiles.addAll(fishProfiles);
   } else {
     log.d('Using process tree to detect shell');
     final processes = await getParentProcesses(scope: scope);
@@ -213,6 +234,10 @@ Future<File?> detectProfile({required Scope scope}) async {
     } else if (shell?.name == 'zsh') {
       profiles.addAll(zshProfiles);
       profiles.addAll(bashProfiles);
+    } else if (shell?.name == 'fish') {
+      profiles.addAll(fishProfiles);
+    } else {
+      log.d('No shell detected');
     }
   }
   for (final name in profiles) {
