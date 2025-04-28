@@ -111,7 +111,8 @@ Future<FlutterToolInfo> setUpFlutterTool({
     scope: scope,
     file: environment.updateLockFile,
     condition: () async =>
-        flutterCache.engineStampFile.existsSync() &&
+    flutterCache.engineStampFile.existsSync() &&
+    flutterCache.engineRealmFile.existsSync() &&
         flutterCache.engineVersion == desiredEngineVersion,
     onFail: () async {
       log.v('Engine out of date');
@@ -126,6 +127,9 @@ Future<FlutterToolInfo> setUpFlutterTool({
       );
       sharedCache.engineStampFile.writeAsStringSync(desiredEngineVersion);
       sharedCache.engineVersionFile.writeAsStringSync(desiredEngineVersion);
+      // Unclear whether we need to pass in FLUTTER_REALM here, but it does
+      // need to exist
+      sharedCache.engineRealmFile.writeAsStringSync('');
       await trySyncFlutterCache(scope: scope, environment: environment);
     },
   );
