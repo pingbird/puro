@@ -17,12 +17,16 @@ class EnvironmentInfoResult {
   EnvironmentInfoResult(
     this.environment,
     this.version,
+    this.dartVersion,
     this.projects,
+    this.showDartVersion,
   );
 
   final EnvConfig environment;
   final FlutterVersion? version;
+  final String? dartVersion;
   final List<Directory> projects;
+  final bool showDartVersion;
 
   EnvironmentInfoModel toModel() {
     return EnvironmentInfoModel(
@@ -101,7 +105,15 @@ class ListEnvironmentResult extends CommandResult {
           for (var i = 0; i < lines.length; i++) ...[
             padRightColored(lines[i][0], linePadding) +
                 format.color(
-                  ' (${results[i].environment.exists ? results[i].version ?? 'unknown' : 'not installed'})',
+                  ' (${[
+                    if (results[i].environment.exists)
+                      results[i].version ?? 'unknown'
+                    else
+                      'not installed',
+                    if (results[i].dartVersion != null &&
+                        results[i].showDartVersion)
+                      'Dart ${results[i].dartVersion}',
+                  ].join(' / ')})',
                   foregroundColor: Ansi8BitColor.grey,
                 ),
             ...lines[i].skip(1),
@@ -130,6 +142,7 @@ class ListEnvironmentResult extends CommandResult {
 Future<ListEnvironmentResult> listEnvironments({
   required Scope scope,
   bool showProjects = false,
+  bool showDartVersion = false,
 }) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
@@ -141,15 +154,21 @@ Future<ListEnvironmentResult> listEnvironments({
   for (final name in pseudoEnvironmentNames) {
     final environment = config.getEnv(name);
     FlutterVersion? version;
+    String? dartVersion;
     if (environment.exists) {
       version = await getEnvironmentFlutterVersion(
         scope: scope,
         environment: environment,
       );
+      final dartVersionFile = environment.flutter.cache.dartSdk.versionFile;
+      dartVersion = dartVersionFile.existsSync()
+          ? dartVersionFile.readAsStringSync().trim()
+          : null;
     }
     final projects =
         (allDotfiles[environment.name] ?? []).map((e) => e.parent).toList();
-    results.add(EnvironmentInfoResult(environment, version, projects));
+    results.add(EnvironmentInfoResult(
+        environment, version, dartVersion, projects, showDartVersion));
   }
 
   if (config.envsDir.existsSync()) {
@@ -165,9 +184,14 @@ Future<ListEnvironmentResult> listEnvironments({
         scope: scope,
         environment: environment,
       );
+      final dartVersionFile = environment.flutter.cache.dartSdk.versionFile;
+      final dartVersion = dartVersionFile.existsSync()
+          ? dartVersionFile.readAsStringSync().trim()
+          : null;
       final projects =
           (allDotfiles[environment.name] ?? []).map((e) => e.parent).toList();
-      results.add(EnvironmentInfoResult(environment, version, projects));
+      results.add(EnvironmentInfoResult(
+          environment, version, dartVersion, projects, showDartVersion));
     }
   }
 

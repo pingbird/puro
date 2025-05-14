@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: puro.proto
 //
-// @dart = 2.12
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names, library_prefixes
@@ -90,10 +90,20 @@ const EnvironmentInfoModel$json = {
       '10': 'version',
       '17': true
     },
+    {
+      '1': 'dartVersion',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '9': 1,
+      '10': 'dartVersion',
+      '17': true
+    },
     {'1': 'projects', '3': 4, '4': 3, '5': 9, '10': 'projects'},
   ],
   '8': [
     {'1': '_version'},
+    {'1': '_dartVersion'},
   ],
 };
 
@@ -101,7 +111,8 @@ const EnvironmentInfoModel$json = {
 final $typed_data.Uint8List environmentInfoModelDescriptor = $convert.base64Decode(
     'ChRFbnZpcm9ubWVudEluZm9Nb2RlbBISCgRuYW1lGAEgASgJUgRuYW1lEhIKBHBhdGgYAiABKA'
     'lSBHBhdGgSMwoHdmVyc2lvbhgDIAEoCzIULkZsdXR0ZXJWZXJzaW9uTW9kZWxIAFIHdmVyc2lv'
-    'bogBARIaCghwcm9qZWN0cxgEIAMoCVIIcHJvamVjdHNCCgoIX3ZlcnNpb24=');
+    'bogBARIlCgtkYXJ0VmVyc2lvbhgFIAEoCUgBUgtkYXJ0VmVyc2lvbogBARIaCghwcm9qZWN0cx'
+    'gEIAMoCVIIcHJvamVjdHNCCgoIX3ZlcnNpb25CDgoMX2RhcnRWZXJzaW9u');
 
 @$core.Deprecated('Use environmentListModelDescriptor instead')
 const EnvironmentListModel$json = {

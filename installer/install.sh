@@ -43,7 +43,7 @@ elif [ "$OS" = 'Linux' ]; then
   DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/linux-x64/puro"
 else
   >&2 echo "Error: Unknown OS: $OS"
-  ret 1
+  $ret 1
 fi
 
 command -v curl > /dev/null 2>&1 || {

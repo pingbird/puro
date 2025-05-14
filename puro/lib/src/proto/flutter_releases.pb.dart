@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: flutter_releases.proto
 //
-// @dart = 2.12
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names, library_prefixes
@@ -12,6 +12,8 @@
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
+
+export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 class FlutterReleaseModel extends $pb.GeneratedMessage {
   factory FlutterReleaseModel({
@@ -105,7 +107,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasHash() => $_has(0);
   @$pb.TagNumber(1)
-  void clearHash() => clearField(1);
+  void clearHash() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get channel => $_getSZ(1);
@@ -117,7 +119,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasChannel() => $_has(1);
   @$pb.TagNumber(2)
-  void clearChannel() => clearField(2);
+  void clearChannel() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get version => $_getSZ(2);
@@ -129,7 +131,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasVersion() => $_has(2);
   @$pb.TagNumber(3)
-  void clearVersion() => clearField(3);
+  void clearVersion() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get dartSdkVersion => $_getSZ(3);
@@ -141,7 +143,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool hasDartSdkVersion() => $_has(3);
   @$pb.TagNumber(4)
-  void clearDartSdkVersion() => clearField(4);
+  void clearDartSdkVersion() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get dartSdkArch => $_getSZ(4);
@@ -153,7 +155,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.bool hasDartSdkArch() => $_has(4);
   @$pb.TagNumber(5)
-  void clearDartSdkArch() => clearField(5);
+  void clearDartSdkArch() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get releaseDate => $_getSZ(5);
@@ -165,7 +167,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.bool hasReleaseDate() => $_has(5);
   @$pb.TagNumber(6)
-  void clearReleaseDate() => clearField(6);
+  void clearReleaseDate() => $_clearField(6);
 
   @$pb.TagNumber(7)
   $core.String get archive => $_getSZ(6);
@@ -177,7 +179,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.bool hasArchive() => $_has(6);
   @$pb.TagNumber(7)
-  void clearArchive() => clearField(7);
+  void clearArchive() => $_clearField(7);
 
   @$pb.TagNumber(8)
   $core.String get sha256 => $_getSZ(7);
@@ -189,13 +191,13 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $core.bool hasSha256() => $_has(7);
   @$pb.TagNumber(8)
-  void clearSha256() => clearField(8);
+  void clearSha256() => $_clearField(8);
 }
 
 class FlutterReleasesModel extends $pb.GeneratedMessage {
   factory FlutterReleasesModel({
     $core.String? baseUrl,
-    $core.Map<$core.String, $core.String>? currentRelease,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>? currentRelease,
     $core.Iterable<FlutterReleaseModel>? releases,
   }) {
     final $result = create();
@@ -203,7 +205,7 @@ class FlutterReleasesModel extends $pb.GeneratedMessage {
       $result.baseUrl = baseUrl;
     }
     if (currentRelease != null) {
-      $result.currentRelease.addAll(currentRelease);
+      $result.currentRelease.addEntries(currentRelease);
     }
     if (releases != null) {
       $result.releases.addAll(releases);
@@ -265,13 +267,13 @@ class FlutterReleasesModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasBaseUrl() => $_has(0);
   @$pb.TagNumber(1)
-  void clearBaseUrl() => clearField(1);
+  void clearBaseUrl() => $_clearField(1);
 
   @$pb.TagNumber(2)
-  $core.Map<$core.String, $core.String> get currentRelease => $_getMap(1);
+  $pb.PbMap<$core.String, $core.String> get currentRelease => $_getMap(1);
 
   @$pb.TagNumber(3)
-  $core.List<FlutterReleaseModel> get releases => $_getList(2);
+  $pb.PbList<FlutterReleaseModel> get releases => $_getList(2);
 }
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');

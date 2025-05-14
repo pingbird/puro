@@ -54,6 +54,7 @@ class PuroConfig {
     required this.buildTarget,
     required this.enableShims,
     required this.shouldInstall,
+    required this.shouldSkipCacheSync,
   }) : puroRoot = puroRoot.absolute;
 
   static Future<PuroConfig> fromCommandLine({
@@ -73,6 +74,7 @@ class PuroConfig {
     required String? flutterStorageBaseUrl,
     required String? environmentOverride,
     required bool? shouldInstall,
+    required bool? shouldSkipCacheSync,
     required bool firstRun,
     // Global shims break IDE auto-detection, we use symlinks now instead
     bool enableShims = false,
@@ -179,6 +181,9 @@ class PuroConfig {
     pubCache ??=
         puroRoot.childDirectory('shared').childDirectory('pub_cache').path;
 
+    shouldSkipCacheSync ??=
+        Platform.environment['PURO_SKIP_CACHE_SYNC']?.isNotEmpty ?? false;
+
     return PuroConfig(
       fileSystem: fileSystem,
       gitExecutable: fileSystem.file(gitExecutable),
@@ -216,6 +221,7 @@ class PuroConfig {
       enableShims: enableShims,
       shouldInstall: shouldInstall ??
           (!globalPrefs.hasShouldInstall() || globalPrefs.shouldInstall),
+      shouldSkipCacheSync: shouldSkipCacheSync,
     );
   }
 
@@ -281,6 +287,7 @@ class PuroConfig {
   final PuroBuildTarget buildTarget;
   final bool enableShims;
   final bool shouldInstall;
+  final bool shouldSkipCacheSync;
   final bool legacyPubCache;
 
   late final Directory envsDir = puroRoot.childDirectory('envs');
@@ -700,6 +707,7 @@ class DartSdkConfig {
       .childDirectory('lib')
       .childFile('libraries.dart');
   late final File revisionFile = sdkDir.childFile('revision');
+  late final File versionFile = sdkDir.childFile('version');
   late final File versionJsonFile = sdkDir.childFile('version.json');
   late final commitHash = revisionFile.readAsStringSync().trim();
 }

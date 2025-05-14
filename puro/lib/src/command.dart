@@ -158,6 +158,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
   String? flutterStorageBaseUrlOverride;
   String? environmentOverride;
   bool? shouldInstallOverride;
+  bool? shouldSkipCacheSyncOverride;
   bool? allowUpdateCheckOverride;
 
   late List<String> args;
@@ -347,6 +348,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         flutterStorageBaseUrl: flutterStorageBaseUrlOverride,
         environmentOverride: environmentOverride,
         shouldInstall: shouldInstallOverride,
+        shouldSkipCacheSync: shouldSkipCacheSyncOverride,
         firstRun: firstRun,
       );
       scope.add(
