@@ -23,9 +23,6 @@ to automatically pick up the SDK of your puro environment.
 See https://github.com/Dart-Code/Dart-Code/pull/5377''';
 
   @override
-  
-
-  @override
   Future<CommandResult>? run() async {
     final environment = await getProjectEnvOrDefault(scope: scope);
     final path = environment.flutter.sdkDir.absolute.path;
