@@ -19,6 +19,7 @@ import 'commands/flutter.dart';
 import 'commands/gc.dart';
 import 'commands/internal_generate_ast_parser.dart';
 import 'commands/internal_generate_docs.dart';
+import 'commands/locate_sdk.dart';
 import 'commands/ls_versions.dart';
 import 'commands/prefs.dart';
 import 'commands/pub.dart';
@@ -272,6 +273,7 @@ void main(List<String> args) async {
     ..addCommand(DartCommand())
     ..addCommand(PubCommand())
     ..addCommand(RunCommand())
+    ..addCommand(LocateSdkCommand())
     ..addCommand(GenerateDocsCommand())
     ..addCommand(GenerateASTParserCommand())
     ..addCommand(PuroUpgradeCommand())
