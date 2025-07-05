@@ -247,7 +247,8 @@ class PuroVersion {
 enum PuroBuildTarget {
   windowsX64('windows-x64', '.exe', '.bat'),
   linuxX64('linux-x64', '', ''),
-  macosX64('darwin-x64', '', '');
+  macosX64('darwin-x64', '', ''),
+  macosArm64('darwin-arm64', '', '');
 
   const PuroBuildTarget(
     this.name,
@@ -263,6 +264,8 @@ enum PuroBuildTarget {
         return PuroBuildTarget.linuxX64;
       case 'darwin-x64':
         return PuroBuildTarget.macosX64;
+      case 'darwin-arm64':
+        return PuroBuildTarget.macosArm64;
       default:
         throw ArgumentError('Unknown target: $str');
     }
@@ -283,12 +286,32 @@ enum PuroBuildTarget {
     } else if (Platform.isLinux) {
       return PuroBuildTarget.linuxX64;
     } else if (Platform.isMacOS) {
-      return PuroBuildTarget.macosX64;
+      if (isArmArch()) {
+        return PuroBuildTarget.macosArm64;
+      } else {
+        return PuroBuildTarget.macosX64;
+      }
     } else {
       throw AssertionError(
         'Unrecognized operating system: ${Platform.operatingSystem}',
       );
     }
+  }
+}
+
+bool isArmArch() {
+  try {
+    // 同步执行命令
+    final result = Process.runSync('uname', ['-m']);
+    // 获取输出
+    final stdout = result.stdout.toString().trim();
+    if (stdout == 'arm64') {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    return false;
   }
 }
 
