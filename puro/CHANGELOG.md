@@ -1,3 +1,8 @@
+## 1.4.11
+
+* Bug fixes
+* Added `-d` flag to `puro ls` to show dart versions
+
 ## 1.4.10
 
 * Bug fixes

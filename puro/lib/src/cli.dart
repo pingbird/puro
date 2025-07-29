@@ -238,6 +238,15 @@ void main(List<String> args) async {
       }),
     )
     ..addFlag(
+      'skip-cache-sync',
+      help: 'Whether to skip syncing the Flutter cache',
+      callback: runner.wrapCallback((flag) {
+        if (runner.results!.wasParsed('skip-cache-sync')) {
+          runner.shouldSkipCacheSyncOverride = flag;
+        }
+      }),
+    )
+    ..addFlag(
       'version',
       help: 'Prints version information, same as the `version` command',
       negatable: false,

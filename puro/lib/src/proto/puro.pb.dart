@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: puro.proto
 //
-// @dart = 2.12
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names, library_prefixes
@@ -12,6 +12,8 @@
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
+
+export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 class CommandErrorModel extends $pb.GeneratedMessage {
   factory CommandErrorModel({
@@ -80,7 +82,7 @@ class CommandErrorModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasException() => $_has(0);
   @$pb.TagNumber(1)
-  void clearException() => clearField(1);
+  void clearException() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get exceptionType => $_getSZ(1);
@@ -92,7 +94,7 @@ class CommandErrorModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasExceptionType() => $_has(1);
   @$pb.TagNumber(2)
-  void clearExceptionType() => clearField(2);
+  void clearExceptionType() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get stackTrace => $_getSZ(2);
@@ -104,7 +106,7 @@ class CommandErrorModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasStackTrace() => $_has(2);
   @$pb.TagNumber(3)
-  void clearStackTrace() => clearField(3);
+  void clearStackTrace() => $_clearField(3);
 }
 
 class LogEntryModel extends $pb.GeneratedMessage {
@@ -174,7 +176,7 @@ class LogEntryModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasTimestamp() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTimestamp() => clearField(1);
+  void clearTimestamp() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.int get level => $_getIZ(1);
@@ -186,7 +188,7 @@ class LogEntryModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasLevel() => $_has(1);
   @$pb.TagNumber(2)
-  void clearLevel() => clearField(2);
+  void clearLevel() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get message => $_getSZ(2);
@@ -198,7 +200,7 @@ class LogEntryModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasMessage() => $_has(2);
   @$pb.TagNumber(3)
-  void clearMessage() => clearField(3);
+  void clearMessage() => $_clearField(3);
 }
 
 class FlutterVersionModel extends $pb.GeneratedMessage {
@@ -273,7 +275,7 @@ class FlutterVersionModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasCommit() => $_has(0);
   @$pb.TagNumber(1)
-  void clearCommit() => clearField(1);
+  void clearCommit() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get version => $_getSZ(1);
@@ -285,7 +287,7 @@ class FlutterVersionModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasVersion() => $_has(1);
   @$pb.TagNumber(2)
-  void clearVersion() => clearField(2);
+  void clearVersion() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get branch => $_getSZ(2);
@@ -297,7 +299,7 @@ class FlutterVersionModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasBranch() => $_has(2);
   @$pb.TagNumber(3)
-  void clearBranch() => clearField(3);
+  void clearBranch() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get tag => $_getSZ(3);
@@ -309,7 +311,7 @@ class FlutterVersionModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool hasTag() => $_has(3);
   @$pb.TagNumber(4)
-  void clearTag() => clearField(4);
+  void clearTag() => $_clearField(4);
 }
 
 class EnvironmentInfoModel extends $pb.GeneratedMessage {
@@ -318,6 +320,7 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
     $core.String? path,
     FlutterVersionModel? version,
     $core.Iterable<$core.String>? projects,
+    $core.String? dartVersion,
   }) {
     final $result = create();
     if (name != null) {
@@ -331,6 +334,9 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
     }
     if (projects != null) {
       $result.projects.addAll(projects);
+    }
+    if (dartVersion != null) {
+      $result.dartVersion = dartVersion;
     }
     return $result;
   }
@@ -350,6 +356,7 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
     ..aOM<FlutterVersionModel>(3, _omitFieldNames ? '' : 'version',
         subBuilder: FlutterVersionModel.create)
     ..pPS(4, _omitFieldNames ? '' : 'projects')
+    ..aOS(5, _omitFieldNames ? '' : 'dartVersion', protoName: 'dartVersion')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. '
@@ -386,7 +393,7 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasName() => $_has(0);
   @$pb.TagNumber(1)
-  void clearName() => clearField(1);
+  void clearName() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get path => $_getSZ(1);
@@ -398,24 +405,36 @@ class EnvironmentInfoModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasPath() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPath() => clearField(2);
+  void clearPath() => $_clearField(2);
 
   @$pb.TagNumber(3)
   FlutterVersionModel get version => $_getN(2);
   @$pb.TagNumber(3)
   set version(FlutterVersionModel v) {
-    setField(3, v);
+    $_setField(3, v);
   }
 
   @$pb.TagNumber(3)
   $core.bool hasVersion() => $_has(2);
   @$pb.TagNumber(3)
-  void clearVersion() => clearField(3);
+  void clearVersion() => $_clearField(3);
   @$pb.TagNumber(3)
   FlutterVersionModel ensureVersion() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $core.List<$core.String> get projects => $_getList(3);
+  $pb.PbList<$core.String> get projects => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $core.String get dartVersion => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set dartVersion($core.String v) {
+    $_setString(4, v);
+  }
+
+  @$pb.TagNumber(5)
+  $core.bool hasDartVersion() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDartVersion() => $_clearField(5);
 }
 
 class EnvironmentListModel extends $pb.GeneratedMessage {
@@ -481,7 +500,7 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
   static EnvironmentListModel? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<EnvironmentInfoModel> get environments => $_getList(0);
+  $pb.PbList<EnvironmentInfoModel> get environments => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.String get projectEnvironment => $_getSZ(1);
@@ -493,7 +512,7 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasProjectEnvironment() => $_has(1);
   @$pb.TagNumber(2)
-  void clearProjectEnvironment() => clearField(2);
+  void clearProjectEnvironment() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get globalEnvironment => $_getSZ(2);
@@ -505,7 +524,7 @@ class EnvironmentListModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasGlobalEnvironment() => $_has(2);
   @$pb.TagNumber(3)
-  void clearGlobalEnvironment() => clearField(3);
+  void clearGlobalEnvironment() => $_clearField(3);
 }
 
 class EnvironmentUpgradeModel extends $pb.GeneratedMessage {
@@ -579,19 +598,19 @@ class EnvironmentUpgradeModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasName() => $_has(0);
   @$pb.TagNumber(1)
-  void clearName() => clearField(1);
+  void clearName() => $_clearField(1);
 
   @$pb.TagNumber(2)
   FlutterVersionModel get from => $_getN(1);
   @$pb.TagNumber(2)
   set from(FlutterVersionModel v) {
-    setField(2, v);
+    $_setField(2, v);
   }
 
   @$pb.TagNumber(2)
   $core.bool hasFrom() => $_has(1);
   @$pb.TagNumber(2)
-  void clearFrom() => clearField(2);
+  void clearFrom() => $_clearField(2);
   @$pb.TagNumber(2)
   FlutterVersionModel ensureFrom() => $_ensure(1);
 
@@ -599,13 +618,13 @@ class EnvironmentUpgradeModel extends $pb.GeneratedMessage {
   FlutterVersionModel get to => $_getN(2);
   @$pb.TagNumber(3)
   set to(FlutterVersionModel v) {
-    setField(3, v);
+    $_setField(3, v);
   }
 
   @$pb.TagNumber(3)
   $core.bool hasTo() => $_has(2);
   @$pb.TagNumber(3)
-  void clearTo() => clearField(3);
+  void clearTo() => $_clearField(3);
   @$pb.TagNumber(3)
   FlutterVersionModel ensureTo() => $_ensure(2);
 }
@@ -672,7 +691,7 @@ class CommandMessageModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasType() => $_has(0);
   @$pb.TagNumber(1)
-  void clearType() => clearField(1);
+  void clearType() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
@@ -684,7 +703,7 @@ class CommandMessageModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMessage() => clearField(2);
+  void clearMessage() => $_clearField(2);
 }
 
 class CommandResultModel extends $pb.GeneratedMessage {
@@ -782,10 +801,10 @@ class CommandResultModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => clearField(1);
+  void clearSuccess() => $_clearField(1);
 
   @$pb.TagNumber(2)
-  $core.List<CommandMessageModel> get messages => $_getList(1);
+  $pb.PbList<CommandMessageModel> get messages => $_getList(1);
 
   @$pb.TagNumber(3)
   $core.String get usage => $_getSZ(2);
@@ -797,36 +816,36 @@ class CommandResultModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasUsage() => $_has(2);
   @$pb.TagNumber(3)
-  void clearUsage() => clearField(3);
+  void clearUsage() => $_clearField(3);
 
   @$pb.TagNumber(4)
   CommandErrorModel get error => $_getN(3);
   @$pb.TagNumber(4)
   set error(CommandErrorModel v) {
-    setField(4, v);
+    $_setField(4, v);
   }
 
   @$pb.TagNumber(4)
   $core.bool hasError() => $_has(3);
   @$pb.TagNumber(4)
-  void clearError() => clearField(4);
+  void clearError() => $_clearField(4);
   @$pb.TagNumber(4)
   CommandErrorModel ensureError() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $core.List<LogEntryModel> get logs => $_getList(4);
+  $pb.PbList<LogEntryModel> get logs => $_getList(4);
 
   @$pb.TagNumber(6)
   EnvironmentListModel get environmentList => $_getN(5);
   @$pb.TagNumber(6)
   set environmentList(EnvironmentListModel v) {
-    setField(6, v);
+    $_setField(6, v);
   }
 
   @$pb.TagNumber(6)
   $core.bool hasEnvironmentList() => $_has(5);
   @$pb.TagNumber(6)
-  void clearEnvironmentList() => clearField(6);
+  void clearEnvironmentList() => $_clearField(6);
   @$pb.TagNumber(6)
   EnvironmentListModel ensureEnvironmentList() => $_ensure(5);
 
@@ -834,13 +853,13 @@ class CommandResultModel extends $pb.GeneratedMessage {
   EnvironmentUpgradeModel get environmentUpgrade => $_getN(6);
   @$pb.TagNumber(7)
   set environmentUpgrade(EnvironmentUpgradeModel v) {
-    setField(7, v);
+    $_setField(7, v);
   }
 
   @$pb.TagNumber(7)
   $core.bool hasEnvironmentUpgrade() => $_has(6);
   @$pb.TagNumber(7)
-  void clearEnvironmentUpgrade() => clearField(7);
+  void clearEnvironmentUpgrade() => $_clearField(7);
   @$pb.TagNumber(7)
   EnvironmentUpgradeModel ensureEnvironmentUpgrade() => $_ensure(6);
 }
@@ -1004,7 +1023,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasDefaultEnvironment() => $_has(0);
   @$pb.TagNumber(1)
-  void clearDefaultEnvironment() => clearField(1);
+  void clearDefaultEnvironment() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get lastUpdateCheck => $_getSZ(1);
@@ -1016,7 +1035,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasLastUpdateCheck() => $_has(1);
   @$pb.TagNumber(2)
-  void clearLastUpdateCheck() => clearField(2);
+  void clearLastUpdateCheck() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get lastUpdateNotification => $_getSZ(2);
@@ -1028,7 +1047,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasLastUpdateNotification() => $_has(2);
   @$pb.TagNumber(3)
-  void clearLastUpdateNotification() => clearField(3);
+  void clearLastUpdateNotification() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.bool get enableUpdateCheck => $_getBF(3);
@@ -1040,7 +1059,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool hasEnableUpdateCheck() => $_has(3);
   @$pb.TagNumber(4)
-  void clearEnableUpdateCheck() => clearField(4);
+  void clearEnableUpdateCheck() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.bool get enableProfileUpdate => $_getBF(4);
@@ -1052,7 +1071,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.bool hasEnableProfileUpdate() => $_has(4);
   @$pb.TagNumber(5)
-  void clearEnableProfileUpdate() => clearField(5);
+  void clearEnableProfileUpdate() => $_clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get profileOverride => $_getSZ(5);
@@ -1064,10 +1083,10 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.bool hasProfileOverride() => $_has(5);
   @$pb.TagNumber(6)
-  void clearProfileOverride() => clearField(6);
+  void clearProfileOverride() => $_clearField(6);
 
   @$pb.TagNumber(7)
-  $core.List<$core.String> get projectDotfiles => $_getList(6);
+  $pb.PbList<$core.String> get projectDotfiles => $_getList(6);
 
   @$pb.TagNumber(8)
   $core.String get lastUpdateNotificationCommand => $_getSZ(7);
@@ -1079,7 +1098,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $core.bool hasLastUpdateNotificationCommand() => $_has(7);
   @$pb.TagNumber(8)
-  void clearLastUpdateNotificationCommand() => clearField(8);
+  void clearLastUpdateNotificationCommand() => $_clearField(8);
 
   @$pb.TagNumber(9)
   $core.String get pubCacheDir => $_getSZ(8);
@@ -1091,7 +1110,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $core.bool hasPubCacheDir() => $_has(8);
   @$pb.TagNumber(9)
-  void clearPubCacheDir() => clearField(9);
+  void clearPubCacheDir() => $_clearField(9);
 
   @$pb.TagNumber(10)
   $core.String get flutterGitUrl => $_getSZ(9);
@@ -1103,7 +1122,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   $core.bool hasFlutterGitUrl() => $_has(9);
   @$pb.TagNumber(10)
-  void clearFlutterGitUrl() => clearField(10);
+  void clearFlutterGitUrl() => $_clearField(10);
 
   @$pb.TagNumber(11)
   $core.String get engineGitUrl => $_getSZ(10);
@@ -1115,7 +1134,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   $core.bool hasEngineGitUrl() => $_has(10);
   @$pb.TagNumber(11)
-  void clearEngineGitUrl() => clearField(11);
+  void clearEngineGitUrl() => $_clearField(11);
 
   @$pb.TagNumber(12)
   $core.String get dartSdkGitUrl => $_getSZ(11);
@@ -1127,7 +1146,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(12)
   $core.bool hasDartSdkGitUrl() => $_has(11);
   @$pb.TagNumber(12)
-  void clearDartSdkGitUrl() => clearField(12);
+  void clearDartSdkGitUrl() => $_clearField(12);
 
   @$pb.TagNumber(13)
   $core.String get releasesJsonUrl => $_getSZ(12);
@@ -1139,7 +1158,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   $core.bool hasReleasesJsonUrl() => $_has(12);
   @$pb.TagNumber(13)
-  void clearReleasesJsonUrl() => clearField(13);
+  void clearReleasesJsonUrl() => $_clearField(13);
 
   @$pb.TagNumber(14)
   $core.String get flutterStorageBaseUrl => $_getSZ(13);
@@ -1151,7 +1170,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(14)
   $core.bool hasFlutterStorageBaseUrl() => $_has(13);
   @$pb.TagNumber(14)
-  void clearFlutterStorageBaseUrl() => clearField(14);
+  void clearFlutterStorageBaseUrl() => $_clearField(14);
 
   @$pb.TagNumber(15)
   $core.String get puroBuildsUrl => $_getSZ(14);
@@ -1163,7 +1182,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(15)
   $core.bool hasPuroBuildsUrl() => $_has(14);
   @$pb.TagNumber(15)
-  void clearPuroBuildsUrl() => clearField(15);
+  void clearPuroBuildsUrl() => $_clearField(15);
 
   @$pb.TagNumber(16)
   $core.String get puroBuildTarget => $_getSZ(15);
@@ -1175,7 +1194,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(16)
   $core.bool hasPuroBuildTarget() => $_has(15);
   @$pb.TagNumber(16)
-  void clearPuroBuildTarget() => clearField(16);
+  void clearPuroBuildTarget() => $_clearField(16);
 
   @$pb.TagNumber(18)
   $core.bool get shouldInstall => $_getBF(16);
@@ -1187,7 +1206,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(18)
   $core.bool hasShouldInstall() => $_has(16);
   @$pb.TagNumber(18)
-  void clearShouldInstall() => clearField(18);
+  void clearShouldInstall() => $_clearField(18);
 
   @$pb.TagNumber(19)
   $core.bool get legacyPubCache => $_getBF(17);
@@ -1199,7 +1218,7 @@ class PuroGlobalPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(19)
   $core.bool hasLegacyPubCache() => $_has(17);
   @$pb.TagNumber(19)
-  void clearLegacyPubCache() => clearField(19);
+  void clearLegacyPubCache() => $_clearField(19);
 }
 
 class PuroEnvPrefsModel extends $pb.GeneratedMessage {
@@ -1276,13 +1295,13 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   FlutterVersionModel get desiredVersion => $_getN(0);
   @$pb.TagNumber(1)
   set desiredVersion(FlutterVersionModel v) {
-    setField(1, v);
+    $_setField(1, v);
   }
 
   @$pb.TagNumber(1)
   $core.bool hasDesiredVersion() => $_has(0);
   @$pb.TagNumber(1)
-  void clearDesiredVersion() => clearField(1);
+  void clearDesiredVersion() => $_clearField(1);
   @$pb.TagNumber(1)
   FlutterVersionModel ensureDesiredVersion() => $_ensure(0);
 
@@ -1296,7 +1315,7 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasForkRemoteUrl() => $_has(1);
   @$pb.TagNumber(2)
-  void clearForkRemoteUrl() => clearField(2);
+  void clearForkRemoteUrl() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get engineForkRemoteUrl => $_getSZ(2);
@@ -1308,7 +1327,7 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasEngineForkRemoteUrl() => $_has(2);
   @$pb.TagNumber(3)
-  void clearEngineForkRemoteUrl() => clearField(3);
+  void clearEngineForkRemoteUrl() => $_clearField(3);
 
   @$pb.TagNumber(4)
   $core.bool get precompileTool => $_getBF(3);
@@ -1320,7 +1339,7 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool hasPrecompileTool() => $_has(3);
   @$pb.TagNumber(4)
-  void clearPrecompileTool() => clearField(4);
+  void clearPrecompileTool() => $_clearField(4);
 
   @$pb.TagNumber(5)
   $core.bool get patched => $_getBF(4);
@@ -1332,7 +1351,7 @@ class PuroEnvPrefsModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.bool hasPatched() => $_has(4);
   @$pb.TagNumber(5)
-  void clearPatched() => clearField(5);
+  void clearPatched() => $_clearField(5);
 }
 
 class PuroDotfileModel extends $pb.GeneratedMessage {
@@ -1404,7 +1423,7 @@ class PuroDotfileModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasEnv() => $_has(0);
   @$pb.TagNumber(1)
-  void clearEnv() => clearField(1);
+  void clearEnv() => $_clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get previousDartSdk => $_getSZ(1);
@@ -1416,7 +1435,7 @@ class PuroDotfileModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasPreviousDartSdk() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPreviousDartSdk() => clearField(2);
+  void clearPreviousDartSdk() => $_clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get previousFlutterSdk => $_getSZ(2);
@@ -1428,7 +1447,7 @@ class PuroDotfileModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasPreviousFlutterSdk() => $_has(2);
   @$pb.TagNumber(3)
-  void clearPreviousFlutterSdk() => clearField(3);
+  void clearPreviousFlutterSdk() => $_clearField(3);
 }
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');

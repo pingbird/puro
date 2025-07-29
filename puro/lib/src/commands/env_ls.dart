@@ -9,6 +9,12 @@ class EnvLsCommand extends PuroCommand {
       help: 'Whether to show projects using each environment',
       negatable: false,
     );
+    argParser.addFlag(
+      'dart',
+      abbr: 'd',
+      help: 'Whether to show the dart version of flutter environments',
+      negatable: false,
+    );
   }
 
   @override
@@ -23,6 +29,7 @@ class EnvLsCommand extends PuroCommand {
     return listEnvironments(
       scope: scope,
       showProjects: argResults!['projects'] as bool,
+      showDartVersion: argResults!['dart'] as bool,
     );
   }
 }
