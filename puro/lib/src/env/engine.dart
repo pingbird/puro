@@ -20,16 +20,9 @@ import '../terminal.dart';
 import 'create.dart';
 import 'gc.dart';
 
-enum EngineOS {
-  windows,
-  macOS,
-  linux,
-}
+enum EngineOS { windows, macOS, linux }
 
-enum EngineArch {
-  x64,
-  arm64,
-}
+enum EngineArch { x64, arm64 }
 
 enum EngineBuildTarget {
   windowsX64('dart-sdk-windows-x64.zip', EngineOS.windows, EngineArch.x64),
@@ -38,11 +31,7 @@ enum EngineBuildTarget {
   macosX64('dart-sdk-darwin-x64.zip', EngineOS.macOS, EngineArch.x64),
   macosArm64('dart-sdk-darwin-arm64.zip', EngineOS.macOS, EngineArch.arm64);
 
-  const EngineBuildTarget(
-    this.zipName,
-    this.os,
-    this.arch,
-  );
+  const EngineBuildTarget(this.zipName, this.os, this.arch);
 
   final String zipName;
   final EngineOS os;
@@ -76,9 +65,7 @@ enum EngineBuildTarget {
     throw AssertionError('Unsupported build target: $os $arch');
   }
 
-  static Future<EngineBuildTarget> query({
-    required Scope scope,
-  }) async {
+  static Future<EngineBuildTarget> query({required Scope scope}) async {
     final EngineOS os;
     final EngineArch arch;
     if (Platform.isWindows) {
@@ -86,21 +73,17 @@ enum EngineBuildTarget {
       arch = EngineArch.x64;
     } else if (Platform.isMacOS) {
       os = EngineOS.macOS;
-      final sysctlResult = await runProcess(
-        scope,
-        'sysctl',
-        ['-n', 'hw.optional.arm64'],
-        runInShell: true,
-      );
+      final sysctlResult = await runProcess(scope, 'sysctl', [
+        '-n',
+        'hw.optional.arm64',
+      ], runInShell: true);
       final stdout = (sysctlResult.stdout as String).trim();
       if (sysctlResult.exitCode != 0 || stdout == '0') {
         arch = EngineArch.x64;
       } else if (stdout == '1') {
         arch = EngineArch.arm64;
       } else {
-        throw AssertionError(
-          'Unexpected result from sysctl: `$stdout`',
-        );
+        throw AssertionError('Unexpected result from sysctl: `$stdout`');
       }
     } else if (Platform.isLinux) {
       os = EngineOS.linux;
@@ -125,8 +108,9 @@ enum EngineBuildTarget {
     return EngineBuildTarget.from(os, arch);
   }
 
-  static final Provider<Future<EngineBuildTarget>> provider =
-      Provider((scope) => query(scope: scope));
+  static final Provider<Future<EngineBuildTarget>> provider = Provider(
+    (scope) => query(scope: scope),
+  );
 }
 
 /// Unzips [zipFile] into [destination].
@@ -139,29 +123,19 @@ Future<void> unzip({
   if (Platform.isWindows) {
     final zip = await findProgramInPath(scope: scope, name: '7z');
     if (zip.isNotEmpty) {
-      await runProcess(
-        scope,
-        zip.first.path,
-        [
-          'x',
-          '-y',
-          '-o${destination.path}',
-          zipFile.path,
-        ],
-        throwOnFailure: true,
-      );
+      await runProcess(scope, zip.first.path, [
+        'x',
+        '-y',
+        '-o${destination.path}',
+        zipFile.path,
+      ], throwOnFailure: true);
     } else {
-      await runProcess(
-        scope,
-        'powershell',
-        [
-          'Import-Module Microsoft.PowerShell.Archive; Expand-Archive',
-          zipFile.path,
-          '-DestinationPath',
-          destination.path,
-        ],
-        throwOnFailure: true,
-      );
+      await runProcess(scope, 'powershell', [
+        'Import-Module Microsoft.PowerShell.Archive; Expand-Archive',
+        zipFile.path,
+        '-DestinationPath',
+        destination.path,
+      ], throwOnFailure: true);
     }
   } else if (Platform.isLinux || Platform.isMacOS) {
     const pm = LocalProcessManager();
@@ -179,13 +153,7 @@ Future<void> unzip({
     await runProcess(
       scope,
       'unzip',
-      [
-        '-o',
-        '-q',
-        zipFile.path,
-        '-d',
-        destination.path,
-      ],
+      ['-o', '-q', zipFile.path, '-d', destination.path],
       runInShell: true,
       throwOnFailure: true,
     );
@@ -213,9 +181,7 @@ Future<bool> downloadSharedEngine({
           sharedCache.dartSdk.dartExecutable.path,
           ['--version'],
           throwOnFailure: true,
-          environment: {
-            'PUB_CACHE': config.legacyPubCacheDir.path,
-          },
+          environment: {'PUB_CACHE': config.legacyPubCacheDir.path},
         );
       });
     } catch (exception) {
@@ -246,7 +212,8 @@ Future<bool> downloadSharedEngine({
       // of shared.sh or the git tree, but this is much simpler.
       if (e.statusCode == 404 && target == EngineBuildTarget.macosArm64) {
         final engineZipUrl = config.flutterStorageBaseUrl.append(
-          path: 'flutter_infra_release/flutter/$engineCommit/'
+          path:
+              'flutter_infra_release/flutter/$engineCommit/'
               '${EngineBuildTarget.macosX64.zipName}',
         );
         await downloadFile(
@@ -290,12 +257,9 @@ Future<Version> getDartSDKVersion({
   required Scope scope,
   required DartSdkConfig dartSdk,
 }) async {
-  final result = await runProcess(
-    scope,
-    dartSdk.dartExecutable.path,
-    ['--version'],
-    throwOnFailure: true,
-  );
+  final result = await runProcess(scope, dartSdk.dartExecutable.path, [
+    '--version',
+  ], throwOnFailure: true);
   final match = _dartSdkRegex.firstMatch(result.stdout as String);
   if (match == null) {
     throw AssertionError('Failed to parse `${result.stdout}`');
@@ -304,10 +268,7 @@ Future<Version> getDartSDKVersion({
 }
 
 /// These files shouldn't be shared between flutter installs.
-const cacheBlacklist = {
-  'flutter_version_check.stamp',
-  'flutter.version.json',
-};
+const cacheBlacklist = {'flutter_version_check.stamp', 'flutter.version.json'};
 
 extension EnvPrefsModelExtension on PuroEnvPrefsModel {
   bool get isPatched => hasPatched() && patched;
@@ -323,17 +284,16 @@ Future<void> syncFlutterCache({
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final fs = config.fileSystem;
-  final engineVersion =
-      await getEngineVersion(scope: scope, flutterConfig: environment.flutter);
+  final engineVersion = await getEngineVersion(
+    scope: scope,
+    flutterConfig: environment.flutter,
+  );
   if (engineVersion == null) {
     return;
   }
   environmentPrefs ??= await environment.readPrefs(scope: scope);
   final sharedCacheDir = config
-      .getFlutterCache(
-        engineVersion,
-        patched: environmentPrefs.isPatched,
-      )
+      .getFlutterCache(engineVersion, patched: environmentPrefs.isPatched)
       .cacheDir;
   if (!sharedCacheDir.existsSync()) {
     return;
@@ -363,8 +323,10 @@ Future<void> syncFlutterCache({
       // Delete the link if it doesn't point to the file we want.
       final link = fs.link(file.path);
       if (link.targetSync() != sharedFile.path) {
-        log.d('Deleting ${file.basename} symlink because it points to '
-            '`${link.targetSync()}` instead of `${sharedFile.path}`');
+        log.d(
+          'Deleting ${file.basename} symlink because it points to '
+          '`${link.targetSync()}` instead of `${sharedFile.path}`',
+        );
         link.deleteSync();
       }
       continue;
@@ -373,8 +335,10 @@ Future<void> syncFlutterCache({
     if (fs.existsSync(sharedPath)) {
       // Delete local copy and link to shared copy, perhaps we could
       // merge them instead?
-      log.d('Deleting ${file.basename} because it already exists in the '
-          'shared cache');
+      log.d(
+        'Deleting ${file.basename} because it already exists in the '
+        'shared cache',
+      );
       file.deleteSync(recursive: true);
     } else {
       // Move it to the shared cache.
@@ -406,9 +370,6 @@ Future<void> trySyncFlutterCache({
   required EnvConfig environment,
 }) async {
   await runOptional(scope, 'Syncing flutter cache', () async {
-    await syncFlutterCache(
-      scope: scope,
-      environment: environment,
-    );
+    await syncFlutterCache(scope: scope, environment: environment);
   });
 }

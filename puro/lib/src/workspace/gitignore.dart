@@ -32,11 +32,13 @@ Future<void> updateConfigLines({
   if (!existingLines.containsAll(lines) ||
       existingLines.length != lines.length) {
     log.v('Updating config at ${file.path}');
-    file.writeAsStringSync(<String>[
-      ...result,
-      '',
-      for (final name in lines) ...[gitConfigComment, name],
-    ].join('\n'));
+    file.writeAsStringSync(
+      <String>[
+        ...result,
+        '',
+        for (final name in lines) ...[gitConfigComment, name],
+      ].join('\n'),
+    );
     for (final line in lines) {
       if (!existingLines.contains(line)) {
         log.v('Added "$line"');
@@ -56,11 +58,14 @@ Directory? findGitDir(Directory projectDir) {
   if (gitTree == null) return null;
   final gitDir = gitTree.childDirectory('.git');
   if (fileSystem.statSync(gitDir.path).type == FileSystemEntityType.file) {
-    final match = RegExp(r'gitdir: (.+)')
-        .firstMatch(fileSystem.file(gitDir.path).readAsStringSync().trim());
+    final match = RegExp(
+      r'gitdir: (.+)',
+    ).firstMatch(fileSystem.file(gitDir.path).readAsStringSync().trim());
     if (match != null) {
-      final gitTree2 =
-          findProjectDir(fileSystem.directory(match.group(1)!), '.git');
+      final gitTree2 = findProjectDir(
+        fileSystem.directory(match.group(1)!),
+        '.git',
+      );
       if (gitTree2 != null) {
         return gitTree2.childDirectory('.git').resolve();
       }

@@ -1,3 +1,7 @@
+## Unreleased
+
+* Added the `prepare` command to pre-download Flutter artifacts for an environment
+
 ## 1.4.11
 
 * Bug fixes

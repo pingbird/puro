@@ -13,11 +13,7 @@ class VersionCommand extends PuroCommand {
       negatable: false,
       help: 'Print just the version to stdout and exit',
     );
-    argParser.addFlag(
-      'release',
-      negatable: false,
-      hide: true,
-    );
+    argParser.addFlag('release', negatable: false, hide: true);
   }
 
   @override
@@ -39,8 +35,9 @@ class VersionCommand extends PuroCommand {
       stdout.write('${puroVersion.semver}');
       await runner.exitPuro(0);
     }
-    final externalMessage =
-        await detectExternalFlutterInstallations(scope: scope);
+    final externalMessage = await detectExternalFlutterInstallations(
+      scope: scope,
+    );
     final updateMessage = await checkIfUpdateAvailable(
       scope: scope,
       runner: runner,

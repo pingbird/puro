@@ -117,10 +117,7 @@ class PuroVersion {
           scriptPath,
           path.join(path.current, target.executableName),
         ) ||
-        path.equals(
-          scriptPath,
-          path.join(path.current, 'puro'),
-        ) ||
+        path.equals(scriptPath, path.join(path.current, 'puro')) ||
         config.fileSystem
             .file(executablePath)
             .parent
@@ -130,8 +127,9 @@ class PuroVersion {
       scriptPath = executablePath;
     } else {
       try {
-        scriptPath =
-            config.fileSystem.file(scriptPath).resolveSymbolicLinksSync();
+        scriptPath = config.fileSystem
+            .file(scriptPath)
+            .resolveSymbolicLinksSync();
       } catch (exception, stackTrace) {
         log.w('Error while resolving Platform.script\n$exception\n$stackTrace');
       }
@@ -145,10 +143,12 @@ class PuroVersion {
     if (!scriptIsExecutable && packageRoot == null) {
       final pubInstallBinDir = scriptFile.parent;
       final pubInstallPackageDir = pubInstallBinDir.parent;
-      final pubInstallPubspecLockFile =
-          pubInstallPackageDir.childFile('pubspec.lock');
-      final pubInstallPubspecYamlFile =
-          pubInstallPackageDir.childFile('pubspec.yaml');
+      final pubInstallPubspecLockFile = pubInstallPackageDir.childFile(
+        'pubspec.lock',
+      );
+      final pubInstallPubspecYamlFile = pubInstallPackageDir.childFile(
+        'pubspec.yaml',
+      );
       log.d('pubInstallBinDir: ${pubInstallBinDir.path}');
       log.d('pubInstallPackageDir: ${pubInstallPackageDir.path}');
       if (pubInstallBinDir.basename == 'bin' &&
@@ -161,8 +161,9 @@ class PuroVersion {
         final segments = path.split(scriptPath);
         final dartToolIndex = segments.indexOf('.dart_tool');
         if (dartToolIndex != -1) {
-          packageRoot =
-              _fs.directory(path.joinAll(segments.take(dartToolIndex)));
+          packageRoot = _fs.directory(
+            path.joinAll(segments.take(dartToolIndex)),
+          );
         }
       }
     }
@@ -189,10 +190,7 @@ class PuroVersion {
       }
     } else if (scriptIsExecutable) {
       puroExecutable = config.fileSystem.file(executablePath);
-      if (path.equals(
-        executablePath,
-        config.puroExecutableFile.path,
-      )) {
+      if (path.equals(executablePath, config.puroExecutableFile.path)) {
         installationType = PuroInstallationType.distribution;
       } else {
         installationType = PuroInstallationType.standalone;
@@ -225,7 +223,8 @@ class PuroVersion {
           );
         } catch (exception, stackTrace) {
           log.w(
-              'Error while parsing ${pubspecLockFile.path}\n$exception\n$stackTrace');
+            'Error while parsing ${pubspecLockFile.path}\n$exception\n$stackTrace',
+          );
         }
       }
     }
@@ -249,11 +248,7 @@ enum PuroBuildTarget {
   linuxX64('linux-x64', '', ''),
   macosX64('darwin-x64', '', '');
 
-  const PuroBuildTarget(
-    this.name,
-    this.exeSuffix,
-    this.scriptSuffix,
-  );
+  const PuroBuildTarget(this.name, this.exeSuffix, this.scriptSuffix);
 
   factory PuroBuildTarget.fromString(String str) {
     switch (str) {
@@ -295,9 +290,7 @@ enum PuroBuildTarget {
 const _kUpdateVersionCheckThreshold = Duration(days: 1);
 const _kUpdateNotificationThreshold = Duration(days: 1);
 
-Future<void> _fetchLatestVersionInBackground({
-  required Scope scope,
-}) async {
+Future<void> _fetchLatestVersionInBackground({required Scope scope}) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final httpClient = scope.read(clientProvider);
@@ -336,8 +329,9 @@ Future<CommandMessage?> checkIfUpdateAvailable({
     return null;
   }
   log.v('Checking if update is available');
-  final lastVersionCheck =
-      prefs.hasLastUpdateCheck() ? DateTime.parse(prefs.lastUpdateCheck) : null;
+  final lastVersionCheck = prefs.hasLastUpdateCheck()
+      ? DateTime.parse(prefs.lastUpdateCheck)
+      : null;
   final lastNotification = prefs.hasLastUpdateNotification()
       ? DateTime.parse(prefs.lastUpdateNotification)
       : null;
@@ -348,11 +342,13 @@ Future<CommandMessage?> checkIfUpdateAvailable({
   final isOutOfDate =
       latestVersion != null && latestVersion > puroVersion.semver;
   final now = clock.now();
-  final willNotify = isOutOfDate &&
+  final willNotify =
+      isOutOfDate &&
       (alwaysNotify ||
           lastNotification == null ||
           now.difference(lastNotification) > _kUpdateNotificationThreshold);
-  final shouldVersionCheck = !isOutOfDate &&
+  final shouldVersionCheck =
+      !isOutOfDate &&
       (lastVersionCheck == null ||
           now.difference(lastVersionCheck) > _kUpdateVersionCheckThreshold);
   log.d('lastNotification: $lastNotification');

@@ -25,23 +25,16 @@ Future<void> renameEnvironment({
   final newEnv = config.getEnv(newName);
 
   if (newEnv.exists) {
-    throw CommandError(
-      'Environment `$newName` already exists',
-    );
+    throw CommandError('Environment `$newName` already exists');
   } else if (env.name == newEnv.name) {
-    throw CommandError(
-      'Environment `$name` is already named `$newName`',
-    );
+    throw CommandError('Environment `$name` is already named `$newName`');
   } else if (isPseudoEnvName(newName)) {
     throw CommandError(
       'Environment `$newName` is already pinned to a version, use `puro create $newName` to create it',
     );
   }
 
-  final dotfiles = await getDotfilesUsingEnv(
-    scope: scope,
-    environment: env,
-  );
+  final dotfiles = await getDotfilesUsingEnv(scope: scope, environment: env);
 
   if (env.updateLockFile.existsSync()) {
     await env.updateLockFile.delete();
@@ -73,8 +66,9 @@ Future<void> renameEnvironment({
       final model = PuroDotfileModel.create();
       model.mergeFromProto3Json(data);
       model.env = newName;
-      dotfile
-          .writeAsStringSync(prettyJsonEncoder.convert(model.toProto3Json()));
+      dotfile.writeAsStringSync(
+        prettyJsonEncoder.convert(model.toProto3Json()),
+      );
     }
   });
 

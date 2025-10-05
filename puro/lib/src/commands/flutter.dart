@@ -28,8 +28,9 @@ class FlutterCommand extends PuroCommand {
     final log = PuroLogger.of(scope);
     final environment = await getProjectEnvOrDefault(scope: scope);
     log.v('Flutter SDK: ${environment.flutter.sdkDir.path}');
-    final nonOptionArgs =
-        argResults!.arguments.where((e) => !e.startsWith('-')).toList();
+    final nonOptionArgs = argResults!.arguments
+        .where((e) => !e.startsWith('-'))
+        .toList();
     if (nonOptionArgs.isNotEmpty) {
       if (nonOptionArgs.first == 'upgrade') {
         runner.addMessage(

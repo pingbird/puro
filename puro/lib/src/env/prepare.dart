@@ -33,7 +33,9 @@ List<String> sortPreparePlatforms(Iterable<String> platforms) {
 List<String> defaultPreparePlatforms() {
   final platforms = <String>{'android', 'web'};
   if (Platform.isMacOS) {
-    platforms..add('ios')..add('macos');
+    platforms
+      ..add('ios')
+      ..add('macos');
   }
   if (Platform.isLinux) {
     platforms.add('linux');
@@ -51,6 +53,9 @@ Future<void> prepareEnvironment({
   bool allPlatforms = false,
   bool force = false,
 }) async {
+  final effectivePlatforms = platforms == null
+      ? const <String>[]
+      : sortPreparePlatforms(platforms);
   final args = <String>['precache'];
   if (force) {
     args.add('--force');
@@ -58,7 +63,7 @@ Future<void> prepareEnvironment({
   if (allPlatforms) {
     args.add('--all-platforms');
   }
-  for (final platform in platforms ?? const <String>[]) {
+  for (final platform in effectivePlatforms) {
     args.add('--$platform');
   }
   final exitCode = await runFlutterCommand(

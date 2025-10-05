@@ -33,13 +33,13 @@ class EnvUpgradeResult extends CommandResult {
 
   @override
   CommandMessage get message => CommandMessage.format(
-        (format) => from.commit == to.commit
-            ? toolInfo.didUpdateTool || toolInfo.didUpdateEngine
-                ? 'Finished installation of $to in environment `${environment.name}`'
-                : 'Environment `${environment.name}` is already up to date'
-            : '${downgrade ? 'Downgraded' : 'Upgraded'} environment `${environment.name}`\n'
-                '${from.toString(format)} => ${to.toString(format)}',
-      );
+    (format) => from.commit == to.commit
+        ? toolInfo.didUpdateTool || toolInfo.didUpdateEngine
+              ? 'Finished installation of $to in environment `${environment.name}`'
+              : 'Environment `${environment.name}` is already up to date'
+        : '${downgrade ? 'Downgraded' : 'Upgraded'} environment `${environment.name}`\n'
+              '${from.toString(format)} => ${to.toString(format)}',
+  );
 
   @override
   late final model = CommandResultModel(
@@ -106,14 +106,9 @@ Future<EnvUpgradeResult> upgradeEnvironment({
         );
       }
       if (await git.hasUncomittedChanges(repository: repository)) {
-        throw CommandError(
-          "Can't upgrade fork with uncomitted changes",
-        );
+        throw CommandError("Can't upgrade fork with uncomitted changes");
       }
-      await git.pull(
-        repository: repository,
-        all: true,
-      );
+      await git.pull(repository: repository, all: true);
       final switchBranch =
           toVersion.branch != null && branch != toVersion.branch;
       if (switchBranch) {
@@ -152,10 +147,7 @@ Future<EnvUpgradeResult> upgradeEnvironment({
   }
 
   // Replace flutter/dart with shims
-  await installEnvShims(
-    scope: scope,
-    environment: environment,
-  );
+  await installEnvShims(scope: scope, environment: environment);
 
   final toolInfo = await setUpFlutterTool(
     scope: scope,

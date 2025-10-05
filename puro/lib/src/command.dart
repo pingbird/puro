@@ -225,25 +225,25 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
     LogLevel level = LogLevel.verbose,
   }) {
     backgroundTasks[() async {
-      try {
-        await task();
-      } catch (exception, stackTrace) {
-        log.add(LogEntry(
-          clock.now(),
-          level,
-          'Exception while $name\n$exception\n$stackTrace',
-        ));
-      }
-    }()] = name;
+          try {
+            await task();
+          } catch (exception, stackTrace) {
+            log.add(
+              LogEntry(
+                clock.now(),
+                level,
+                'Exception while $name\n$exception\n$stackTrace',
+              ),
+            );
+          }
+        }()] =
+        name;
   }
 
   @override
   Future<void> printUsage() async {
     await writeResultAndExit(
-      CommandHelpResult(
-        didRequestHelp: didRequestHelp,
-        usage: usage,
-      ),
+      CommandHelpResult(didRequestHelp: didRequestHelp, usage: usage),
     );
   }
 
@@ -319,10 +319,15 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
 
       // Initialize config
 
-      final homeDir =
-          PuroConfig.getHomeDir(scope: scope, fileSystem: fileSystem);
+      final homeDir = PuroConfig.getHomeDir(
+        scope: scope,
+        fileSystem: fileSystem,
+      );
       final puroRoot = PuroConfig.getPuroRoot(
-          scope: scope, fileSystem: fileSystem, homeDir: homeDir);
+        scope: scope,
+        fileSystem: fileSystem,
+        homeDir: homeDir,
+      );
       final prefsJson = puroRoot.childFile('prefs.json');
       scope.add(globalPrefsJsonFileProvider, prefsJson);
       final firstRun =
@@ -351,10 +356,7 @@ class PuroCommandRunner extends CommandRunner<CommandResult> {
         shouldSkipCacheSync: shouldSkipCacheSyncOverride,
         firstRun: firstRun,
       );
-      scope.add(
-        PuroConfig.provider,
-        config,
-      );
+      scope.add(PuroConfig.provider, config);
       scope.add(CommandMessage.provider, messages.add);
 
       final commandName = topLevelResults.command?.name;

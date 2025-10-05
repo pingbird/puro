@@ -8,9 +8,10 @@ extension CommandResultModelExtensions on CommandResultModel {
   void addMessage(CommandMessage message, OutputFormatter format) {
     messages.add(
       CommandMessageModel(
-        type: (message.type ??
-                (success ? CompletionType.success : CompletionType.failure))
-            .name,
+        type:
+            (message.type ??
+                    (success ? CompletionType.success : CompletionType.failure))
+                .name,
         message: message.message(format),
       ),
     );
@@ -34,11 +35,13 @@ class CommandErrorResult extends CommandResult {
   Iterable<CommandMessage> get messages {
     return [
       CommandMessage('$exception\n$stackTrace'),
-      CommandMessage([
-        'Puro crashed! Please file an issue at https://github.com/pingbird/puro',
-        if (logLevel != null && logLevel! < 4)
-          'Consider running the command with a higher log level: `--log-level=4`',
-      ].join('\n')),
+      CommandMessage(
+        [
+          'Puro crashed! Please file an issue at https://github.com/pingbird/puro',
+          if (logLevel != null && logLevel! < 4)
+            'Consider running the command with a higher log level: `--log-level=4`',
+        ].join('\n'),
+      ),
     ];
   }
 
@@ -47,20 +50,16 @@ class CommandErrorResult extends CommandResult {
 
   @override
   CommandResultModel? get model => CommandResultModel(
-        error: CommandErrorModel(
-          exception: '$exception',
-          exceptionType: '${exception.runtimeType}',
-          stackTrace: '$stackTrace',
-        ),
-      );
+    error: CommandErrorModel(
+      exception: '$exception',
+      exceptionType: '${exception.runtimeType}',
+      stackTrace: '$stackTrace',
+    ),
+  );
 }
 
 class CommandHelpResult extends CommandResult {
-  CommandHelpResult({
-    required this.didRequestHelp,
-    this.help,
-    this.usage,
-  });
+  CommandHelpResult({required this.didRequestHelp, this.help, this.usage});
 
   final bool didRequestHelp;
   final String? help;
@@ -68,19 +67,15 @@ class CommandHelpResult extends CommandResult {
 
   @override
   Iterable<CommandMessage> get messages => [
-        if (message != null)
-          CommandMessage(
-            help!,
-            type: CompletionType.failure,
-          ),
-        if (usage != null)
-          CommandMessage(
-            usage!,
-            type: message == null && didRequestHelp
-                ? CompletionType.plain
-                : CompletionType.info,
-          ),
-      ];
+    if (message != null) CommandMessage(help!, type: CompletionType.failure),
+    if (usage != null)
+      CommandMessage(
+        usage!,
+        type: message == null && didRequestHelp
+            ? CompletionType.plain
+            : CompletionType.info,
+      ),
+  ];
 
   @override
   bool get success => didRequestHelp;
@@ -104,11 +99,7 @@ class BasicMessageResult extends CommandResult {
     this.model,
   }) : messages = [CommandMessage.format(message, type: type)];
 
-  BasicMessageResult.list(
-    this.messages, {
-    this.success = true,
-    this.model,
-  });
+  BasicMessageResult.list(this.messages, {this.success = true, this.model});
 
   @override
   final bool success;
@@ -139,10 +130,10 @@ abstract class CommandResult {
 
   @override
   String toString() => CommandMessage.formatMessages(
-        messages: messages,
-        format: plainFormatter,
-        success: toModel().success,
-      );
+    messages: messages,
+    format: plainFormatter,
+    success: toModel().success,
+  );
 }
 
 class CommandMessage {
@@ -158,11 +149,14 @@ class CommandMessage {
     required bool success,
   }) {
     return messages
-        .map((e) => format.complete(
-              e.message(format),
-              type: e.type ??
-                  (success ? CompletionType.success : CompletionType.failure),
-            ))
+        .map(
+          (e) => format.complete(
+            e.message(format),
+            type:
+                e.type ??
+                (success ? CompletionType.success : CompletionType.failure),
+          ),
+        )
         .join('\n');
   }
 
@@ -181,11 +175,11 @@ class CommandError implements Exception {
     CommandResultModel? model,
     bool success = false,
   }) : result = BasicMessageResult(
-          message,
-          success: success,
-          type: type,
-          model: model,
-        );
+         message,
+         success: success,
+         type: type,
+         model: model,
+       );
 
   CommandError.format(
     String Function(OutputFormatter format) message, {
@@ -193,21 +187,21 @@ class CommandError implements Exception {
     CommandResultModel? model,
     bool success = false,
   }) : result = BasicMessageResult.format(
-          message,
-          success: success,
-          type: type,
-          model: model,
-        );
+         message,
+         success: success,
+         type: type,
+         model: model,
+       );
 
   CommandError.list(
     List<CommandMessage> messages, {
     CommandResultModel? model,
     bool success = false,
   }) : result = BasicMessageResult.list(
-          messages,
-          success: success,
-          model: model,
-        );
+         messages,
+         success: success,
+         model: model,
+       );
 
   final CommandResult result;
 

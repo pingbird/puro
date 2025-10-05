@@ -16,11 +16,7 @@ import '../progress.dart';
 import '../provider.dart';
 import 'engine.dart';
 
-enum DartChannel {
-  stable,
-  beta,
-  dev,
-}
+enum DartChannel { stable, beta, dev }
 
 enum DartOS {
   windows,
@@ -30,10 +26,10 @@ enum DartOS {
   static final DartOS current = Platform.isWindows
       ? DartOS.windows
       : Platform.isMacOS
-          ? DartOS.macOS
-          : Platform.isLinux
-              ? DartOS.linux
-              : throw UnsupportedError('Unsupported platform');
+      ? DartOS.macOS
+      : Platform.isLinux
+      ? DartOS.linux
+      : throw UnsupportedError('Unsupported platform');
 }
 
 enum DartArch {
@@ -43,8 +39,9 @@ enum DartArch {
   arm64,
   riscv64;
 
-  static final DartArch current = DartArch.values
-      .singleWhere((e) => '${ffi.Abi.current()}'.endsWith('_${e.name}'));
+  static final DartArch current = DartArch.values.singleWhere(
+    (e) => '${ffi.Abi.current()}'.endsWith('_${e.name}'),
+  );
 }
 
 class DartRelease {
@@ -56,12 +53,12 @@ class DartRelease {
   final Version version;
 
   Uri get downloadUrl => Uri.parse(
-        'https://storage.googleapis.com/dart-archive/channels/${channel.name}/release/$version/sdk/dartsdk-${os.name.toLowerCase()}-${arch.name}-release.zip',
-      );
+    'https://storage.googleapis.com/dart-archive/channels/${channel.name}/release/$version/sdk/dartsdk-${os.name.toLowerCase()}-${arch.name}-release.zip',
+  );
 
   Uri get versionUrl => Uri.parse(
-        'https://storage.googleapis.com/storage/v1/b/dart-archive/o/channels%2F${channel.name}%2Frelease%2F$version%2FVERSION?alt=media',
-      );
+    'https://storage.googleapis.com/storage/v1/b/dart-archive/o/channels%2F${channel.name}%2Frelease%2F$version%2FVERSION?alt=media',
+  );
 
   String get name => '${channel.name}-$version-${os.name}-${arch.name}';
 }
@@ -70,22 +67,21 @@ class DartReleases {
   DartReleases(this.releases);
   final Map<DartChannel, List<Version>> releases;
   Map<String, dynamic> toJson() => {
-        for (final channel in releases.keys)
-          channel.name: releases[channel]!.map((v) => '$v').toList(),
-      };
+    for (final channel in releases.keys)
+      channel.name: releases[channel]!.map((v) => '$v').toList(),
+  };
   factory DartReleases.fromJson(Map<String, dynamic> json) => DartReleases({
-        for (final channel in json.keys)
-          DartChannel.values.singleWhere((e) => e.name == channel):
-              (json[channel] as List)
-                  .map((v) => Version.parse(v as String))
-                  .toList(),
-      });
+    for (final channel in json.keys)
+      DartChannel.values.singleWhere(
+        (e) => e.name == channel,
+      ): (json[channel] as List)
+          .map((v) => Version.parse(v as String))
+          .toList(),
+  });
 }
 
 /// Fetches all of the available Dart releases.
-Future<DartReleases> fetchDartReleases({
-  required Scope scope,
-}) async {
+Future<DartReleases> fetchDartReleases({required Scope scope}) async {
   final config = PuroConfig.of(scope);
   return ProgressNode.of(scope).wrap((scope, node) async {
     final releases = <DartChannel, List<Version>>{};
@@ -101,7 +97,8 @@ Future<DartReleases> fetchDartReleases({
       releases[channel] = [];
       for (final prefix in data['prefixes'] as List) {
         final version = tryParseVersion(
-            (prefix as String).split('/').lastWhere((e) => e.isNotEmpty));
+          (prefix as String).split('/').lastWhere((e) => e.isNotEmpty),
+        );
         if (version == null) continue;
         releases[channel]!.add(version);
       }
@@ -135,35 +132,31 @@ Future<DartReleases?> getCachedDartReleases({
 }
 
 /// Gets all of the available Dart releases, checking the cache first.
-Future<DartReleases> getDartReleases({
-  required Scope scope,
-}) async {
+Future<DartReleases> getDartReleases({required Scope scope}) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
 
   final cachedReleasesStat = config.cachedDartReleasesJsonFile.statSync();
   final hasCache = cachedReleasesStat.type == FileSystemEntityType.file;
-  var cacheIsFresh = hasCache &&
+  var cacheIsFresh =
+      hasCache &&
       clock.now().difference(cachedReleasesStat.modified).inHours < 1;
 
   // Don't read from the cache if it's stale.
   if (hasCache && cacheIsFresh) {
     DartReleases? cachedReleases;
-    await lockFile(
-      scope,
-      config.cachedDartReleasesJsonFile,
-      (handle) async {
-        final contents = await handle.readAllAsString();
-        try {
-          cachedReleases = DartReleases.fromJson(
-              jsonDecode(contents) as Map<String, dynamic>);
-        } catch (exception, stackTrace) {
-          log.w('Error while parsing cached releases');
-          log.w('$exception\n$stackTrace');
-          cacheIsFresh = false;
-        }
-      },
-    );
+    await lockFile(scope, config.cachedDartReleasesJsonFile, (handle) async {
+      final contents = await handle.readAllAsString();
+      try {
+        cachedReleases = DartReleases.fromJson(
+          jsonDecode(contents) as Map<String, dynamic>,
+        );
+      } catch (exception, stackTrace) {
+        log.w('Error while parsing cached releases');
+        log.w('$exception\n$stackTrace');
+        cacheIsFresh = false;
+      }
+    });
     if (cachedReleases != null) {
       return cachedReleases!;
     }
@@ -192,9 +185,7 @@ Future<void> downloadSharedDartRelease({
           dartSdk.dartExecutable.path,
           ['--version'],
           throwOnFailure: true,
-          environment: {
-            'PUB_CACHE': config.legacyPubCacheDir.path,
-          },
+          environment: {'PUB_CACHE': config.legacyPubCacheDir.path},
         );
       });
     } catch (exception) {
@@ -209,8 +200,9 @@ Future<void> downloadSharedDartRelease({
     if (!config.sharedDartReleaseDir.existsSync()) {
       config.sharedDartReleaseDir.createSync(recursive: true);
     }
-    final zipFile =
-        config.sharedDartReleaseDir.childFile('${release.name}.zip');
+    final zipFile = config.sharedDartReleaseDir.childFile(
+      '${release.name}.zip',
+    );
 
     await downloadFile(
       scope: scope,

@@ -15,41 +15,27 @@ Future<void> restoreIdeConfigs({
   required Directory projectDir,
   required ProjectConfig projectConfig,
 }) async {
-  runOptional(
-    scope,
-    'restoring intellij config',
-    () async {
-      final ideConfig = await IntelliJConfig.load(
-        scope: scope,
-        projectDir: projectDir,
-        projectConfig: projectConfig,
-      );
-      if (ideConfig.exists) {
-        await restoreIdeConfig(
-          scope: scope,
-          ideConfig: ideConfig,
-        );
-      }
-    },
-  );
+  runOptional(scope, 'restoring intellij config', () async {
+    final ideConfig = await IntelliJConfig.load(
+      scope: scope,
+      projectDir: projectDir,
+      projectConfig: projectConfig,
+    );
+    if (ideConfig.exists) {
+      await restoreIdeConfig(scope: scope, ideConfig: ideConfig);
+    }
+  });
 
-  runOptional(
-    scope,
-    'restoring vscode config',
-    () async {
-      final ideConfig = await VSCodeConfig.load(
-        scope: scope,
-        projectDir: projectDir,
-        projectConfig: projectConfig,
-      );
-      if (ideConfig.exists) {
-        await restoreIdeConfig(
-          scope: scope,
-          ideConfig: ideConfig,
-        );
-      }
-    },
-  );
+  runOptional(scope, 'restoring vscode config', () async {
+    final ideConfig = await VSCodeConfig.load(
+      scope: scope,
+      projectDir: projectDir,
+      projectConfig: projectConfig,
+    );
+    if (ideConfig.exists) {
+      await restoreIdeConfig(scope: scope, ideConfig: ideConfig);
+    }
+  });
 }
 
 Future<void> restoreIdeConfig({
@@ -85,11 +71,7 @@ Future<void> cleanWorkspace({
   final config = PuroConfig.of(scope);
   projectDir ??= config.project.ensureParentProjectDir();
   await runOptional(scope, 'restoring gitignore', () {
-    return updateGitignore(
-      scope: scope,
-      projectDir: projectDir!,
-      ignores: {},
-    );
+    return updateGitignore(scope: scope, projectDir: projectDir!, ignores: {});
   });
   await runOptional(scope, 'restoring IDE configs', () {
     return restoreIdeConfigs(

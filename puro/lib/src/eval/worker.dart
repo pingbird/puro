@@ -144,14 +144,16 @@ class EvalWorker {
 
     // Connecting to the observatory requires a token which we can only get from
     // scanning stdout.
-    final stdoutLines = const LineSplitter()
-        .bind(const Utf8Decoder(allowMalformed: true).bind(process.stdout));
+    final stdoutLines = const LineSplitter().bind(
+      const Utf8Decoder(allowMalformed: true).bind(process.stdout),
+    );
     final serverUriCompleter = Completer<String>();
     final stdoutFuture = stdoutLines.listen((line) {
       if (!serverUriCompleter.isCompleted &&
           line.startsWith('The Dart VM service is listening on')) {
-        serverUriCompleter
-            .complete(line.split(' ').last.replaceAll('http://', 'ws://'));
+        serverUriCompleter.complete(
+          line.split(' ').last.replaceAll('http://', 'ws://'),
+        );
       }
     }).asFuture<void>();
     final stderrFuture = process.stderr.listen(stderr.add).asFuture<void>();
@@ -196,8 +198,9 @@ class EvalWorker {
       mainFileHandle: mainFileHandle,
       vmService: vmService,
       isolateId: isolateId,
-      onExit:
-          stdoutFuture.then((_) => stderrFuture.then((_) => process.exitCode)),
+      onExit: stdoutFuture.then(
+        (_) => stderrFuture.then((_) => process.exitCode),
+      ),
       context: context,
       currentCode: initialCode,
     );
@@ -207,7 +210,8 @@ class EvalWorker {
     log.d(() => '_evaluate: ${jsonEncode(parseResult.code)}');
     if (parseResult.code == currentCode.code &&
         !context.needsPackageReload &&
-        reloadSuccessful) return;
+        reloadSuccessful)
+      return;
     reloadSuccessful = false;
     evalFile.writeAsStringSync(parseResult.code);
     currentCode = parseResult;
@@ -221,8 +225,9 @@ class EvalWorker {
 
     if (reloadResult.success == false) {
       final notices = reloadResult.json!['notices'] as List<dynamic>;
-      final dynamic reason =
-          notices.firstWhere((dynamic e) => e['type'] == 'ReasonForCancelling');
+      final dynamic reason = notices.firstWhere(
+        (dynamic e) => e['type'] == 'ReasonForCancelling',
+      );
       throw EvalError(message: reason['message'] as String);
     }
 

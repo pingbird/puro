@@ -76,7 +76,8 @@ extension StreamedResponseExtensions on StreamedResponse {
         if (extraHeaders != null) ...extraHeaders,
       },
       isRedirect: isRedirect ?? (keepIsRedirect && this.isRedirect),
-      persistentConnection: persistentConnection ??
+      persistentConnection:
+          persistentConnection ??
           (!keepPersistentConnection || this.persistentConnection),
       reasonPhrase:
           reasonPhrase ?? (keepReasonPhrase ? this.reasonPhrase : null),
@@ -94,9 +95,7 @@ extension StreamedResponseExtensions on StreamedResponse {
 /// After the last call to [copyRequest] you should also call [close], this
 /// prevents the entire request body from buffering in memory.
 abstract class RequestCopier {
-  factory RequestCopier({
-    required BaseRequest original,
-  }) = _RequestCopierImpl;
+  factory RequestCopier({required BaseRequest original}) = _RequestCopierImpl;
 
   const RequestCopier._();
 
@@ -126,8 +125,8 @@ const _sentinel = _Sentinel();
 
 class _RequestCopierImpl extends RequestCopier {
   _RequestCopierImpl({required this.original})
-      : splitter = StreamSplitter(original.finalize()),
-        super._();
+    : splitter = StreamSplitter(original.finalize()),
+      super._();
 
   final BaseRequest original;
   final StreamSplitter<List<int>> splitter;
@@ -172,11 +171,7 @@ class _RequestCopierImpl extends RequestCopier {
 }
 
 class HttpException implements Exception {
-  const HttpException({
-    this.uri,
-    required this.statusCode,
-    required this.body,
-  });
+  const HttpException({this.uri, required this.statusCode, required this.body});
 
   factory HttpException.fromResponse(BaseResponse response) {
     // package:http responses are either a Response (body is known) or
@@ -258,10 +253,7 @@ extension UriExtensions on Uri {
       userInfo: userInfo,
       host: host,
       port: port,
-      pathSegments: [
-        ...pathSegments,
-        ...path.split('/'),
-      ],
+      pathSegments: [...pathSegments, ...path.split('/')],
       queryParameters: strQueryParameters.isEmpty ? null : strQueryParameters,
       fragment: fragment,
     );

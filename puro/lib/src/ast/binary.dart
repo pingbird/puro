@@ -322,53 +322,33 @@ abstract class BinType {
       }
       return NamedBinType(schema);
     } else if (schema['option'] != null) {
-      return OptionBinType(BinType.fromSchema(
-        schema['option'],
-        typeSchemas,
-        enumNames,
-      ));
+      return OptionBinType(
+        BinType.fromSchema(schema['option'], typeSchemas, enumNames),
+      );
     } else if (schema['list'] != null) {
-      return ListBinType(BinType.fromSchema(
-        schema['list'],
-        typeSchemas,
-        enumNames,
-      ));
+      return ListBinType(
+        BinType.fromSchema(schema['list'], typeSchemas, enumNames),
+      );
     } else if (schema['rlist'] != null) {
-      return RListBinType(BinType.fromSchema(
-        schema['rlist'],
-        typeSchemas,
-        enumNames,
-      ));
+      return RListBinType(
+        BinType.fromSchema(schema['rlist'], typeSchemas, enumNames),
+      );
     } else if (schema['pair'] != null) {
       return PairBinType(
-        BinType.fromSchema(
-          schema['pair'][0],
-          typeSchemas,
-          enumNames,
-        ),
-        BinType.fromSchema(
-          schema['pair'][1],
-          typeSchemas,
-          enumNames,
-        ),
+        BinType.fromSchema(schema['pair'][0], typeSchemas, enumNames),
+        BinType.fromSchema(schema['pair'][1], typeSchemas, enumNames),
       );
     } else if (schema['array'] != null) {
       return ArrayBinType(
         schema['array'][0] as String,
-        BinType.fromSchema(
-          schema['array'][1],
-          typeSchemas,
-          enumNames,
-        ),
+        BinType.fromSchema(schema['array'][1], typeSchemas, enumNames),
       );
     } else if (schema['union'] != null) {
       return NamedBinType(typeSchemas[schema['union'][0]]![1] as String);
     } else if (schema['ifPrivate'] != null) {
-      return IfPrivateBinType(BinType.fromSchema(
-        schema['ifPrivate'],
-        typeSchemas,
-        enumNames,
-      ));
+      return IfPrivateBinType(
+        BinType.fromSchema(schema['ifPrivate'], typeSchemas, enumNames),
+      );
     } else {
       throw UnimplementedError('Unknown type: $schema');
     }

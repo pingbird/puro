@@ -40,12 +40,7 @@ class LogEntry {
 }
 
 class PuroLogger {
-  PuroLogger({
-    this.level,
-    this.terminal,
-    this.onAdd,
-    this.profile = false,
-  });
+  PuroLogger({this.level, this.terminal, this.onAdd, this.profile = false});
 
   LogLevel? level;
   Terminal? terminal;
@@ -74,15 +69,17 @@ class PuroLogger {
 
       if (profile) {
         final elapsed = stopwatch.elapsedMilliseconds;
-        buf.write(format.color(
-          '${elapsed.pretty().padLeft(4)} ',
-          foregroundColor: elapsed > 1000
-              ? Ansi8BitColor.red
-              : elapsed > 100
-                  ? Ansi8BitColor.orange1
-                  : Ansi8BitColor.green,
-          bold: true,
-        ));
+        buf.write(
+          format.color(
+            '${elapsed.pretty().padLeft(4)} ',
+            foregroundColor: elapsed > 1000
+                ? Ansi8BitColor.red
+                : elapsed > 100
+                ? Ansi8BitColor.orange1
+                : Ansi8BitColor.green,
+            bold: true,
+          ),
+        );
         if (!stopwatch.isRunning) {
           stopwatch.start();
         } else {
@@ -90,11 +87,13 @@ class PuroLogger {
         }
       }
 
-      buf.write(format.color(
-        levelPrefixes[event.level]!,
-        foregroundColor: levelColors[event.level]!,
-        bold: true,
-      ));
+      buf.write(
+        format.color(
+          levelPrefixes[event.level]!,
+          foregroundColor: levelColors[event.level]!,
+          bold: true,
+        ),
+      );
 
       terminal!.writeln(format.prefix('$buf ', event.message));
     }

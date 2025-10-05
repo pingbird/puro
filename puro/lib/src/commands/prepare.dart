@@ -19,7 +19,8 @@ class PrepareCommand extends PuroCommand {
       )
       ..addMultiOption(
         'platform',
-        help: 'Precache artifacts for the provided platforms (android, ios, etc).',
+        help:
+            'Precache artifacts for the provided platforms (android, ios, etc).',
         valueHelp: 'name',
         allowed: preparePlatformOptions.toList()..sort(),
       );
@@ -46,13 +47,15 @@ class PrepareCommand extends PuroCommand {
 
     final force = argResults!['force'] as bool;
     final allPlatforms = argResults!['all-platforms'] as bool;
-    final requestedPlatforms =
-        (argResults!['platform'] as List<String>).map((e) => e.toLowerCase());
+    final requestedPlatforms = (argResults!['platform'] as List<String>).map(
+      (e) => e.toLowerCase(),
+    );
     final sortedRequested = sortPreparePlatforms(requestedPlatforms);
+    final defaultPlatforms = defaultPreparePlatforms();
 
     final platforms = sortedRequested.isNotEmpty
         ? sortedRequested
-        : (allPlatforms ? <String>[] : defaultPreparePlatforms());
+        : (allPlatforms ? <String>[] : defaultPlatforms);
 
     log.d(
       'Preparing environment `${environment.name}` for platforms: '
@@ -71,8 +74,8 @@ class PrepareCommand extends PuroCommand {
     final platformSummary = allPlatforms
         ? 'all platforms'
         : (platforms.isEmpty
-            ? 'default platforms (${defaultPreparePlatforms().join(', ')})'
-            : platforms.join(', '));
+              ? 'default platforms (${defaultPlatforms.join(', ')})'
+              : platforms.join(', '));
 
     return BasicMessageResult(
       'Prepared environment `${environment.name}` (${platformSummary}${force ? ', forced' : ''})',

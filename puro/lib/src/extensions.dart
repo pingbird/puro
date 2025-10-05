@@ -187,11 +187,7 @@ extension NumExtensions on num {
     bool plusSign = true,
   }) {
     precision ??= abs() > 0 && abs() < 1 ? 2 : 0;
-    return '${(this * 100).pretty(
-      precision: precision,
-      minusSign: minusSign,
-      plusSign: plusSign,
-    )}%';
+    return '${(this * 100).pretty(precision: precision, minusSign: minusSign, plusSign: plusSign)}%';
   }
 
   /// Returns a short formatted number using abbreviations.
@@ -218,71 +214,27 @@ extension NumExtensions on num {
     }
 
     if (this == 0) {
-      return pretty(
-        precision: 0,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      );
+      return pretty(precision: 0, plusSign: plusSign, minusSign: minusSign);
     } else if (this < 1) {
-      return pretty(
-        precision: 1,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      );
+      return pretty(precision: 1, plusSign: plusSign, minusSign: minusSign);
     } else if (this < 100) {
-      return pretty(
-        precision: 0,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      );
-    } else if (this < 5000 /* 5K */) {
-      return '${(this / 1000).pretty(
-        precision: 1,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      )}K';
-    } else if (this < 500000 /* 500K */) {
-      return '${(this / 1000).pretty(
-        precision: 0,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      )}K';
-    } else if (this < 5000000 /* 5M  */) {
-      return '${(this / 1000000).pretty(
-        precision: 1,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      )}M';
-    } else if (this < 500000000 /* 500M */) {
-      return '${(this / 1000000).pretty(
-        precision: 0,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      )}M';
-    } else if (this < 5000000000 /* 5B */) {
-      return '${(this / 1000000000).pretty(
-        precision: 1,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      )}${metric ? 'G' : 'B'}';
-    } else if (this < 500000000000 /* 500B */) {
-      return '${(this / 1000000000).pretty(
-        precision: 0,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      )}${metric ? 'G' : 'B'}';
-    } else if (this < 5000000000000 /* 5T */) {
-      return '${(this / 1000000000000).pretty(
-        precision: 1,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      )}T';
+      return pretty(precision: 0, plusSign: plusSign, minusSign: minusSign);
+    } else if (this < 5000 /* 5K */ ) {
+      return '${(this / 1000).pretty(precision: 1, plusSign: plusSign, minusSign: minusSign)}K';
+    } else if (this < 500000 /* 500K */ ) {
+      return '${(this / 1000).pretty(precision: 0, plusSign: plusSign, minusSign: minusSign)}K';
+    } else if (this < 5000000 /* 5M  */ ) {
+      return '${(this / 1000000).pretty(precision: 1, plusSign: plusSign, minusSign: minusSign)}M';
+    } else if (this < 500000000 /* 500M */ ) {
+      return '${(this / 1000000).pretty(precision: 0, plusSign: plusSign, minusSign: minusSign)}M';
+    } else if (this < 5000000000 /* 5B */ ) {
+      return '${(this / 1000000000).pretty(precision: 1, plusSign: plusSign, minusSign: minusSign)}${metric ? 'G' : 'B'}';
+    } else if (this < 500000000000 /* 500B */ ) {
+      return '${(this / 1000000000).pretty(precision: 0, plusSign: plusSign, minusSign: minusSign)}${metric ? 'G' : 'B'}';
+    } else if (this < 5000000000000 /* 5T */ ) {
+      return '${(this / 1000000000000).pretty(precision: 1, plusSign: plusSign, minusSign: minusSign)}T';
     } else {
-      return '${(this / 1000000000000).pretty(
-        precision: 0,
-        plusSign: plusSign,
-        minusSign: minusSign,
-      )}T';
+      return '${(this / 1000000000000).pretty(precision: 0, plusSign: plusSign, minusSign: minusSign)}T';
     }
   }
 }
@@ -299,10 +251,7 @@ extension DurationExtensions on Duration {
     'year': 31556952.0,
   };
 
-  String pretty({
-    String before = 'before',
-    bool abbr = false,
-  }) {
+  String pretty({String before = 'before', bool abbr = false}) {
     if (before.isNotEmpty) before = ' $before';
     var s = inMicroseconds / 1000000;
     if (s == double.infinity) return 'never';

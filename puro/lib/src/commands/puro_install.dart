@@ -56,14 +56,11 @@ class PuroInstallCommand extends PuroCommand {
     final force = argResults!['force'] as bool;
     final promote = argResults!['promote'] as bool;
     final profileOverride = argResults!['profile'] as String?;
-    final updatePath =
-        argResults!.wasParsed('path') ? argResults!['path'] as bool : null;
+    final updatePath = argResults!.wasParsed('path')
+        ? argResults!['path'] as bool
+        : null;
 
-    await ensurePuroInstalled(
-      scope: scope,
-      force: force,
-      promote: promote,
-    );
+    await ensurePuroInstalled(scope: scope, force: force, promote: promote);
 
     final PuroGlobalPrefsModel prefs = await updateGlobalPrefs(
       scope: scope,
@@ -110,17 +107,16 @@ class PuroInstallCommand extends PuroCommand {
       if (Platform.isLinux || Platform.isMacOS) {
         final profile = await installProfileEnv(
           scope: scope,
-          profileOverride:
-              prefs.hasProfileOverride() ? prefs.profileOverride : null,
+          profileOverride: prefs.hasProfileOverride()
+              ? prefs.profileOverride
+              : null,
         );
         profilePath = profile?.path;
         if (profilePath != null && profilePath.startsWith(homeDir)) {
           profilePath = '~' + profilePath.substring(homeDir.length);
         }
       } else if (Platform.isWindows) {
-        updatedWindowsRegistry = await tryUpdateWindowsPath(
-          scope: scope,
-        );
+        updatedWindowsRegistry = await tryUpdateWindowsPath(scope: scope);
       }
     }
 
@@ -130,17 +126,14 @@ class PuroInstallCommand extends PuroCommand {
       if (envDir.basename == 'default') continue;
       final environment = config.getEnv(envDir.basename);
       if (!environment.flutterDir.childDirectory('.git').existsSync()) continue;
-      await runOptional(
-        scope,
-        '`${environment.name}` post-upgrade',
-        () async {
-          await installEnvShims(scope: scope, environment: environment);
-        },
-      );
+      await runOptional(scope, '`${environment.name}` post-upgrade', () async {
+        await installEnvShims(scope: scope, environment: environment);
+      });
     }
 
-    final externalMessage =
-        await detectExternalFlutterInstallations(scope: scope);
+    final externalMessage = await detectExternalFlutterInstallations(
+      scope: scope,
+    );
 
     final updateMessage = await checkIfUpdateAvailable(
       scope: scope,
@@ -153,7 +146,8 @@ class PuroInstallCommand extends PuroCommand {
       if (updateMessage != null) updateMessage,
       if (profilePath != null)
         CommandMessage(
-            'Updated PATH in $profilePath, reopen your terminal or `source $profilePath` for it to take effect'),
+          'Updated PATH in $profilePath, reopen your terminal or `source $profilePath` for it to take effect',
+        ),
       if (updatedWindowsRegistry)
         CommandMessage(
           'Updated PATH in the Windows registry, reopen your terminal for it to take effect',
