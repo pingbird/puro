@@ -25,6 +25,7 @@ import 'commands/pub.dart';
 import 'commands/puro_install.dart';
 import 'commands/puro_uninstall.dart';
 import 'commands/puro_upgrade.dart';
+import 'commands/prepare.dart';
 import 'commands/repl.dart';
 import 'commands/run.dart';
 import 'commands/version.dart';
@@ -268,6 +269,7 @@ void main(List<String> args) async {
     ..addCommand(CleanCommand())
     ..addCommand(EnvRmCommand())
     ..addCommand(EnvRenameCommand())
+    ..addCommand(PrepareCommand())
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand())
     ..addCommand(PubCommand())
