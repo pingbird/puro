@@ -78,7 +78,7 @@ class PrepareCommand extends PuroCommand {
               : platforms.join(', '));
 
     return BasicMessageResult(
-      'Prepared environment `${environment.name}` (${platformSummary}${force ? ', forced' : ''})',
+      'Prepared environment `${environment.name}` ($platformSummary${force ? ', forced' : ''})',
     );
   }
 }
