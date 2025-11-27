@@ -282,8 +282,7 @@ enum PuroBuildTarget {
       return PuroBuildTarget.linuxX64;
     } else if (Platform.isMacOS) {
       final result = Process.runSync('uname', ['-m']);
-      if (result.exitCode == 0 &&
-          (result.stdout as String).trim() == 'arm64') {
+      if (result.exitCode == 0 && (result.stdout as String).trim() == 'arm64') {
         return PuroBuildTarget.macosArm64;
       }
       return PuroBuildTarget.macosX64;
