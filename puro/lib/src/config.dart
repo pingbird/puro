@@ -652,6 +652,9 @@ class FlutterConfig {
     '.packages',
   );
   late final File legacyVersionFile = sdkDir.childFile('version');
+  late final File updateEngineVersionScript = sdkDir
+      .childDirectory('bin')
+      .childFile('update_engine_version.sh');
 
   String? get engineVersion => engineVersionFile.existsSync()
       ? engineVersionFile.readAsStringSync().trim()
