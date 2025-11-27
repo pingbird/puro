@@ -123,7 +123,7 @@ commands:
 jobs:
   linux_tests:
     environment: &dart_version
-      DART_VERSION: "3.7.2"
+      DART_VERSION: "3.10.0"
       DART_RELEASE: "stable"
     docker:
       - image: cimg/base:stable
