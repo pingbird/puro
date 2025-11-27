@@ -52,14 +52,13 @@ class PuroUninstallCommand extends PuroCommand {
     if (Platform.isLinux || Platform.isMacOS) {
       final profile = await uninstallProfileEnv(
         scope: scope,
-        profileOverride:
-            prefs.hasProfileOverride() ? prefs.profileOverride : null,
+        profileOverride: prefs.hasProfileOverride()
+            ? prefs.profileOverride
+            : null,
       );
       profilePath = profile?.path.replaceAll(homeDir, '~');
     } else if (Platform.isWindows) {
-      updatedWindowsRegistry = await tryCleanWindowsPath(
-        scope: scope,
-      );
+      updatedWindowsRegistry = await tryCleanWindowsPath(scope: scope);
     }
 
     if (profilePath == null && !updatedWindowsRegistry) {
@@ -71,7 +70,8 @@ class PuroUninstallCommand extends PuroCommand {
     return BasicMessageResult.list([
       if (profilePath != null)
         CommandMessage(
-            'Removed Puro from PATH in $profilePath, reopen your terminal for it to take effect'),
+          'Removed Puro from PATH in $profilePath, reopen your terminal for it to take effect',
+        ),
       if (updatedWindowsRegistry)
         CommandMessage(
           'Removed Puro from PATH in the Windows registry, reopen your terminal for it to take effect',

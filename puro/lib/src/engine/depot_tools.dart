@@ -3,9 +3,7 @@ import '../git.dart';
 import '../logger.dart';
 import '../provider.dart';
 
-Future<void> installDepotTools({
-  required Scope scope,
-}) async {
+Future<void> installDepotTools({required Scope scope}) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final git = GitClient.of(scope);

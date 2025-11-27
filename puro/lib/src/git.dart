@@ -27,9 +27,7 @@ enum GitCloneStep {
 }
 
 class GitClient {
-  GitClient({
-    required this.scope,
-  });
+  GitClient({required this.scope});
 
   final Scope scope;
   late final _puroConfig = PuroConfig.of(scope);
@@ -68,24 +66,22 @@ class GitClient {
     } else {
       stdout = const LineSplitter()
           .bind(systemEncoding.decoder.bind(process.stdout))
-          .map(
-        (e) {
-          _log.d('git: $e');
-          if (onStdout != null) onStdout(e);
-          return e;
-        },
-      ).join('\n');
+          .map((e) {
+            _log.d('git: $e');
+            if (onStdout != null) onStdout(e);
+            return e;
+          })
+          .join('\n');
     }
 
     final stderr = const LineSplitter()
         .bind(systemEncoding.decoder.bind(process.stderr))
-        .map(
-      (e) {
-        _log.d('git: $e');
-        if (onStderr != null) onStderr(e);
-        return e;
-      },
-    ).join('\n');
+        .map((e) {
+          _log.d('git: $e');
+          if (onStderr != null) onStderr(e);
+          return e;
+        })
+        .join('\n');
 
     final exitCode = await process.exitCode;
 
@@ -93,12 +89,7 @@ class GitClient {
       _log.v('git failed with exit code $exitCode');
     }
 
-    return ProcessResult(
-      process.pid,
-      exitCode,
-      await stdout,
-      await stderr,
-    );
+    return ProcessResult(process.pid, exitCode, await stdout, await stderr);
   }
 
   void _ensureSuccess(ProcessResult result) {
@@ -114,10 +105,7 @@ class GitClient {
 
   /// https://git-scm.com/docs/git-init
   Future<void> init({required Directory repository}) async {
-    final result = await raw(
-      ['init'],
-      directory: repository,
-    );
+    final result = await raw(['init'], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -153,12 +141,9 @@ class GitClient {
           if (percentIndex < 0) {
             continue;
           }
-          final percent = int.tryParse(line
-              .substring(
-                prefix.length,
-                percentIndex,
-              )
-              .trimLeft());
+          final percent = int.tryParse(
+            line.substring(prefix.length, percentIndex).trimLeft(),
+          );
           if (percent == null) continue;
           onProgress(step, percent / 100);
         }
@@ -199,17 +184,14 @@ class GitClient {
     bool force = false,
     String? newBranch,
   }) async {
-    final result = await raw(
-      [
-        'checkout',
-        if (detach) '--detach',
-        if (track) '--track',
-        if (force) '-f',
-        if (newBranch != null) ...['-b', newBranch],
-        if (ref != null) ref,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'checkout',
+      if (detach) '--detach',
+      if (track) '--track',
+      if (force) '-f',
+      if (newBranch != null) ...['-b', newBranch],
+      if (ref != null) ref,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -223,18 +205,15 @@ class GitClient {
     bool merge = false,
     bool keep = false,
   }) async {
-    final result = await raw(
-      [
-        'reset',
-        if (soft) '--soft',
-        if (mixed) '--mixed',
-        if (hard) '--hard',
-        if (merge) '--merge',
-        if (keep) '--keep',
-        if (ref != null) ref,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'reset',
+      if (soft) '--soft',
+      if (mixed) '--mixed',
+      if (hard) '--hard',
+      if (merge) '--merge',
+      if (keep) '--keep',
+      if (ref != null) ref,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -248,18 +227,15 @@ class GitClient {
     bool merge = false,
     bool keep = false,
   }) async {
-    final result = await raw(
-      [
-        'reset',
-        if (soft) '--soft',
-        if (mixed) '--mixed',
-        if (hard) '--hard',
-        if (merge) '--merge',
-        if (keep) '--keep',
-        if (ref != null) ref,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'reset',
+      if (soft) '--soft',
+      if (mixed) '--mixed',
+      if (hard) '--hard',
+      if (merge) '--merge',
+      if (keep) '--keep',
+      if (ref != null) ref,
+    ], directory: repository);
     return result.exitCode == 0;
   }
 
@@ -269,14 +245,11 @@ class GitClient {
     String? remote,
     bool all = false,
   }) async {
-    final result = await raw(
-      [
-        'pull',
-        if (remote != null) remote,
-        if (all) '--all',
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'pull',
+      if (remote != null) remote,
+      if (all) '--all',
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -288,16 +261,13 @@ class GitClient {
     bool all = false,
     bool updateHeadOk = false,
   }) async {
-    final result = await raw(
-      [
-        'fetch',
-        if (all) '--all',
-        if (updateHeadOk) '--update-head-ok',
-        if (!all) remote,
-        if (ref != null) ref,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'fetch',
+      if (all) '--all',
+      if (updateHeadOk) '--update-head-ok',
+      if (!all) remote,
+      if (ref != null) ref,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -308,16 +278,13 @@ class GitClient {
     bool? fastForward,
     bool fastForwardOnly = false,
   }) async {
-    final result = await raw(
-      [
-        'merge',
-        if (fastForward != null)
-          if (fastForward) '--ff' else '--no-ff',
-        if (fastForwardOnly) '--ff-only',
-        fromCommit,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'merge',
+      if (fastForward != null)
+        if (fastForward) '--ff' else '--no-ff',
+      if (fastForwardOnly) '--ff-only',
+      fromCommit,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -328,15 +295,12 @@ class GitClient {
     bool short = false,
     bool abbreviation = false,
   }) async {
-    final result = await raw(
-      [
-        'rev-parse',
-        if (short) '--short',
-        if (abbreviation) '--abbrev-ref',
-        ...args,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'rev-parse',
+      if (short) '--short',
+      if (abbreviation) '--abbrev-ref',
+      ...args,
+    ], directory: repository);
     _ensureSuccess(result);
     return (result.stdout as String).trim().split('\n').toList();
   }
@@ -365,16 +329,13 @@ class GitClient {
     bool abbreviation = false,
     bool verify = false,
   }) async {
-    final result = await raw(
-      [
-        'rev-parse',
-        if (short) '--short',
-        if (abbreviation) '--abbrev-ref',
-        if (verify) '--verify',
-        ...args,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'rev-parse',
+      if (short) '--short',
+      if (abbreviation) '--abbrev-ref',
+      if (verify) '--verify',
+      ...args,
+    ], directory: repository);
     if (result.exitCode != 0) {
       return null;
     }
@@ -407,22 +368,13 @@ class GitClient {
     required String ref1,
     required String ref2,
   }) async {
-    final result = await raw(
-      [
-        'merge-base',
-        ref1,
-        ref2,
-      ],
-      directory: repository,
-    );
+    final result = await raw(['merge-base', ref1, ref2], directory: repository);
     _ensureSuccess(result);
     return (result.stdout as String).trim();
   }
 
   /// Returns true if the repository has uncomitted changes.
-  Future<bool> hasUncomittedChanges({
-    required Directory repository,
-  }) async {
+  Future<bool> hasUncomittedChanges({required Directory repository}) async {
     await raw(['git update-index', '--refresh']);
     final result = await raw(['diff-index', '--quiet', 'HEAD', '--']);
     return result.exitCode != 0;
@@ -447,11 +399,7 @@ class GitClient {
     bool short = false,
     String branch = 'HEAD',
   }) {
-    return tryRevParseSingle(
-      repository: repository,
-      short: short,
-      arg: branch,
-    );
+    return tryRevParseSingle(repository: repository, short: short, arg: branch);
   }
 
   /// https://git-scm.com/docs/git-branch
@@ -462,16 +410,13 @@ class GitClient {
     bool force = false,
     bool delete = false,
   }) async {
-    final result = await raw(
-      [
-        'branch',
-        if (force) '-f',
-        if (delete) '-d',
-        if (setUpstream != null) ...['-u', setUpstream],
-        branch,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'branch',
+      if (force) '-f',
+      if (delete) '-d',
+      if (setUpstream != null) ...['-u', setUpstream],
+      branch,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -493,13 +438,10 @@ class GitClient {
     required Directory repository,
     required String branch,
   }) async {
-    final result = await raw(
-      [
-        'show-ref',
-        'refs/heads/$branch',
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'show-ref',
+      'refs/heads/$branch',
+    ], directory: repository);
     return result.exitCode == 0;
   }
 
@@ -508,14 +450,7 @@ class GitClient {
     required Directory repository,
     required String branch,
   }) async {
-    final result = await raw(
-      [
-        'branch',
-        '-D',
-        branch,
-      ],
-      directory: repository,
-    );
+    final result = await raw(['branch', '-D', branch], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -544,14 +479,11 @@ class GitClient {
     required String name,
     required String? ref,
   }) async {
-    final result = await raw(
-      [
-        'symbolic-ref',
-        name,
-        if (ref == null) '--delete' else ref,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'symbolic-ref',
+      name,
+      if (ref == null) '--delete' else ref,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -561,10 +493,7 @@ class GitClient {
     required List<String> objects,
   }) async {
     final result = await raw(
-      [
-        'show',
-        ...objects,
-      ],
+      ['show', ...objects],
       directory: repository,
       binary: true,
     );
@@ -578,10 +507,7 @@ class GitClient {
     required List<String> objects,
   }) async {
     final result = await raw(
-      [
-        'show',
-        ...objects,
-      ],
+      ['show', ...objects],
       directory: repository,
       binary: true,
     );
@@ -595,10 +521,7 @@ class GitClient {
     String ref = 'HEAD',
     required String path,
   }) {
-    return show(
-      repository: repository,
-      objects: ['$ref:$path'],
-    );
+    return show(repository: repository, objects: ['$ref:$path']);
   }
 
   /// Checks if a file exists in the repository.
@@ -621,10 +544,7 @@ class GitClient {
     String ref = 'HEAD',
     required String path,
   }) {
-    return tryShow(
-      repository: repository,
-      objects: ['$ref:$path'],
-    );
+    return tryShow(repository: repository, objects: ['$ref:$path']);
   }
 
   /// Gets all of the names of tags containing the provided ref.
@@ -634,10 +554,11 @@ class GitClient {
     required Directory repository,
     required String ref,
   }) async {
-    final result = await raw(
-      ['tag', '--points-at', ref],
-      directory: repository,
-    );
+    final result = await raw([
+      'tag',
+      '--points-at',
+      ref,
+    ], directory: repository);
     return (result.stdout as String).trim().split('\n');
   }
 
@@ -649,16 +570,13 @@ class GitClient {
     String? match,
     bool long = false,
   }) async {
-    final result = await raw(
-      [
-        'describe',
-        if (tags) '--tags',
-        if (long) '--long',
-        if (match != null) ...['--match', match],
-        ref,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'describe',
+      if (tags) '--tags',
+      if (long) '--long',
+      if (match != null) ...['--match', match],
+      ref,
+    ], directory: repository);
     return (result.stdout as String).trim();
   }
 
@@ -670,10 +588,7 @@ class GitClient {
   Future<Map<String, GitRemoteUrls>> getRemotes({
     required Directory repository,
   }) async {
-    final result = await raw(
-      ['remote', '-v'],
-      directory: repository,
-    );
+    final result = await raw(['remote', '-v'], directory: repository);
     _ensureSuccess(result);
     final stdout = result.stdout as String;
     final fetches = <String, String>{};
@@ -710,16 +625,13 @@ class GitClient {
     required String url,
     bool fetch = false,
   }) async {
-    final result = await raw(
-      [
-        'remote',
-        'add',
-        if (fetch) '-f',
-        name,
-        url,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'remote',
+      'add',
+      if (fetch) '-f',
+      name,
+      url,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -732,18 +644,15 @@ class GitClient {
     bool add = false,
     bool delete = false,
   }) async {
-    final result = await raw(
-      [
-        'remote',
-        'set-url',
-        if (push) '--push',
-        if (delete) '--delete',
-        if (add) '--add',
-        name,
-        url,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'remote',
+      'set-url',
+      if (push) '--push',
+      if (delete) '--delete',
+      if (add) '--add',
+      name,
+      url,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -752,14 +661,7 @@ class GitClient {
     required Directory repository,
     required String name,
   }) async {
-    final result = await raw(
-      [
-        'remote',
-        'remove',
-        name,
-      ],
-      directory: repository,
-    );
+    final result = await raw(['remote', 'remove', name], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -779,10 +681,7 @@ class GitClient {
       }
       if (currentRemotes.containsKey(remoteName)) {
         // Delete existing remote
-        await removeRemote(
-          repository: repository,
-          name: remoteName,
-        );
+        await removeRemote(repository: repository, name: remoteName);
       }
       final newRemote = entry.value;
       if (newRemote != null) {
@@ -832,15 +731,12 @@ class GitClient {
     required Iterable<String> files,
     bool value = true,
   }) async {
-    final result = await raw(
-      [
-        'update-index',
-        if (value) '--assume-unchanged' else '--no-assume-unchanged',
-        '--',
-        ...files,
-      ],
-      directory: repository,
-    );
+    final result = await raw([
+      'update-index',
+      if (value) '--assume-unchanged' else '--no-assume-unchanged',
+      '--',
+      ...files,
+    ], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -849,14 +745,7 @@ class GitClient {
     required Directory repository,
     required String name,
   }) async {
-    final result = await raw(
-      [
-        'config',
-        '--get',
-        name,
-      ],
-      directory: repository,
-    );
+    final result = await raw(['config', '--get', name], directory: repository);
     if (result.exitCode == 1) return null;
     _ensureSuccess(result);
     return (result.stdout as String).trim();
@@ -868,14 +757,7 @@ class GitClient {
     required String name,
     required String value,
   }) async {
-    final result = await raw(
-      [
-        'config',
-        name,
-        value,
-      ],
-      directory: repository,
-    );
+    final result = await raw(['config', name, value], directory: repository);
     _ensureSuccess(result);
   }
 
@@ -887,14 +769,9 @@ class GitClient {
 
 @immutable
 class GitRemoteUrls {
-  const GitRemoteUrls({
-    required this.fetch,
-    required this.push,
-  });
+  const GitRemoteUrls({required this.fetch, required this.push});
 
-  GitRemoteUrls.single(String url)
-      : fetch = url,
-        push = {url};
+  GitRemoteUrls.single(String url) : fetch = url, push = {url};
 
   final String fetch;
   final Set<String> push;
@@ -1007,31 +884,37 @@ class GitTagVersion {
   /// return '1.2.3-4.5.pre-6-gabc123').
   static GitTagVersion parse(String version) {
     final RegExp versionPattern = RegExp(
-        r'^(\d+)\.(\d+)\.(\d+)(-\d+\.\d+\.pre)?(?:-(\d+)-g([a-f0-9]+))?$');
+      r'^(\d+)\.(\d+)\.(\d+)(-\d+\.\d+\.pre)?(?:-(\d+)-g([a-f0-9]+))?$',
+    );
     final Match? match = versionPattern.firstMatch(version.trim());
     if (match == null) {
       return unknown;
     }
 
     final List<String?> matchGroups = match.groups(<int>[1, 2, 3, 4, 5, 6]);
-    final int? x =
-        matchGroups[0] == null ? null : int.tryParse(matchGroups[0]!);
-    final int? y =
-        matchGroups[1] == null ? null : int.tryParse(matchGroups[1]!);
-    final int? z =
-        matchGroups[2] == null ? null : int.tryParse(matchGroups[2]!);
+    final int? x = matchGroups[0] == null
+        ? null
+        : int.tryParse(matchGroups[0]!);
+    final int? y = matchGroups[1] == null
+        ? null
+        : int.tryParse(matchGroups[1]!);
+    final int? z = matchGroups[2] == null
+        ? null
+        : int.tryParse(matchGroups[2]!);
     final String? devString = matchGroups[3];
     int? devVersion, devPatch;
     if (devString != null) {
-      final Match? devMatch =
-          RegExp(r'^-(\d+)\.(\d+)\.pre$').firstMatch(devString);
+      final Match? devMatch = RegExp(
+        r'^-(\d+)\.(\d+)\.pre$',
+      ).firstMatch(devString);
       final List<String?>? devGroups = devMatch?.groups(<int>[1, 2]);
       devVersion = devGroups?[0] == null ? null : int.tryParse(devGroups![0]!);
       devPatch = devGroups?[1] == null ? null : int.tryParse(devGroups![1]!);
     }
     // count of commits past last tagged version
-    final int? commits =
-        matchGroups[4] == null ? 0 : int.tryParse(matchGroups[4]!);
+    final int? commits = matchGroups[4] == null
+        ? 0
+        : int.tryParse(matchGroups[4]!);
     final String? hash = matchGroups[5];
 
     return GitTagVersion(

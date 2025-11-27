@@ -54,8 +54,11 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
   offending.remove(config.puroFlutterShimFile.path);
   offending.remove(config.puroExecutableFile.path);
 
-  final defaultEnvBinDir =
-      config.getEnv('default', resolve: false).flutter.binDir.path;
+  final defaultEnvBinDir = config
+      .getEnv('default', resolve: false)
+      .flutter
+      .binDir
+      .path;
   offending.removeWhere((e) => path.equals(path.dirname(e), defaultEnvBinDir));
 
   log.d('defaultEnvBinDir: $defaultEnvBinDir');
@@ -65,13 +68,10 @@ Future<CommandMessage?> detectExternalFlutterInstallations({
 
   if (offending.isNotEmpty) {
     return CommandMessage.format(
-      (format) => 'Other Flutter or Dart installations detected\n'
+      (format) =>
+          'Other Flutter or Dart installations detected\n'
           'Puro recommends removing the following from your PATH:\n'
-          '${offending.map((e) => '${format.color(
-                '*',
-                bold: true,
-                foregroundColor: Ansi8BitColor.red,
-              )} $e').join('\n')}',
+          '${offending.map((e) => '${format.color('*', bold: true, foregroundColor: Ansi8BitColor.red)} $e').join('\n')}',
       type: CompletionType.alert,
     );
   } else {
@@ -97,32 +97,27 @@ Future<bool> updateProfile({
   required Iterable<String> lines,
 }) {
   final export = lines.map((e) => '$e $_kProfileComment').join('\n');
-  return lockFile(
-    scope,
-    file,
-    (handle) async {
-      final contents = await handle.readAllAsString();
-      if (export.isNotEmpty && contents.contains(export)) {
-        // Already exported
-        return false;
-      }
-      final lines = contents.split('\n');
-      final originalLines = lines.length;
-      lines.removeWhere((e) => e.endsWith(_kProfileComment));
-      if (export.isEmpty && lines.length == originalLines) {
-        // Not exporting anything
-        return false;
-      }
-      while (lines.isNotEmpty && lines.last.isEmpty) {
-        lines.removeLast();
-      }
-      lines.add('');
-      lines.add(export);
-      await handle.writeAllString('${lines.join('\n')}\n');
-      return true;
-    },
-    mode: FileMode.append,
-  );
+  return lockFile(scope, file, (handle) async {
+    final contents = await handle.readAllAsString();
+    if (export.isNotEmpty && contents.contains(export)) {
+      // Already exported
+      return false;
+    }
+    final lines = contents.split('\n');
+    final originalLines = lines.length;
+    lines.removeWhere((e) => e.endsWith(_kProfileComment));
+    if (export.isEmpty && lines.length == originalLines) {
+      // Not exporting anything
+      return false;
+    }
+    while (lines.isNotEmpty && lines.last.isEmpty) {
+      lines.removeLast();
+    }
+    lines.add('');
+    lines.add(export);
+    await handle.writeAllString('${lines.join('\n')}\n');
+    return true;
+  }, mode: FileMode.append);
 }
 
 Future<File?> installProfileEnv({
@@ -148,7 +143,7 @@ Future<File?> installProfileEnv({
         'export PATH="\$PATH:${path.replaceAll(home, '\$HOME')}"',
       'export PURO_ROOT="${config.puroRoot.path}"',
       if (config.legacyPubCache)
-        'export PUB_CACHE="${config.legacyPubCacheDir.path}"'
+        'export PUB_CACHE="${config.legacyPubCacheDir.path}"',
     ],
   );
   return result ? file : null;
@@ -167,11 +162,7 @@ Future<File?> uninstallProfileEnv({
   if (file == null) {
     return null;
   }
-  final result = await updateProfile(
-    scope: scope,
-    file: file,
-    lines: [],
-  );
+  final result = await updateProfile(scope: scope, file: file, lines: []);
   return result ? file : null;
 }
 
@@ -248,16 +239,19 @@ Future<String?> readWindowsRegistryValue({
   required String valueName,
 }) async {
   // This is horrible.
-  final result = await runProcess(
-    scope,
-    'reg',
-    ['query', key, '/v', valueName],
-  );
+  final result = await runProcess(scope, 'reg', [
+    'query',
+    key,
+    '/v',
+    valueName,
+  ]);
   if (result.exitCode != 0) {
     return null;
   }
-  final lines =
-      (result.stdout as String).replaceAll('\r\n', '\n').trim().split('\n');
+  final lines = (result.stdout as String)
+      .replaceAll('\r\n', '\n')
+      .trim()
+      .split('\n');
   if (lines.length != 2) {
     return null;
   }
@@ -291,16 +285,10 @@ Future<bool> writeWindowsRegistryValue({
   final log = PuroLogger.of(scope);
   final ProcessResult result;
   if (elevated) {
-    final startProc = 'Start-Process reg -Wait -Verb runAs -ArgumentList '
+    final startProc =
+        'Start-Process reg -Wait -Verb runAs -ArgumentList '
         '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}';
-    result = await runProcess(
-      scope,
-      'powershell',
-      [
-        '-command',
-        startProc,
-      ],
-    );
+    result = await runProcess(scope, 'powershell', ['-command', startProc]);
   } else {
     result = await runProcess(scope, 'reg', args);
   }
@@ -316,33 +304,22 @@ Future<bool> deleteWindowsRegistryValue({
   required String valueName,
   bool elevated = false,
 }) async {
-  final args = [
-    'delete',
-    key,
-    '/v',
-    valueName,
-    '/f',
-  ];
+  final args = ['delete', key, '/v', valueName, '/f'];
 
   final log = PuroLogger.of(scope);
   final ProcessResult result;
   if (elevated) {
-    final startProc = 'Start-Process reg -Wait -Verb runAs -ArgumentList '
+    final startProc =
+        'Start-Process reg -Wait -Verb runAs -ArgumentList '
         '${args.map(escapePowershellString).map((e) => '"$e"').join(',')}';
-    result = await runProcess(
-      scope,
-      'powershell',
-      [
-        '-command',
-        startProc,
-      ],
-    );
+    result = await runProcess(scope, 'powershell', ['-command', startProc]);
   } else {
     result = await runProcess(scope, 'reg', args);
   }
   if (result.exitCode != 0) {
     log.w(
-        'reg delete failed with exit code ${result.exitCode}\n${result.stderr}');
+      'reg delete failed with exit code ${result.exitCode}\n${result.stderr}',
+    );
   }
   return result.exitCode == 0;
 }
@@ -394,9 +371,7 @@ Future<bool> tryDeleteWindowsEnv({
   );
 }
 
-Future<bool> tryUpdateWindowsPath({
-  required Scope scope,
-}) async {
+Future<bool> tryUpdateWindowsPath({required Scope scope}) async {
   final config = PuroConfig.of(scope);
 
   final env = <String, String>{
@@ -419,10 +394,7 @@ Future<bool> tryUpdateWindowsPath({
 
   var result = false;
 
-  if (await tryUpdateWindowsEnv(
-    scope: scope,
-    env: env,
-  )) {
+  if (await tryUpdateWindowsEnv(scope: scope, env: env)) {
     result = true;
   }
 
@@ -438,9 +410,7 @@ Future<bool> tryUpdateWindowsPath({
   return result;
 }
 
-Future<bool> tryCleanWindowsPath({
-  required Scope scope,
-}) async {
+Future<bool> tryCleanWindowsPath({required Scope scope}) async {
   final config = PuroConfig.of(scope);
   final currentPath = await readWindowsRegistryValue(
     scope: scope,

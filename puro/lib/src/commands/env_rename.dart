@@ -17,11 +17,7 @@ class EnvRenameCommand extends PuroCommand {
     final args = unwrapArguments(exactly: 2);
     final name = args[0];
     final newName = args[1];
-    await renameEnvironment(
-      scope: scope,
-      name: name,
-      newName: newName,
-    );
+    await renameEnvironment(scope: scope, name: name, newName: newName);
     return BasicMessageResult('Renamed environment `$name` to `$newName`');
   }
 }

@@ -73,7 +73,8 @@ Future<void> installEnvShims({
   await writePassiveAtomic(
     scope: scope,
     file: flutterConfig.binDir.childFile('dart'),
-    content: '$bashShimHeader\n'
+    content:
+        '$bashShimHeader\n'
         'export PURO_FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
         'PURO_BIN="\$PURO_FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
         '"\$PURO_BIN/puro" dart "\$@"\n',
@@ -81,28 +82,26 @@ Future<void> installEnvShims({
   await writePassiveAtomic(
     scope: scope,
     file: flutterConfig.binDir.childFile('flutter'),
-    content: '$bashShimHeader\n'
+    content:
+        '$bashShimHeader\n'
         'export PURO_FLUTTER_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
         'PURO_BIN="\$PURO_FLUTTER_BIN/../../../../bin"\n' // Backing out of envs/<name>/flutter/bin
         '"\$PURO_BIN/puro" flutter "\$@"\n',
   );
 
   if (!Platform.isWindows) {
-    await runProcess(
-      scope,
-      'chmod',
-      [
-        '+x',
-        flutterConfig.binDir.childFile('dart').path,
-        flutterConfig.binDir.childFile('flutter').path,
-      ],
-    );
+    await runProcess(scope, 'chmod', [
+      '+x',
+      flutterConfig.binDir.childFile('dart').path,
+      flutterConfig.binDir.childFile('flutter').path,
+    ]);
   }
 
   await writePassiveAtomic(
     scope: scope,
     file: flutterConfig.binDir.childFile('dart.bat'),
-    content: '@echo off\n'
+    content:
+        '@echo off\n'
         'SETLOCAL ENABLEDELAYEDEXPANSION\n'
         'FOR %%i IN ("%~dp0.") DO SET PURO_FLUTTER_BIN=%%~fi\n'
         'SET PURO_BIN=%PURO_FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'
@@ -111,7 +110,8 @@ Future<void> installEnvShims({
   await writePassiveAtomic(
     scope: scope,
     file: flutterConfig.binDir.childFile('flutter.bat'),
-    content: '@echo off\n'
+    content:
+        '@echo off\n'
         'SETLOCAL ENABLEDELAYEDEXPANSION\n'
         'FOR %%i IN ("%~dp0.") DO SET PURO_FLUTTER_BIN=%%~fi\n'
         'SET PURO_BIN=%PURO_FLUTTER_BIN%\\..\\..\\..\\..\\bin\n'

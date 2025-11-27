@@ -50,15 +50,9 @@ void main(List<String> args) async {
 
   final PuroLogger log;
   if (isJson) {
-    log = PuroLogger(
-      terminal: terminal,
-      onAdd: runner.logEntries.add,
-    );
+    log = PuroLogger(terminal: terminal, onAdd: runner.logEntries.add);
   } else {
-    log = PuroLogger(
-      terminal: terminal,
-      level: LogLevel.warning,
-    );
+    log = PuroLogger(terminal: terminal, level: LogLevel.warning);
     if (Platform.environment.containsKey('PURO_LOG_LEVEL')) {
       final logLevel = int.tryParse(Platform.environment['PURO_LOG_LEVEL']!);
       if (logLevel != null) {
@@ -171,7 +165,8 @@ void main(List<String> args) async {
     )
     ..addOption(
       'log-level',
-      help: 'Changes how much information is logged to the console, 0 being '
+      help:
+          'Changes how much information is logged to the console, 0 being '
           'no logging at all, and 4 being extremely verbose',
       valueHelp: '0-4',
       callback: runner.wrapCallback((str) {
@@ -223,11 +218,7 @@ void main(List<String> args) async {
         }
       }),
     )
-    ..addFlag(
-      'json',
-      help: 'Output in JSON where possible',
-      negatable: false,
-    )
+    ..addFlag('json', help: 'Output in JSON where possible', negatable: false)
     ..addFlag(
       'install',
       help: 'Whether to attempt to install puro',
@@ -303,10 +294,8 @@ void main(List<String> args) async {
       ),
     );
   } catch (exception, stackTrace) {
-    await runner.writeResultAndExit(CommandErrorResult(
-      exception,
-      stackTrace,
-      log.level?.index ?? 0,
-    ));
+    await runner.writeResultAndExit(
+      CommandErrorResult(exception, stackTrace, log.level?.index ?? 0),
+    );
   }
 }

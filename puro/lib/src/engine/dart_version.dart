@@ -56,8 +56,5 @@ Future<String> getEngineDartCommit({
   );
 
   // Try again after cloning the repository
-  return getEngineDartCommit(
-    scope: scope,
-    engineCommit: engineCommit,
-  );
+  return getEngineDartCommit(scope: scope, engineCommit: engineCommit);
 }

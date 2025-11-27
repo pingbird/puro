@@ -29,24 +29,17 @@ Future<Process> startProcess(
     if (engineInfo.os == EngineOS.macOS &&
         engineInfo.arch == EngineArch.arm64) {
       log.d('querying arch of $executable');
-      final fileResult = await runProcess(
-        scope,
-        'file',
-        [executable],
-        throwOnFailure: true,
-      );
+      final fileResult = await runProcess(scope, 'file', [
+        executable,
+      ], throwOnFailure: true);
       log.d('file result: ${fileResult.stdout}');
-      if ((fileResult.stdout as String)
-          .contains('Mach-O 64-bit executable arm64')) {
+      if ((fileResult.stdout as String).contains(
+        'Mach-O 64-bit executable arm64',
+      )) {
         return startProcess(
           scope,
           '/usr/bin/arch',
-          [
-            '-arch',
-            'arm64',
-            executable,
-            ...arguments,
-          ],
+          ['-arch', 'arm64', executable, ...arguments],
           workingDirectory: workingDirectory,
           environment: environment,
           includeParentEnvironment: includeParentEnvironment,
@@ -67,16 +60,17 @@ Future<Process> startProcess(
     mode: mode,
   );
   final executableName = path.basename(executable);
-  log.d('[$executableName ${process.pid}] ${workingDirectory ?? ''}> ${[
-    executable,
-    ...arguments
-  ].join(' ')}');
-  unawaited(process.exitCode.then((exitCode) {
-    final log = PuroLogger.of(scope);
-    log.d(
-      '[$executableName ${process.pid}] finished with exit code $exitCode in ${DateTime.now().difference(start).inMilliseconds}ms',
-    );
-  }));
+  log.d(
+    '[$executableName ${process.pid}] ${workingDirectory ?? ''}> ${[executable, ...arguments].join(' ')}',
+  );
+  unawaited(
+    process.exitCode.then((exitCode) {
+      final log = PuroLogger.of(scope);
+      log.d(
+        '[$executableName ${process.pid}] finished with exit code $exitCode in ${DateTime.now().difference(start).inMilliseconds}ms',
+      );
+    }),
+  );
   return process;
 }
 
@@ -215,13 +209,10 @@ Future<ProcessResult?> runProcessWithTimeout(
   var stderrDone = false;
   int? exitCode;
 
-  final timer = Timer(
-    timeout,
-    () {
-      process.kill(timeoutSignal);
-      completer.complete(null);
-    },
-  );
+  final timer = Timer(timeout, () {
+    process.kill(timeoutSignal);
+    completer.complete(null);
+  });
 
   void onDone() {
     if (!stdoutDone ||
@@ -257,10 +248,12 @@ Future<ProcessResult?> runProcessWithTimeout(
     },
   );
 
-  unawaited(process.exitCode.then((value) {
-    exitCode = value;
-    onDone();
-  }));
+  unawaited(
+    process.exitCode.then((value) {
+      exitCode = value;
+      onDone();
+    }),
+  );
 
   return completer.future;
 }
@@ -277,21 +270,14 @@ class PsInfo {
   String toString() => '$id: $name';
 }
 
-Future<List<PsInfo>> getParentProcesses({
-  required Scope scope,
-}) async {
+Future<List<PsInfo>> getParentProcesses({required Scope scope}) async {
   final log = PuroLogger.of(scope);
   final stack = <PsInfo>[];
   if (Platform.isWindows) {
-    final result = await runProcess(
-      scope,
-      'powershell',
-      [
-        '-command',
-        'Get-WmiObject -Query "select Name,ParentProcessId,ProcessId from Win32_Process" | ConvertTo-Json',
-      ],
-      debugLogging: false,
-    );
+    final result = await runProcess(scope, 'powershell', [
+      '-command',
+      'Get-WmiObject -Query "select Name,ParentProcessId,ProcessId from Win32_Process" | ConvertTo-Json',
+    ], debugLogging: false);
     if (result.exitCode != 0 || (result.stdout as String).isEmpty) {
       if (result.stdout != '') log.w(result.stdout as String);
       if (result.stderr != '') log.w(result.stderr as String);
@@ -335,8 +321,9 @@ Future<List<PsInfo>> getParentProcesses({
         '$pid',
       ]);
       if (result.exitCode != 0) break;
-      final resultMatch = RegExp(r'^\s*(\d+)\s+(.+)$')
-          .firstMatch((result.stdout as String).trim().split('\n').last);
+      final resultMatch = RegExp(
+        r'^\s*(\d+)\s+(.+)$',
+      ).firstMatch((result.stdout as String).trim().split('\n').last);
       if (resultMatch == null) break;
       final ppid = int.tryParse(resultMatch.group(1) ?? '');
       final name = resultMatch.group(2)?.split(' ').first.split('/').last;

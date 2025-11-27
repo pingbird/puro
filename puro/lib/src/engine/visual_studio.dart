@@ -13,9 +13,7 @@ import '../provider.dart';
 ///
 /// Mostly borrowed from https://github.com/flutter/flutter/blob/master/packages/flutter_tools/lib/src/windows/visual_studio.dart
 class VisualStudio {
-  VisualStudio({
-    required this.scope,
-  });
+  VisualStudio({required this.scope});
 
   final Scope scope;
   late final config = PuroConfig.of(scope);
@@ -23,8 +21,9 @@ class VisualStudio {
   late final fileSystem = config.fileSystem;
 
   /// Matches the description property from the vswhere.exe JSON output.
-  final RegExp _vswhereDescriptionProperty =
-      RegExp(r'\s*"description"\s*:\s*".*"\s*,?');
+  final RegExp _vswhereDescriptionProperty = RegExp(
+    r'\s*"description"\s*:\s*".*"\s*,?',
+  );
 
   /// True if Visual Studio installation was found.
   ///
@@ -107,8 +106,9 @@ class VisualStudio {
     if (sdkLocation == null) {
       return null;
     }
-    final Directory sdkIncludeDirectory =
-        config.fileSystem.directory(sdkLocation).childDirectory('Include');
+    final Directory sdkIncludeDirectory = config.fileSystem
+        .directory(sdkLocation)
+        .childDirectory('Include');
     if (!sdkIncludeDirectory.existsSync()) {
       return null;
     }
@@ -119,8 +119,9 @@ class VisualStudio {
       if (versionEntry.basename.startsWith('10.')) {
         // Version only handles 3 components; strip off the '10.' to leave three
         // components, since they all start with that.
-        final Version? version =
-            Version.parse(versionEntry.basename.substring(3));
+        final Version? version = Version.parse(
+          versionEntry.basename.substring(3),
+        );
         if (highestVersion == null ||
             (version != null && version > highestVersion)) {
           highestVersion = version;
@@ -300,23 +301,21 @@ class VisualStudio {
         '-latest',
       ];
 
-      final whereResult = runProcessSync(
-        scope,
-        _vswherePath,
-        <String>[
-          ...defaultArguments,
-          ...?additionalArguments,
-          ...requirementArguments,
-        ],
-        stdoutEncoding: const Utf8Codec(allowMalformed: true),
-      );
+      final whereResult = runProcessSync(scope, _vswherePath, <String>[
+        ...defaultArguments,
+        ...?additionalArguments,
+        ...requirementArguments,
+      ], stdoutEncoding: const Utf8Codec(allowMalformed: true));
 
       if (whereResult.exitCode == 0) {
-        final List<Map<String, dynamic>>? installations =
-            _tryDecodeVswhereJson(whereResult.stdout as String);
+        final List<Map<String, dynamic>>? installations = _tryDecodeVswhereJson(
+          whereResult.stdout as String,
+        );
         if (installations != null && installations.isNotEmpty) {
           return VswhereDetails.fromJson(
-              validateRequirements, installations[0]);
+            validateRequirements,
+            installations[0],
+          );
         }
       }
     } on ArgumentError {
@@ -378,14 +377,12 @@ class VisualStudio {
     for (final bool checkForPrerelease in <bool>[false, true]) {
       for (final String requiredWorkload in _requiredWorkloads) {
         final VswhereDetails? result = _visualStudioDetails(
-            validateRequirements: true,
-            additionalArguments: checkForPrerelease
-                ? <String>[
-                    ...minimumVersionArguments,
-                    _vswherePrereleaseArgument
-                  ]
-                : minimumVersionArguments,
-            requiredWorkload: requiredWorkload);
+          validateRequirements: true,
+          additionalArguments: checkForPrerelease
+              ? <String>[...minimumVersionArguments, _vswherePrereleaseArgument]
+              : minimumVersionArguments,
+          requiredWorkload: requiredWorkload,
+        );
 
         if (result != null) {
           return result;
@@ -396,7 +393,8 @@ class VisualStudio {
     // An installation that satisfies requirements could not be found.
     // Fallback to the latest Visual Studio installation.
     return _visualStudioDetails(
-        additionalArguments: <String>[_vswherePrereleaseArgument, '-all']);
+      additionalArguments: <String>[_vswherePrereleaseArgument, '-all'],
+    );
   }();
 
   /// Returns the installation location of the Windows 10 SDKs, or null if the
@@ -441,8 +439,9 @@ class VisualStudio {
       }
       // Version only handles 3 components; strip off the '10.' to leave three
       // components, since they all start with that.
-      final Version? version =
-          Version.parse(versionEntry.basename.substring(3));
+      final Version? version = Version.parse(
+        versionEntry.basename.substring(3),
+      );
       if (highestVersion == null ||
           (version != null && version > highestVersion)) {
         highestVersion = version;
@@ -471,7 +470,9 @@ class VswhereDetails {
 
   /// Create a `VswhereDetails` from the JSON output of vswhere.exe.
   factory VswhereDetails.fromJson(
-      bool meetsRequirements, Map<String, dynamic> details) {
+    bool meetsRequirements,
+    Map<String, dynamic> details,
+  ) {
     final Map<String, dynamic>? catalog =
         details['catalog'] as Map<String, dynamic>?;
 
@@ -489,8 +490,9 @@ class VswhereDetails {
       // Below are strings that are used only for display purposes and are allowed to
       // contain replacement characters.
       displayName: details['displayName'] as String?,
-      catalogDisplayVersion:
-          catalog == null ? null : catalog['productDisplayVersion'] as String?,
+      catalogDisplayVersion: catalog == null
+          ? null
+          : catalog['productDisplayVersion'] as String?,
     );
   }
 

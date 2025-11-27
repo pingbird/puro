@@ -16,18 +16,16 @@ Future<void> ensureNoProjectsUsingEnv({
     environment: environment,
   );
   if (dotfiles.isNotEmpty) {
-    throw CommandError.list(
-      [
-        CommandMessage(
-          'Environment `${environment.name}` is currently used by the following '
-          'projects:\n${dotfiles.map((p) => '* ${config.shortenHome(p.parent.path)}').join('\n')}',
-        ),
-        CommandMessage(
-          'Pass `-f` to ignore this warning',
-          type: CompletionType.info,
-        ),
-      ],
-    );
+    throw CommandError.list([
+      CommandMessage(
+        'Environment `${environment.name}` is currently used by the following '
+        'projects:\n${dotfiles.map((p) => '* ${config.shortenHome(p.parent.path)}').join('\n')}',
+      ),
+      CommandMessage(
+        'Pass `-f` to ignore this warning',
+        type: CompletionType.info,
+      ),
+    ]);
   }
 }
 
@@ -60,25 +58,17 @@ Future<void> deleteEnvironment({
     // Try killing dart processes that might be preventing us from deleting the
     // environment.
     if (Platform.isWindows) {
-      await runProcess(
-        scope,
-        'wmic',
-        [
-          'process',
-          'where',
-          'path="${env.flutter.cache.dartSdk.dartExecutable.resolveSymbolicLinksSync().replaceAll('\\', '\\\\')}"',
-          'delete',
-        ],
-      );
+      await runProcess(scope, 'wmic', [
+        'process',
+        'where',
+        'path="${env.flutter.cache.dartSdk.dartExecutable.resolveSymbolicLinksSync().replaceAll('\\', '\\\\')}"',
+        'delete',
+      ]);
     } else {
-      final result = await runProcess(
-        scope,
-        'pgrep',
-        [
-          '-f',
-          env.flutter.cache.dartSdk.dartExecutable.path,
-        ],
-      );
+      final result = await runProcess(scope, 'pgrep', [
+        '-f',
+        env.flutter.cache.dartSdk.dartExecutable.path,
+      ]);
       final pids = (result.stdout as String).trim().split(RegExp('\\s+'));
       await runProcess(scope, 'kill', ['-9', ...pids]);
     }

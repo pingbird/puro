@@ -25,16 +25,10 @@ class VSCodeConfig extends IdeConfig {
 
   JsonEditor readSettings() {
     if (!settingsFile.existsSync()) {
-      return JsonEditor(
-        source: '{}',
-        indentLevel: 4,
-      );
+      return JsonEditor(source: '{}', indentLevel: 4);
     }
     final source = settingsFile.readAsStringSync();
-    return JsonEditor(
-      source: source.isEmpty ? '{}' : source,
-      indentLevel: 4,
-    );
+    return JsonEditor(source: source.isEmpty ? '{}' : source, indentLevel: 4);
   }
 
   static const flutterSdkDirKey = 'dart.flutterSdkPath';
@@ -53,11 +47,9 @@ class VSCodeConfig extends IdeConfig {
     }
     if (dartSdkDir != null &&
         dartSdkDir!.existsSync() &&
-        !dartSdkDir!
-            .resolve()
-            .parent
-            .parent
-            .resolvedPathEquals(config.sharedCachesDir) &&
+        !dartSdkDir!.resolve().parent.parent.resolvedPathEquals(
+          config.sharedCachesDir,
+        ) &&
         !dotfile.hasPreviousDartSdk()) {
       dotfile.previousDartSdk = dartSdkDir!.path;
       changedDotfile = true;
@@ -139,7 +131,8 @@ class VSCodeConfig extends IdeConfig {
     log.v('vscode workspaceDir: $workspaceDir');
     if (workspaceDir == null) {
       return VSCodeConfig(
-        workspaceDir: findProjectDir(projectDir, '.idea') ??
+        workspaceDir:
+            findProjectDir(projectDir, '.idea') ??
             projectConfig.ensureParentProjectDir(),
         projectConfig: projectConfig,
         exists: false,
@@ -153,11 +146,14 @@ class VSCodeConfig extends IdeConfig {
     if (vscodeConfig.settingsFile.existsSync() &&
         vscodeConfig.settingsFile.lengthSync() > 0) {
       final editor = vscodeConfig.readSettings();
-      final flutterSdkPathStr =
-          editor.query([flutterSdkDirKey])?.value.toJson();
+      final flutterSdkPathStr = editor
+          .query([flutterSdkDirKey])
+          ?.value
+          .toJson();
       if (flutterSdkPathStr is String) {
-        vscodeConfig.flutterSdkDir =
-            config.fileSystem.directory(flutterSdkPathStr);
+        vscodeConfig.flutterSdkDir = config.fileSystem.directory(
+          flutterSdkPathStr,
+        );
       }
       final dartSdkPathStr = editor.query([dartSdkDirKey])?.value.toJson();
       if (dartSdkPathStr is String) {
@@ -168,14 +164,14 @@ class VSCodeConfig extends IdeConfig {
   }
 }
 
-Future<bool> isRunningInVscode({
-  required Scope scope,
-}) async {
+Future<bool> isRunningInVscode({required Scope scope}) async {
   final processes = await getParentProcesses(scope: scope);
-  return processes.any((e) =>
-      e.name == 'Code.exe' ||
-      e.name == 'VSCode.exe' ||
-      e.name == 'VSCodium.exe' ||
-      e.name == 'code' ||
-      e.name == 'codium');
+  return processes.any(
+    (e) =>
+        e.name == 'Code.exe' ||
+        e.name == 'VSCode.exe' ||
+        e.name == 'VSCodium.exe' ||
+        e.name == 'code' ||
+        e.name == 'codium',
+  );
 }

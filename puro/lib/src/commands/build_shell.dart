@@ -23,10 +23,7 @@ class BuildShellCommand extends PuroCommand {
 
     await prepareEngineSystemDeps(scope: scope);
 
-    final exitCode = await runBuildEnvShell(
-      scope: scope,
-      command: command,
-    );
+    final exitCode = await runBuildEnvShell(scope: scope, command: command);
 
     await runner.exitPuro(exitCode);
   }

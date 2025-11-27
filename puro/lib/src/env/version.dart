@@ -160,14 +160,9 @@ class FlutterVersion {
             arg: version,
           );
           if (commit != null) {
-            return FlutterVersion(
-              commit: commit,
-              version: parsedVersion,
-            );
+            return FlutterVersion(commit: commit, version: parsedVersion);
           }
-          throw CommandError(
-            'Could not find version $version',
-          );
+          throw CommandError('Could not find version $version');
         }
         final releaseVersion = tryParseVersion(release.version);
         if (releaseVersion == null) {
@@ -192,10 +187,7 @@ class FlutterVersion {
         arg: 'tags/$version',
       );
       if (result != null) {
-        return FlutterVersion(
-          commit: result,
-          tag: version,
-        );
+        return FlutterVersion(commit: result, tag: version);
       }
 
       // Check if it's a commit
@@ -232,10 +224,7 @@ class FlutterVersion {
         repository: sharedRepository,
         branch: 'origin/$version',
       );
-      return FlutterVersion(
-        commit: result,
-        branch: isBranch ? version : null,
-      );
+      return FlutterVersion(commit: result, branch: isBranch ? version : null);
     }
 
     // Check again after fetching
@@ -313,9 +302,5 @@ Future<FlutterVersion?> getEnvironmentFlutterVersion({
     version = tryParseVersion(versionFile.readAsStringSync().trim());
   }
   final branch = await git.getBranch(repository: flutterConfig.sdkDir);
-  return FlutterVersion(
-    commit: commit,
-    version: version,
-    branch: branch,
-  );
+  return FlutterVersion(commit: commit, version: version, branch: branch);
 }

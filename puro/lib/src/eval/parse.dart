@@ -85,11 +85,8 @@ ParseResult<T> parseDart<T extends AstNode>(
   final scanErrors = _ErrorListener();
   final reader = CharSequenceReader(code);
   final featureSet = FeatureSet.latestLanguageVersion();
-  final scanner = Scanner(
-    source,
-    reader,
-    scanErrors,
-  )..configureFeatures(
+  final scanner = Scanner(source, reader, scanErrors)
+    ..configureFeatures(
       featureSetForOverriding: featureSet,
       featureSet: featureSet,
     );
@@ -127,32 +124,28 @@ ParseResult<T> parseDart<T extends AstNode>(
 ParseResult<Expression> parseDartExpression(
   String code, {
   bool async = false,
-}) =>
-    parseDart(
-      async ? '() async => $code' : code,
-      (parser) {
-        final expr = parser.parseExpression2();
-        if (async && expr is FunctionExpression) {
-          return (expr.body as ExpressionFunctionBody).expression;
-        }
-        return expr;
-      },
-    );
+}) => parseDart(async ? '() async => $code' : code, (parser) {
+  final expr = parser.parseExpression2();
+  if (async && expr is FunctionExpression) {
+    return (expr.body as ExpressionFunctionBody).expression;
+  }
+  return expr;
+});
 
-ParseResult<CompilationUnit> parseDartCompilationUnit(String code) => parseDart(
-      code,
-      (parser) => parser.parseCompilationUnit2(),
-    );
+ParseResult<CompilationUnit> parseDartCompilationUnit(String code) =>
+    parseDart(code, (parser) => parser.parseCompilationUnit2());
 
 ParseResult<Block> parseDartBlock(String code) => parseDart(
-      code,
-      (parser) => (parser.parseFunctionBody(
-        false,
-        ParserErrorCode.MISSING_FUNCTION_BODY,
-        false,
-      ) as BlockFunctionBody)
+  code,
+  (parser) =>
+      (parser.parseFunctionBody(
+                false,
+                ParserErrorCode.MISSING_FUNCTION_BODY,
+                false,
+              )
+              as BlockFunctionBody)
           .block,
-    );
+);
 
 class _ErrorListener implements AnalysisErrorListener {
   final errors = <AnalysisError>[];

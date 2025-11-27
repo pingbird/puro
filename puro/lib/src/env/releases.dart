@@ -103,7 +103,8 @@ Future<FlutterReleaseModel?> findFrameworkRelease({
 
   final cachedReleasesStat = config.cachedReleasesJsonFile.statSync();
   final hasCache = cachedReleasesStat.type == FileSystemEntityType.file;
-  var cacheIsFresh = hasCache &&
+  var cacheIsFresh =
+      hasCache &&
       clock.now().difference(cachedReleasesStat.modified).inHours < 1;
   final isChannelOnly = channel != null && version == null;
 
@@ -111,21 +112,17 @@ Future<FlutterReleaseModel?> findFrameworkRelease({
   // release.
   if (hasCache && (!isChannelOnly || cacheIsFresh)) {
     FlutterReleasesModel? cachedReleases;
-    await lockFile(
-      scope,
-      config.cachedReleasesJsonFile,
-      (handle) async {
-        final contents = await handle.readAllAsString();
-        try {
-          cachedReleases = FlutterReleasesModel.create()
-            ..mergeFromProto3Json(jsonDecode(contents));
-        } catch (exception, stackTrace) {
-          log.w('Error while parsing cached releases');
-          log.w('$exception\n$stackTrace');
-          cacheIsFresh = false;
-        }
-      },
-    );
+    await lockFile(scope, config.cachedReleasesJsonFile, (handle) async {
+      final contents = await handle.readAllAsString();
+      try {
+        cachedReleases = FlutterReleasesModel.create()
+          ..mergeFromProto3Json(jsonDecode(contents));
+      } catch (exception, stackTrace) {
+        log.w('Error while parsing cached releases');
+        log.w('$exception\n$stackTrace');
+        cacheIsFresh = false;
+      }
+    });
     if (cachedReleases != null) {
       final foundRelease = searchFlutterVersions(
         releases: cachedReleases!,

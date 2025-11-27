@@ -33,23 +33,25 @@ class GenerateASTParserCommand extends PuroCommand {
         remoteUrl: config.dartSdkGitUrl,
       );
     }
-    final binaryMdResult = await git.raw(
-      [
-        'log',
-        '--format=%H',
-        '8dbe716085d4942ce87bd34e933cfccf2d0f70ae..main',
-        '--',
-        'pkg/kernel/binary.md'
-      ],
-      directory: sharedRepository,
-    );
-    final commits =
-        (binaryMdResult.stdout as String).trim().split('\n').reversed.toList();
+    final binaryMdResult = await git.raw([
+      'log',
+      '--format=%H',
+      '8dbe716085d4942ce87bd34e933cfccf2d0f70ae..main',
+      '--',
+      'pkg/kernel/binary.md',
+    ], directory: sharedRepository);
+    final commits = (binaryMdResult.stdout as String)
+        .trim()
+        .split('\n')
+        .reversed
+        .toList();
 
-    commits.add(await git.getCurrentCommitHash(
-      repository: sharedRepository,
-      branch: 'main',
-    ));
+    commits.add(
+      await git.getCurrentCommitHash(
+        repository: sharedRepository,
+        branch: 'main',
+      ),
+    );
 
     final binaryMdDir = workingDir.childDirectory('binary-md');
     if (!binaryMdDir.existsSync()) {
@@ -60,8 +62,9 @@ class GenerateASTParserCommand extends PuroCommand {
           path: 'tools/VERSION',
           ref: line,
         );
-        final major = RegExp(r'MAJOR (\d+)')
-            .firstMatch(utf8.decode(versionContents))![1]!;
+        final major = RegExp(
+          r'MAJOR (\d+)',
+        ).firstMatch(utf8.decode(versionContents))![1]!;
         if (major == '1') continue;
         final contents = await git.cat(
           repository: sharedRepository,
@@ -85,8 +88,10 @@ class GenerateASTParserCommand extends PuroCommand {
     for (final childFile in binaryMdDir.listSync()) {
       if (childFile is! File || !childFile.basename.endsWith('.md')) continue;
       final contents = childFile.readAsStringSync();
-      final commit =
-          childFile.basename.substring(0, childFile.basename.length - 3);
+      final commit = childFile.basename.substring(
+        0,
+        childFile.basename.length - 3,
+      );
       binaryMdCommits[commit] = contents;
     }
 
@@ -125,16 +130,19 @@ class GenerateASTParserCommand extends PuroCommand {
       final componentFile = (result.value as List).singleWhere((e) {
         return e['type'] != null && e['type'][1] == 'ComponentFile';
       });
-      final version = int.parse((componentFile['type'][3] as List).singleWhere(
-              (e) => e['field'] != null && e['field'][1] == 'formatVersion')[
-          'field'][2] as String);
+      final version = int.parse(
+        (componentFile['type'][3] as List).singleWhere(
+              (e) => e['field'] != null && e['field'][1] == 'formatVersion',
+            )['field'][2]
+            as String,
+      );
 
       verCommit[version] = commit;
       verSchema[version] = result.value;
 
-      astsJsonDir.childFile('v$version.json').writeAsStringSync(
-            prettyJsonEncoder.convert(result.value),
-          );
+      astsJsonDir
+          .childFile('v$version.json')
+          .writeAsStringSync(prettyJsonEncoder.convert(result.value));
     }
 
     commits.removeWhere((e) => !verCommit.values.contains(e));
@@ -147,10 +155,9 @@ class GenerateASTParserCommand extends PuroCommand {
     if (astsDir.existsSync()) astsDir.deleteSync(recursive: true);
     astsDir.createSync(recursive: true);
     for (final entry in verSchema.entries) {
-      final ast = generateAstForSchemas(
-        {entry.key: entry.value},
-        comment: 'For schema ${verCommit[entry.key]}',
-      );
+      final ast = generateAstForSchemas({
+        entry.key: entry.value,
+      }, comment: 'For schema ${verCommit[entry.key]}');
       astsDir.childFile('v${entry.key}.dart').writeAsStringSync(ast);
     }
 
@@ -159,22 +166,17 @@ class GenerateASTParserCommand extends PuroCommand {
     if (diffsDir.existsSync()) diffsDir.deleteSync(recursive: true);
     diffsDir.createSync(recursive: true);
     for (final entry in verSchema.entries.skip(1)) {
-      final diff = await runProcess(
-        scope,
-        'diff',
-        [
-          '--context',
-          '-F',
-          '^class',
-          '--label',
-          'v${entry.key}',
-          '--label',
-          'v${entry.key - 1}',
-          astsDir.childFile('v${entry.key - 1}.dart').path,
-          astsDir.childFile('v${entry.key}.dart').path,
-        ],
-        debugLogging: false,
-      );
+      final diff = await runProcess(scope, 'diff', [
+        '--context',
+        '-F',
+        '^class',
+        '--label',
+        'v${entry.key}',
+        '--label',
+        'v${entry.key - 1}',
+        astsDir.childFile('v${entry.key - 1}.dart').path,
+        astsDir.childFile('v${entry.key}.dart').path,
+      ], debugLogging: false);
       if (diff.exitCode > 1) {
         return BasicMessageResult(
           'Failed to generate diff:\n${diff.stderr}',
@@ -190,19 +192,19 @@ class GenerateASTParserCommand extends PuroCommand {
     final releases = await getDartReleases(scope: scope);
 
     final allReleases = releases.releases.entries
-        .expand((r) => r.value.map((v) => DartRelease(
-              DartOS.current,
-              DartArch.current,
-              r.key,
-              v,
-            )))
+        .expand(
+          (r) => r.value.map(
+            (v) => DartRelease(DartOS.current, DartArch.current, r.key, v),
+          ),
+        )
         .toList();
 
     // allReleases.removeWhere((e) => e.version.major < 2);
 
     // This release has no artifacts for some reason
     allReleases.removeWhere(
-        (e) => '${e.version}' == '1.24.0' && e.channel == DartChannel.dev);
+      (e) => '${e.version}' == '1.24.0' && e.channel == DartChannel.dev,
+    );
 
     // print('releases: ${allReleases.length}');
     // print('releases: ${allReleases.map((e) => e.name).join(',')}');
@@ -311,7 +313,8 @@ class GenerateASTParserCommand extends PuroCommand {
 
 String generateAstForSchemas(Map<int, dynamic> schemas, {String? comment}) {
   String fixName(String name, {bool lower = false}) {
-    var out = const {
+    var out =
+        const {
           'VariableDeclarationPlain': 'VariableDeclaration',
           'class': 'clazz',
           '8bitAlignment': 'byteAlignment',
@@ -373,22 +376,17 @@ String generateAstForSchemas(Map<int, dynamic> schemas, {String? comment}) {
       ('Expression', 'IntegerLiteral'): 'IntegerLiteral',
       (
         'PositiveIntLiteral | NegativeIntLiteral | SpecializedIntLiteral | BigIntLiteral',
-        'IntegerLiteral'
+        'IntegerLiteral',
       ): 'IntegerLiteral',
     }[(from.name, to.name)];
     if (result != null) {
       return getType(result);
     } else {
-      throw AssertionError(
-        'Mismatch ${from.name} != ${to.name}',
-      );
+      throw AssertionError('Mismatch ${from.name} != ${to.name}');
     }
   }
 
-  const skipTypes = {
-    'StringTable',
-    'FileOffset',
-  };
+  const skipTypes = {'StringTable', 'FileOffset'};
 
   for (final entry in schemas.entries) {
     // print('Processing ${entry.key} (${verCommit[entry.key]})');
@@ -468,10 +466,8 @@ String generateAstForSchemas(Map<int, dynamic> schemas, {String? comment}) {
           final parentName = parentType.name;
 
           if (existingParentName != null && existingParentName != parentName) {
-            existing.parent = resolveMerge(
-              existing.parent!,
-              parentType,
-            ) as ClassType;
+            existing.parent =
+                resolveMerge(existing.parent!, parentType) as ClassType;
           } else {
             existing.parent = parentType;
           }
@@ -626,13 +622,13 @@ class UnionType extends DartType {
     final firstName = first is UnionType
         ? first.name
         : (first is ClassType
-            ? (first as ClassType).parent!.name
-            : throw AssertionError());
+              ? (first as ClassType).parent!.name
+              : throw AssertionError());
     final secondName = second is UnionType
         ? second.name
         : (second is ClassType
-            ? (second as ClassType).parent!.name
-            : throw AssertionError());
+              ? (second as ClassType).parent!.name
+              : throw AssertionError());
     assert(firstName == secondName);
     return firstName;
   }

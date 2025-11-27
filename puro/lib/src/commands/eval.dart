@@ -24,7 +24,8 @@ class EvalCommand extends PuroCommand {
       'import',
       aliases: ['imports'],
       abbr: 'i',
-      help: 'A package to import, this option accepts a shortened package '
+      help:
+          'A package to import, this option accepts a shortened package '
           'URI followed by one or more optional modifiers\n\n'
           'Shortened names expand as follows:\n'
           "  foo     => import 'package:foo/foo.dart'\n"
@@ -44,7 +45,8 @@ class EvalCommand extends PuroCommand {
       'package',
       aliases: ['packages'],
       abbr: 'p',
-      help: 'A package to depend on, this option accepts the package name '
+      help:
+          'A package to depend on, this option accepts the package name '
           'optionally followed by a version constraint:\n'
           '  name[`=`][constraint]\n'
           'The package is removed from the pubspec if constraint is "none"',
@@ -82,8 +84,9 @@ class EvalCommand extends PuroCommand {
 
     final noCoreImports = argResults!['no-core'] as bool;
     final reset = argResults!['reset'] as bool;
-    final imports =
-        (argResults!['import'] as List<String>).map(EvalImport.parse).toList();
+    final imports = (argResults!['import'] as List<String>)
+        .map(EvalImport.parse)
+        .toList();
     final packages = argResults!['package'] as List<String>;
     final extra = argResults!['extra'] as List<String>;
     var code = argResults!.rest.join(' ');

@@ -36,8 +36,9 @@ Future<int> collectGarbage({
       usedCaches.add(engineVersion);
     }
 
-    final commit =
-        await git.tryGetCurrentCommitHash(repository: environment.flutterDir);
+    final commit = await git.tryGetCurrentCommitHash(
+      repository: environment.flutterDir,
+    );
     if (commit != null) {
       usedCommits.add(commit);
     }
@@ -47,7 +48,8 @@ Future<int> collectGarbage({
   for (final dir in sharedCacheDirs) {
     if (dir is! Directory ||
         !isValidCommitHash(dir.basename) ||
-        usedCaches.contains(dir.basename)) continue;
+        usedCaches.contains(dir.basename))
+      continue;
     final config = FlutterCacheConfig(dir);
     final versionFile = config.engineVersionFile;
     if (versionFile.existsSync()) {
@@ -63,7 +65,8 @@ Future<int> collectGarbage({
   for (final dir in flutterToolDirs) {
     if (dir is! Directory ||
         !isValidCommitHash(dir.basename) ||
-        usedCommits.contains(dir.basename)) continue;
+        usedCommits.contains(dir.basename))
+      continue;
     final snapshotFile = dir.childFile('flutter_tool.snapshot');
     if (snapshotFile.existsSync()) {
       unusedFlutterTools[dir] = snapshotFile.lastAccessedSync();

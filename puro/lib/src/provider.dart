@@ -2,9 +2,7 @@ abstract class Provider<T> {
   factory Provider(T Function(Scope scope) create) = LazyProvider;
 
   factory Provider.late() {
-    return Provider(
-      (scope) => throw AssertionError('Provider not in scope'),
-    );
+    return Provider((scope) => throw AssertionError('Provider not in scope'));
   }
 
   ProviderNode<T> createNode(Scope scope);

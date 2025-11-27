@@ -51,21 +51,18 @@ class PuroUpgradeCommand extends PuroCommand {
     var targetVersionString = unwrapSingleOptionalArgument();
 
     if (puroVersion.type == PuroInstallationType.pub) {
-      final result = await runProcess(
-        scope,
-        Platform.resolvedExecutable,
-        ['pub', 'global', 'activate', 'puro'],
-      );
+      final result = await runProcess(scope, Platform.resolvedExecutable, [
+        'pub',
+        'global',
+        'activate',
+        'puro',
+      ]);
       if (result.exitCode == 0) {
         final stdout = result.stdout as String;
         if (stdout.contains('already activated at newest available version')) {
-          return BasicMessageResult(
-            'Puro is up to date with $currentVersion',
-          );
+          return BasicMessageResult('Puro is up to date with $currentVersion');
         } else {
-          return BasicMessageResult(
-            'Upgraded puro to latest pub version',
-          );
+          return BasicMessageResult('Upgraded puro to latest pub version');
         }
       } else {
         return BasicMessageResult(
@@ -86,16 +83,18 @@ class PuroUpgradeCommand extends PuroCommand {
       final exitCode = await upgradePuro(
         scope: scope,
         targetVersion: 'master',
-        path:
-            argResults!.wasParsed('path') ? argResults!['path'] as bool : null,
+        path: argResults!.wasParsed('path')
+            ? argResults!['path'] as bool
+            : null,
       );
       await runner.exitPuro(exitCode);
     }
 
     final Version targetVersion;
     if (targetVersionString == null) {
-      final latestVersionResponse =
-          await http.get(config.puroBuildsUrl.append(path: 'latest'));
+      final latestVersionResponse = await http.get(
+        config.puroBuildsUrl.append(path: 'latest'),
+      );
       HttpException.ensureSuccess(latestVersionResponse);
       targetVersionString = latestVersionResponse.body.trim();
       targetVersion = Version.parse(targetVersionString);
@@ -110,9 +109,7 @@ class PuroUpgradeCommand extends PuroCommand {
     } else {
       targetVersion = Version.parse(targetVersionString);
       if (currentVersion == targetVersion && !force) {
-        return BasicMessageResult(
-          'Puro is the desired version $targetVersion',
-        );
+        return BasicMessageResult('Puro is the desired version $targetVersion');
       }
     }
 

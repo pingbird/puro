@@ -10,10 +10,10 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
   Parser<Token<JsonElement>> start() => ref0(element).end();
 
   Parser<Token<JsonElement>> element() => [
-        literalElement(),
-        mapElement(),
-        arrayElement(),
-      ].toChoiceParser(failureJoiner: selectFarthestJoined).cast();
+    literalElement(),
+    mapElement(),
+    arrayElement(),
+  ].toChoiceParser(failureJoiner: selectFarthestJoined).cast();
 
   Parser<String> lineComment() {
     return (string('//') & Token.newlineParser().neg().star()).flatten();
@@ -29,9 +29,9 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
   }
 
   Parser<Token<JsonElement>> token(Parser<JsonElement> parser) {
-    return (ref0(space) & parser.token() & ref0<String>(space))
-        .token()
-        .map((token) {
+    return (ref0(space) & parser.token() & ref0<String>(space)).token().map((
+      token,
+    ) {
       final res = token.value;
       final leading = res[0] as String;
       final body = res[1] as Token<JsonElement>;
@@ -40,11 +40,7 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
         return body;
       } else {
         return Token(
-          JsonWhitespace(
-            leading: leading,
-            body: body,
-            trailing: trailing,
-          ),
+          JsonWhitespace(leading: leading, body: body, trailing: trailing),
           token.buffer,
           token.start,
           token.stop,
@@ -79,66 +75,68 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
   Parser<bool> trueLiteral() => string('true').map((_) => true);
   Parser<bool> falseLiteral() => string('false').map((_) => false);
   Parser<void> nullLiteral() => string('null').map((_) {});
-  Parser<num> numLiteral() => (char('-').optional() &
-          char('0').or(digit().plus()) &
-          char('.').seq(digit().plus()).optional() &
-          pattern('eE')
-              .seq(pattern('-+').optional())
-              .seq(digit().plus())
-              .optional())
-      .flatten()
-      .map(num.parse);
+  Parser<num> numLiteral() =>
+      (char('-').optional() &
+              char('0').or(digit().plus()) &
+              char('.').seq(digit().plus()).optional() &
+              pattern(
+                'eE',
+              ).seq(pattern('-+').optional()).seq(digit().plus()).optional())
+          .flatten()
+          .map(num.parse);
 
   Parser<Token<JsonElement>> literalElement() {
-    return token([
-      ref0(trueLiteral),
-      ref0(falseLiteral),
-      ref0(nullLiteral),
-      ref0(numLiteral),
-      ref0(stringLiteral),
-    ].toChoiceParser().token().map(
-          (str) => JsonLiteral(value: str),
-        ));
+    return token(
+      [
+        ref0(trueLiteral),
+        ref0(falseLiteral),
+        ref0(nullLiteral),
+        ref0(numLiteral),
+        ref0(stringLiteral),
+      ].toChoiceParser().token().map((str) => JsonLiteral(value: str)),
+    );
   }
 
   Parser<Token<JsonElement>> mapElement() {
-    return token((char('{') &
-            ref0(mapEntryElement)
-                .plusSeparated(char(','))
-                .map((e) => e.elements)
-                .optional() &
-            ref0<String>(space) &
-            char(',').optional() &
-            ref0<String>(space) &
-            char('}'))
-        .map((res) {
-      return JsonMap(
-        children: (res[1] as List? ?? <Object?>[])
-            .cast<Token<JsonMapEntry>>()
-            .toList(),
-        space: res[2] as String,
-      );
-    }));
+    return token(
+      (char('{') &
+              ref0(
+                mapEntryElement,
+              ).plusSeparated(char(',')).map((e) => e.elements).optional() &
+              ref0<String>(space) &
+              char(',').optional() &
+              ref0<String>(space) &
+              char('}'))
+          .map((res) {
+            return JsonMap(
+              children: (res[1] as List? ?? <Object?>[])
+                  .cast<Token<JsonMapEntry>>()
+                  .toList(),
+              space: res[2] as String,
+            );
+          }),
+    );
   }
 
   Parser<Token<JsonElement>> arrayElement() {
-    return token((char('[') &
-            ref0(element)
-                .plusSeparated(char(','))
-                .map((e) => e.elements)
-                .optional() &
-            ref0<String>(space) &
-            char(',').optional() &
-            ref0<String>(space) &
-            char(']'))
-        .map((res) {
-      return JsonArray(
-        children: (res[1] as List? ?? <Object?>[])
-            .cast<Token<JsonElement>>()
-            .toList(),
-        space: res[2] as String,
-      );
-    }));
+    return token(
+      (char('[') &
+              ref0(
+                element,
+              ).plusSeparated(char(',')).map((e) => e.elements).optional() &
+              ref0<String>(space) &
+              char(',').optional() &
+              ref0<String>(space) &
+              char(']'))
+          .map((res) {
+            return JsonArray(
+              children: (res[1] as List? ?? <Object?>[])
+                  .cast<Token<JsonElement>>()
+                  .toList(),
+              space: res[2] as String,
+            );
+          }),
+    );
   }
 
   Parser<Token<JsonMapEntry>> mapEntryElement() {
@@ -148,13 +146,14 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
             char(':') &
             ref0<Object?>(element))
         .map((res) {
-      return JsonMapEntry(
-        beforeKey: res[0] as String,
-        key: res[1] as Token<String>,
-        afterKey: res[2] as String,
-        value: res[4] as Token<JsonElement>,
-      );
-    }).token();
+          return JsonMapEntry(
+            beforeKey: res[0] as String,
+            key: res[1] as Token<String>,
+            afterKey: res[2] as String,
+            value: res[4] as Token<JsonElement>,
+          );
+        })
+        .token();
   }
 
   static const escapeChars = {
@@ -165,6 +164,6 @@ class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
     'f': '\f',
     'n': '\n',
     'r': '\r',
-    't': '\t'
+    't': '\t',
   };
 }

@@ -24,55 +24,47 @@ Future<void> installIdeConfigs({
   final log = PuroLogger.of(scope);
   log.d('vscode override: $vscode');
   log.d('intellij override: $vscode');
-  await runOptional(
-    scope,
-    'installing IntelliJ config',
-    () async {
-      final ideConfig = await IntelliJConfig.load(
+  await runOptional(scope, 'installing IntelliJ config', () async {
+    final ideConfig = await IntelliJConfig.load(
+      scope: scope,
+      projectDir: projectDir,
+      projectConfig: projectConfig,
+    );
+    log.d('intellij exists: ${ideConfig.exists}');
+    if ((ideConfig.exists || intellij == true) &&
+        (replaceOnly == null ||
+            (ideConfig.dartSdkDir?.absolute.pathEquals(
+                  replaceOnly.flutter.cache.dartSdkDir,
+                ) ==
+                true))) {
+      await installIdeConfig(
         scope: scope,
-        projectDir: projectDir,
-        projectConfig: projectConfig,
+        ideConfig: ideConfig,
+        environment: environment,
       );
-      log.d('intellij exists: ${ideConfig.exists}');
-      if ((ideConfig.exists || intellij == true) &&
-          (replaceOnly == null ||
-              (ideConfig.dartSdkDir?.absolute
-                      .pathEquals(replaceOnly.flutter.cache.dartSdkDir) ==
-                  true))) {
-        await installIdeConfig(
-          scope: scope,
-          ideConfig: ideConfig,
-          environment: environment,
-        );
-      }
-    },
-    skip: intellij == false,
-  );
+    }
+  }, skip: intellij == false);
 
-  await runOptional(
-    scope,
-    'installing VSCode config',
-    () async {
-      final ideConfig = await VSCodeConfig.load(
+  await runOptional(scope, 'installing VSCode config', () async {
+    final ideConfig = await VSCodeConfig.load(
+      scope: scope,
+      projectDir: projectDir,
+      projectConfig: projectConfig,
+    );
+    log.d('vscode exists: ${ideConfig.exists}');
+    if ((ideConfig.exists || vscode == true) &&
+        (replaceOnly == null ||
+            (ideConfig.dartSdkDir?.absolute.pathEquals(
+                  replaceOnly.flutter.cache.dartSdkDir,
+                ) ==
+                true))) {
+      await installIdeConfig(
         scope: scope,
-        projectDir: projectDir,
-        projectConfig: projectConfig,
+        ideConfig: ideConfig,
+        environment: environment,
       );
-      log.d('vscode exists: ${ideConfig.exists}');
-      if ((ideConfig.exists || vscode == true) &&
-          (replaceOnly == null ||
-              (ideConfig.dartSdkDir?.absolute
-                      .pathEquals(replaceOnly.flutter.cache.dartSdkDir) ==
-                  true))) {
-        await installIdeConfig(
-          scope: scope,
-          ideConfig: ideConfig,
-          environment: environment,
-        );
-      }
-    },
-    skip: vscode == false,
-  );
+    }
+  }, skip: vscode == false);
 }
 
 Future<void> installIdeConfig({
