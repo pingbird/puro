@@ -74,7 +74,7 @@ class VisualStudio {
     if (_bestVisualStudioDetails == null) {
       return false;
     }
-    return _bestVisualStudioDetails!.isComplete ?? true;
+    return _bestVisualStudioDetails.isComplete ?? true;
   }
 
   /// True if Visual Studio is launchable.
@@ -84,7 +84,7 @@ class VisualStudio {
     if (_bestVisualStudioDetails == null) {
       return false;
     }
-    return _bestVisualStudioDetails!.isLaunchable ?? true;
+    return _bestVisualStudioDetails.isLaunchable ?? true;
   }
 
   /// True if the Visual Studio installation is a pre-release version.
