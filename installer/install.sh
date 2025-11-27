@@ -34,8 +34,8 @@ if [ "$OS" = 'Darwin' ]; then
   # Check if we're running on Apple Silicon
   if [ "$(uname -m)" = 'arm64' ]; then
     # Make sure rosetta is installed
-    if ! command -v arch > /dev/null 2>&1; then
-      softwareupdate --install-rosetta
+    if [ ! -f "/Library/Apple/usr/share/rosetta/rosetta" ]; then
+      softwareupdate --install-rosetta --agree-to-license
     fi
   fi
   DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/darwin-x64/puro"

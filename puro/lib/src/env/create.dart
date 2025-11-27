@@ -138,10 +138,6 @@ Future<String?> getEngineVersionOfCommit({
   required Scope scope,
   required String commit,
 }) async {
-  if (await isCommitMonolithicEngine(scope: scope, commit: commit) ?? false) {
-    return commit;
-  }
-
   final config = PuroConfig.of(scope);
   final git = GitClient.of(scope);
   final http = scope.read(clientProvider);
@@ -158,10 +154,28 @@ Future<String?> getEngineVersionOfCommit({
     commit: commit,
     path: 'bin/internal/engine.version',
   );
-  if (url == null) return null;
-  final response = await http.get(url);
-  HttpException.ensureSuccess(response);
-  return response.body.trim();
+  if (url != null) {
+    final response = await http.get(url);
+    HttpException.ensureSuccess(response);
+    return response.body.trim();
+  }
+
+  if (await isCommitMonolithicEngine(scope: scope, commit: commit) ?? false) {
+    // Make sure this is NOT a version of flutter that only builds the engine
+    // on certain commits.
+    final url = config.tryGetFlutterGitDownloadUrl(
+      commit: commit,
+      path: 'bin/internal/last_engine_commit.sh',
+    );
+    if (url != null) {
+      final response = await http.head(url);
+      if (response.statusCode != 404) {
+        HttpException.ensureSuccess(response);
+      }
+    }
+  }
+
+  return null;
 }
 
 /// Creates a new Puro environment named [envName] and installs flutter.
@@ -232,11 +246,15 @@ Future<EnvCreateResult> createEnvironment({
           scope: scope,
           commit: flutterVersion!.commit,
         );
-        log.d('Pre-caching engine $engineVersion');
         if (engineVersion == null) {
+          log.d('Failed to get engine version of commit $flutterVersion');
           return;
         }
-        await downloadSharedEngine(scope: scope, engineCommit: engineVersion);
+        log.d('Pre-caching engine $engineVersion');
+        await downloadSharedEngine(
+          scope: scope,
+          engineCommit: engineVersion,
+        );
         cacheEngineTime = clock.now();
       },
       // The user probably already has flutter cached so cloning forks will be
