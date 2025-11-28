@@ -193,3 +193,18 @@ We can manually delete unused caches with the `puro gc` command:
 $> puro gc                                                        
 [✓] Cleaned up caches and reclaimed 2.7GB
 ```
+
+### Preparing artifacts
+
+Use `puro prepare` to download Flutter artifacts ahead of time so the first build on a new
+or freshly upgraded environment does not need to fetch them on demand:
+
+```
+$> puro prepare master
+[✓] Prepared environment `master` (default platforms (android, ios, macos, web))
+```
+
+Add `--all-platforms` to cache everything Flutter supports, or pass `--platform` multiple
+times (for example `--platform android --platform web`) to tailor the download to the
+projects you build most often. Include `--force` if you want to refresh artifacts even
+when they are already present.

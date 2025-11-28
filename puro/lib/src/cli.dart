@@ -21,6 +21,7 @@ import 'commands/internal_generate_ast_parser.dart';
 import 'commands/internal_generate_docs.dart';
 import 'commands/ls_versions.dart';
 import 'commands/prefs.dart';
+import 'commands/prepare.dart';
 import 'commands/pub.dart';
 import 'commands/puro_install.dart';
 import 'commands/puro_uninstall.dart';
@@ -259,6 +260,7 @@ void main(List<String> args) async {
     ..addCommand(CleanCommand())
     ..addCommand(EnvRmCommand())
     ..addCommand(EnvRenameCommand())
+    ..addCommand(PrepareCommand())
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand())
     ..addCommand(PubCommand())
