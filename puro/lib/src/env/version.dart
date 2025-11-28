@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:meta/meta.dart';
 import 'package:neoansi/neoansi.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -282,25 +284,50 @@ Future<FlutterVersion?> getEnvironmentFlutterVersion({
   if (commit == null) {
     return null;
   }
-  if (!versionFile.existsSync()) {
-    await runOptional(
-      scope,
-      'querying Flutter version for `${environment.name}`',
-      () {
-        return runFlutterCommand(
-          scope: scope,
-          environment: environment,
-          args: ['--version', '--machine'],
-          onStdout: (_) {},
-          onStderr: (_) {},
-        );
-      },
-    );
-  }
+
   Version? version;
+  String? branch;
+
+  // First try to read from version file
   if (versionFile.existsSync()) {
     version = tryParseVersion(versionFile.readAsStringSync().trim());
   }
-  final branch = await git.getBranch(repository: flutterConfig.sdkDir);
+
+  // If no version found, query flutter --version --machine and parse JSON output
+  if (version == null) {
+    await runOptional(
+      scope,
+      'querying Flutter version for `${environment.name}`',
+      () async {
+        final stdoutBytes = <int>[];
+        await runFlutterCommand(
+          scope: scope,
+          environment: environment,
+          args: ['--version', '--machine'],
+          onStdout: stdoutBytes.addAll,
+          onStderr: (_) {},
+        );
+        final json =
+            jsonDecode(utf8.decode(stdoutBytes)) as Map<String, dynamic>;
+        final frameworkVersion = json['frameworkVersion'] as String?;
+        if (frameworkVersion != null) {
+          version = tryParseVersion(frameworkVersion);
+          if (version != null) {
+            versionFile.writeAsStringSync(frameworkVersion);
+          }
+        }
+        branch = json['channel'] as String?;
+      },
+    );
+  }
+
+  // Get branch from git if not found from flutter --version
+
+  branch ??= await git.getBranch(repository: flutterConfig.sdkDir);
+
+  if (branch != 'stable' && branch != 'dev' && branch != 'beta') {
+    branch = null;
+  }
+
   return FlutterVersion(commit: commit, version: version, branch: branch);
 }
