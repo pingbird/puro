@@ -9,6 +9,7 @@ import '../file_lock.dart';
 import '../git.dart';
 import '../http.dart';
 import '../logger.dart';
+import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
 import '../terminal.dart';
@@ -38,6 +39,24 @@ Future<void> updateEngineVersionFile({
   required Scope scope,
   required FlutterConfig flutterConfig,
 }) async {
+  // Run the script to update the engine version file
+  if (flutterConfig.updateEngineVersionScript.existsSync()) {
+    await runProcess(
+      scope,
+      flutterConfig.updateEngineVersionScript.path,
+      [],
+      workingDirectory: flutterConfig.sdkDir.path,
+    );
+  }
+
+  // Write back the engine version file, if the engine stamp file exists.
+  if (flutterConfig.cache.engineStampFile.existsSync()) {
+    final engineVersion = flutterConfig.cache.engineStampFile
+        .readAsStringSync();
+    flutterConfig.engineVersionFile.writeAsStringSync(engineVersion);
+    return;
+  }
+
   if (!flutterConfig.hasEngine) {
     // Not a monolithic engine, nothing to do.
     return;
@@ -169,7 +188,9 @@ Future<String?> getEngineVersionOfCommit({
     );
     if (url != null) {
       final response = await http.head(url);
-      if (response.statusCode != 404) {
+      if (response.statusCode == 404) {
+        return commit;
+      } else {
         HttpException.ensureSuccess(response);
       }
     }
@@ -247,14 +268,13 @@ Future<EnvCreateResult> createEnvironment({
           commit: flutterVersion!.commit,
         );
         if (engineVersion == null) {
-          log.d('Failed to get engine version of commit $flutterVersion');
+          log.d(
+            'Failed to get engine version of commit $flutterVersion, skipping pre-caching',
+          );
           return;
         }
         log.d('Pre-caching engine $engineVersion');
-        await downloadSharedEngine(
-          scope: scope,
-          engineCommit: engineVersion,
-        );
+        await downloadSharedEngine(scope: scope, engineCommit: engineVersion);
         cacheEngineTime = clock.now();
       },
       // The user probably already has flutter cached so cloning forks will be

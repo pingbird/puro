@@ -246,7 +246,8 @@ class PuroVersion {
 enum PuroBuildTarget {
   windowsX64('windows-x64', '.exe', '.bat'),
   linuxX64('linux-x64', '', ''),
-  macosX64('darwin-x64', '', '');
+  macosX64('darwin-x64', '', ''),
+  macosArm64('darwin-arm64', '', '');
 
   const PuroBuildTarget(this.name, this.exeSuffix, this.scriptSuffix);
 
@@ -258,6 +259,8 @@ enum PuroBuildTarget {
         return PuroBuildTarget.linuxX64;
       case 'darwin-x64':
         return PuroBuildTarget.macosX64;
+      case 'darwin-arm64':
+        return PuroBuildTarget.macosArm64;
       default:
         throw ArgumentError('Unknown target: $str');
     }
@@ -278,6 +281,10 @@ enum PuroBuildTarget {
     } else if (Platform.isLinux) {
       return PuroBuildTarget.linuxX64;
     } else if (Platform.isMacOS) {
+      final result = Process.runSync('uname', ['-m']);
+      if (result.exitCode == 0 && (result.stdout as String).trim() == 'arm64') {
+        return PuroBuildTarget.macosArm64;
+      }
       return PuroBuildTarget.macosX64;
     } else {
       throw AssertionError(
