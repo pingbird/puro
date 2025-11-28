@@ -1,3 +1,8 @@
+## 1.5.0
+
+* Fixed several major bugs
+* Added native arm64 mac build
+
 ## 1.4.11
 
 * Bug fixes
