@@ -38,6 +38,7 @@ class ToolQuirks {
     required this.suppressAnalytics,
     required this.disableDartDev,
     required this.disableMirrors,
+    required this.noVersionCommand,
   });
 
   final bool useDeprecatedPub;
@@ -45,6 +46,7 @@ class ToolQuirks {
   final bool suppressAnalytics;
   final bool disableDartDev;
   final bool disableMirrors;
+  final bool noVersionCommand;
 }
 
 Future<ToolQuirks> getToolQuirks({
@@ -67,12 +69,19 @@ Future<ToolQuirks> getToolQuirks({
       .decode(flutterScriptBuf)
       .replaceAll(RegExp('#.*'), ''); // Remove comments
 
+  // Check if the `version` command exists in flutter_tools
+  final versionCommandExists = await git.exists(
+    repository: environment.flutterDir,
+    path: 'packages/flutter_tools/lib/src/commands/version.dart',
+  );
+
   return ToolQuirks(
     useDeprecatedPub: flutterScriptStr.contains('__deprecated_pub'),
     noAnalytics: flutterScriptStr.contains('--no-analytics'),
     suppressAnalytics: flutterScriptStr.contains('--suppress-analytics'),
     disableDartDev: flutterScriptStr.contains('--disable-dart-dev'),
     disableMirrors: flutterScriptStr.contains('--no-enable-mirrors'),
+    noVersionCommand: !versionCommandExists,
   );
 }
 

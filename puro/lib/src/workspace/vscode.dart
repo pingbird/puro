@@ -172,6 +172,8 @@ Future<bool> isRunningInVscode({required Scope scope}) async {
         e.name == 'VSCode.exe' ||
         e.name == 'VSCodium.exe' ||
         e.name == 'code' ||
-        e.name == 'codium',
+        e.name == 'codium' ||
+        e.name == 'Cursor' ||
+        e.name == 'cursor',
   );
 }

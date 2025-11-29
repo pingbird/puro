@@ -40,6 +40,17 @@ Future<int> runFlutterCommand({
   final shouldPrecompile =
       !environmentPrefs.hasPrecompileTool() || environmentPrefs.precompileTool;
   final quirks = await getToolQuirks(scope: scope, environment: environment);
+
+  // Translate `version` to `--version` since the version command was removed
+  if (quirks.noVersionCommand) {
+    final nonOptionArgs = args.where((e) => !e.startsWith('-')).toList();
+    if (nonOptionArgs.firstOrNull == 'version') {
+      args = args.toList();
+      final index = args.indexWhere((e) => e == 'version');
+      args[index] = '--version';
+    }
+  }
+
   final syncCache = !args.contains('--version');
   if (syncCache) {
     await trySyncFlutterCache(scope: scope, environment: environment);

@@ -8,7 +8,7 @@ environment:
   sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
-  analyzer: ^7.4.5
+  analyzer: ^8.4.1
   args: ^2.3.1
   async: ^2.9.0
   clock: ^1.1.1
@@ -22,9 +22,9 @@ dependencies:
   mutex: ^3.0.0
   neoansi: ^0.3.2+1
   path: ^1.8.2
-  petitparser: ^6.0.1
+  petitparser: ^7.0.1
   process: ^5.0.0
-  protobuf: ^4.0.0
+  protobuf: ^6.0.0
   pub_semver: ^2.1.1
   rxdart: ^0.28.0
   stack_trace: ^1.10.0
@@ -38,5 +38,5 @@ dev_dependencies:
   build_runner: ^2.2.1
   freezed: ^3.0.6
   json_serializable: ^6.4.1
-  lints: ^5.1.1
+  lints: ^6.0.0
   test: ^1.16.0

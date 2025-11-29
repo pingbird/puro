@@ -92,7 +92,8 @@ class PuroConfig {
     if (!const LocalProcessManager().canRun(gitExecutable)) {
       final String instructions;
       if (Platform.isWindows) {
-        instructions = 'getting it at https://git-scm.com/download/win';
+        instructions =
+            'running `winget install Git.Git` and restarting your shell';
       } else if (Platform.isLinux) {
         instructions = 'running `apt install git`';
       } else if (Platform.isMacOS) {

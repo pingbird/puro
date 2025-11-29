@@ -4,7 +4,7 @@ import 'element.dart';
 
 class JsonGrammar extends GrammarDefinition<Token<JsonElement>> {
   static Token<JsonElement> parse(String input) =>
-      JsonGrammar().build<Token<JsonElement>>().parse(input).value;
+      JsonGrammar().build().parse(input).value;
 
   @override
   Parser<Token<JsonElement>> start() => ref0(element).end();

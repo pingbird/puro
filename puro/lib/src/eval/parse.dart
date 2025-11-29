@@ -5,7 +5,7 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/error/error.dart';
+import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:analyzer/error/listener.dart';
 import 'package:analyzer/exception/exception.dart';
 import 'package:analyzer/source/line_info.dart';
@@ -32,8 +32,8 @@ class ParseResult<T extends AstNode> {
   final Token? token;
   final CaughtException? scanException;
   final CaughtException? parseException;
-  final List<AnalysisError> scanErrors;
-  final List<AnalysisError> parseErrors;
+  final List<Diagnostic> scanErrors;
+  final List<Diagnostic> parseErrors;
   final bool exhaustive;
 
   late final hasReturn = () {
@@ -140,18 +140,18 @@ ParseResult<Block> parseDartBlock(String code) => parseDart(
   (parser) =>
       (parser.parseFunctionBody(
                 false,
-                ParserErrorCode.MISSING_FUNCTION_BODY,
+                ParserErrorCode.missingFunctionBody,
                 false,
               )
               as BlockFunctionBody)
           .block,
 );
 
-class _ErrorListener implements AnalysisErrorListener {
-  final errors = <AnalysisError>[];
+class _ErrorListener implements DiagnosticListener {
+  final errors = <Diagnostic>[];
 
   @override
-  void onError(AnalysisError error) {
-    errors.add(error);
+  void onDiagnostic(Diagnostic diagnostic) {
+    errors.add(diagnostic);
   }
 }
