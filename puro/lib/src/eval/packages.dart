@@ -36,9 +36,13 @@ Future<bool> updateBootstrapPackages({
       log.d('pubspecLockFile exists');
       final existingPackages = <String, Version>{};
       if (pubspecLockFile.existsSync()) {
-        final yamlData = loadYaml(pubspecLockFile.existsSync()
-            ? pubspecLockFile.readAsStringSync()
-            : '{}') as YamlMap;
+        final yamlData =
+            loadYaml(
+                  pubspecLockFile.existsSync()
+                      ? pubspecLockFile.readAsStringSync()
+                      : '{}',
+                )
+                as YamlMap;
         for (final package in (yamlData['packages'] as YamlMap).entries) {
           final name = package.key as String;
           final version = Version.parse(package.value['version'] as String);
@@ -50,8 +54,9 @@ Future<bool> updateBootstrapPackages({
         final hasPackage = existingPackages.containsKey(entry.key);
         if ((hasPackage == (entry.value == VersionConstraint.empty)) ||
             (hasPackage &&
-                !(entry.value ?? VersionConstraint.any)
-                    .allows(existingPackages[entry.key]!))) {
+                !(entry.value ?? VersionConstraint.any).allows(
+                  existingPackages[entry.key]!,
+                ))) {
           log.d(
             'not satisfied: ${entry.key} must be ${entry.value} '
             'but is ${existingPackages[entry.key]}',

@@ -9,6 +9,7 @@ import '../file_lock.dart';
 import '../git.dart';
 import '../http.dart';
 import '../logger.dart';
+import '../process.dart';
 import '../progress.dart';
 import '../provider.dart';
 import '../terminal.dart';
@@ -19,10 +20,7 @@ import 'flutter_tool.dart';
 import 'version.dart';
 
 class EnvCreateResult extends CommandResult {
-  EnvCreateResult({
-    required this.success,
-    required this.environment,
-  });
+  EnvCreateResult({required this.success, required this.environment});
 
   @override
   final bool success;
@@ -30,8 +28,8 @@ class EnvCreateResult extends CommandResult {
 
   @override
   CommandMessage get message => CommandMessage(
-        'Created new environment at `${environment.flutterDir.path}`',
-      );
+    'Created new environment at `${environment.flutterDir.path}`',
+  );
 }
 
 /// Updates the engine version file, to replicate the functionality of
@@ -41,6 +39,24 @@ Future<void> updateEngineVersionFile({
   required Scope scope,
   required FlutterConfig flutterConfig,
 }) async {
+  // Run the script to update the engine version file
+  if (flutterConfig.updateEngineVersionScript.existsSync()) {
+    await runProcess(
+      scope,
+      flutterConfig.updateEngineVersionScript.path,
+      [],
+      workingDirectory: flutterConfig.sdkDir.path,
+    );
+  }
+
+  // Write back the engine version file, if the engine stamp file exists.
+  if (flutterConfig.cache.engineStampFile.existsSync()) {
+    final engineVersion = flutterConfig.cache.engineStampFile
+        .readAsStringSync();
+    flutterConfig.engineVersionFile.writeAsStringSync(engineVersion);
+    return;
+  }
+
   if (!flutterConfig.hasEngine) {
     // Not a monolithic engine, nothing to do.
     return;
@@ -65,12 +81,16 @@ Future<void> updateEngineVersionFile({
       );
     }
     commit = await git.mergeBase(
-        repository: flutterConfig.sdkDir,
-        ref1: 'HEAD',
-        ref2: 'upstream/master');
+      repository: flutterConfig.sdkDir,
+      ref1: 'HEAD',
+      ref2: 'upstream/master',
+    );
   } else {
     commit = await git.mergeBase(
-        repository: flutterConfig.sdkDir, ref1: 'HEAD', ref2: 'origin/master');
+      repository: flutterConfig.sdkDir,
+      ref1: 'HEAD',
+      ref2: 'origin/master',
+    );
   }
 
   flutterConfig.engineVersionFile.writeAsStringSync('$commit\n');
@@ -137,10 +157,6 @@ Future<String?> getEngineVersionOfCommit({
   required Scope scope,
   required String commit,
 }) async {
-  if (await isCommitMonolithicEngine(scope: scope, commit: commit) ?? false) {
-    return commit;
-  }
-
   final config = PuroConfig.of(scope);
   final git = GitClient.of(scope);
   final http = scope.read(clientProvider);
@@ -157,10 +173,30 @@ Future<String?> getEngineVersionOfCommit({
     commit: commit,
     path: 'bin/internal/engine.version',
   );
-  if (url == null) return null;
-  final response = await http.get(url);
-  HttpException.ensureSuccess(response);
-  return response.body.trim();
+  if (url != null) {
+    final response = await http.get(url);
+    HttpException.ensureSuccess(response);
+    return response.body.trim();
+  }
+
+  if (await isCommitMonolithicEngine(scope: scope, commit: commit) ?? false) {
+    // Make sure this is NOT a version of flutter that only builds the engine
+    // on certain commits.
+    final url = config.tryGetFlutterGitDownloadUrl(
+      commit: commit,
+      path: 'bin/internal/last_engine_commit.sh',
+    );
+    if (url != null) {
+      final response = await http.head(url);
+      if (response.statusCode == 404) {
+        return commit;
+      } else {
+        HttpException.ensureSuccess(response);
+      }
+    }
+  }
+
+  return null;
 }
 
 /// Creates a new Puro environment named [envName] and installs flutter.
@@ -231,14 +267,14 @@ Future<EnvCreateResult> createEnvironment({
           scope: scope,
           commit: flutterVersion!.commit,
         );
-        log.d('Pre-caching engine $engineVersion');
         if (engineVersion == null) {
+          log.d(
+            'Failed to get engine version of commit $flutterVersion, skipping pre-caching',
+          );
           return;
         }
-        await downloadSharedEngine(
-          scope: scope,
-          engineCommit: engineVersion,
-        );
+        log.d('Pre-caching engine $engineVersion');
+        await downloadSharedEngine(scope: scope, engineCommit: engineVersion);
         cacheEngineTime = clock.now();
       },
       // The user probably already has flutter cached so cloning forks will be
@@ -257,17 +293,15 @@ Future<EnvCreateResult> createEnvironment({
     );
 
     // Replace flutter/dart with shims
-    await installEnvShims(
-      scope: scope,
-      environment: environment,
-    );
+    await installEnvShims(scope: scope, environment: environment);
 
     final cloneTime = clock.now();
 
     await engineTask;
 
     if (cacheEngineTime != null) {
-      final wouldveTaken = (cloneTime.difference(startTime)) +
+      final wouldveTaken =
+          (cloneTime.difference(startTime)) +
           (cacheEngineTime!.difference(startTime));
       final took = clock.now().difference(startTime);
       log.v(
@@ -280,15 +314,9 @@ Future<EnvCreateResult> createEnvironment({
   await updateDefaultEnvSymlink(scope: scope);
 
   // Set up engine and compile tool
-  await setUpFlutterTool(
-    scope: scope,
-    environment: environment,
-  );
+  await setUpFlutterTool(scope: scope, environment: environment);
 
-  return EnvCreateResult(
-    success: true,
-    environment: environment,
-  );
+  return EnvCreateResult(success: true, environment: environment);
 }
 
 /// Clones or fetches from a remote, putting it in a shared repository.
@@ -360,8 +388,9 @@ Future<void> cloneFlutterWithSharedRefs({
         .childDirectory('objects')
         .childDirectory('info')
         .childFile('alternates');
-    final sharedObjects =
-        sharedRepository.childDirectory('.git').childDirectory('objects');
+    final sharedObjects = sharedRepository
+        .childDirectory('.git')
+        .childDirectory('objects');
     alternatesFile.writeAsStringSync('${sharedObjects.path}\n');
     await git.syncRemotes(repository: repository, remotes: remotes);
 
@@ -416,11 +445,7 @@ Future<void> cloneFlutterWithSharedRefs({
       node.description = 'Checking out $forkRef';
 
       await guardCheckout(() async {
-        await git.checkout(
-          repository: repository,
-          ref: forkRef,
-          force: force,
-        );
+        await git.checkout(repository: repository, ref: forkRef, force: force);
       });
     });
 
@@ -445,10 +470,7 @@ Future<void> cloneFlutterWithSharedRefs({
 
     node.description = 'Checking out $flutterVersion';
 
-    await git.fetch(
-      repository: repository,
-      all: true,
-    );
+    await git.fetch(repository: repository, all: true);
 
     final branch = flutterVersion.branch;
     if (branch != null) {

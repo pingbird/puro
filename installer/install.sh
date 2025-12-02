@@ -30,15 +30,13 @@ else
 fi
 
 OS="$(uname -s)"
+ARCH="$(uname -m)"
 if [ "$OS" = 'Darwin' ]; then
-  # Check if we're running on Apple Silicon
-  if [ "$(uname -m)" = 'arm64' ]; then
-    # Make sure rosetta is installed
-    if ! command -v arch > /dev/null 2>&1; then
-      softwareupdate --install-rosetta
-    fi
+  if [ "$ARCH" = 'arm64' ]; then
+    DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/darwin-arm64/puro"
+  else
+    DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/darwin-x64/puro"
   fi
-  DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/darwin-x64/puro"
 elif [ "$OS" = 'Linux' ]; then
   DOWNLOAD_URL="https://puro.dev/builds/${PURO_VERSION}/linux-x64/puro"
 else

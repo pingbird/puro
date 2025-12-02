@@ -47,12 +47,14 @@ Future<int> runBuildEnvShell({
 
     terminal
       ..flushStatus()
-      ..writeln(terminal.format.color(
-        '[ Running ${command![0]} with engine build environment,\n'
-        '  type `exit` to return to the normal shell ]\n',
-        bold: true,
-        foregroundColor: Ansi8BitColor.blue,
-      ));
+      ..writeln(
+        terminal.format.color(
+          '[ Running ${command![0]} with engine build environment,\n'
+          '  type `exit` to return to the normal shell ]\n',
+          bold: true,
+          foregroundColor: Ansi8BitColor.blue,
+        ),
+      );
   }
 
   final process = await startProcess(
@@ -70,11 +72,13 @@ Future<int> runBuildEnvShell({
   if (defaultShell) {
     terminal
       ..flushStatus()
-      ..writeln(terminal.format.color(
-        '\n[ Returning from engine build shell ]',
-        bold: true,
-        foregroundColor: Ansi8BitColor.blue,
-      ));
+      ..writeln(
+        terminal.format.color(
+          '\n[ Returning from engine build shell ]',
+          bold: true,
+          foregroundColor: Ansi8BitColor.blue,
+        ),
+      );
   }
 
   return exitCode;

@@ -42,9 +42,9 @@ class GenerateDocsCommand extends PuroCommand {
         .childFile('commands.md')
         .writeAsString(generateCommands());
 
-    await puroDir.childFile('CHANGELOG.md').copy(
-          referenceDir.childFile('changelog.md').path,
-        );
+    await puroDir
+        .childFile('CHANGELOG.md')
+        .copy(referenceDir.childFile('changelog.md').path);
 
     if (argResults!['deploy'] as bool) {
       // Replace master in the installation instructions with the latest version
@@ -99,10 +99,12 @@ class GenerateDocsCommand extends PuroCommand {
     final buffer = StringBuffer();
     for (final option in options) {
       buffer.write('#### ');
-      buffer.writeln([
-        if (option.abbr != null) '`-${option.abbr}`',
-        '`${optionString(option)}`',
-      ].join(', '));
+      buffer.writeln(
+        [
+          if (option.abbr != null) '`-${option.abbr}`',
+          '`${optionString(option)}`',
+        ].join(', '),
+      );
       buffer.writeln();
       if (option.help != null) {
         buffer.writeln(option.help);
@@ -143,8 +145,9 @@ class GenerateDocsCommand extends PuroCommand {
       } else if (option.isMultiple) {
         final defaultsTo = option.defaultsTo as List?;
         if (defaultsTo != null && defaultsTo.isNotEmpty) {
-          final defaults =
-              defaultsTo.map((dynamic value) => '`"$value"`').join(', ');
+          final defaults = defaultsTo
+              .map((dynamic value) => '`"$value"`')
+              .join(', ');
           buffer.writeln('(defaults to $defaults)');
           buffer.writeln();
         }
@@ -162,8 +165,10 @@ class GenerateDocsCommand extends PuroCommand {
     buffer.writeln();
     for (final command in runner.commands.values.toSet()) {
       if (command.hidden) continue;
-      buffer.writeln('## ${command.name.substring(0, 1).toUpperCase()}'
-          '${command.name.substring(1)}');
+      buffer.writeln(
+        '## ${command.name.substring(0, 1).toUpperCase()}'
+        '${command.name.substring(1)}',
+      );
       buffer.writeln();
       buffer.writeln('```sh');
       buffer.writeln('${command.invocation}');
@@ -171,8 +176,9 @@ class GenerateDocsCommand extends PuroCommand {
       buffer.writeln();
       buffer.writeln(command.description);
       buffer.writeln();
-      final options = command.argParser.options.values
-          .where((e) => e.name != 'help' && !e.hide);
+      final options = command.argParser.options.values.where(
+        (e) => e.name != 'help' && !e.hide,
+      );
       if (options.isNotEmpty) {
         buffer.writeln('#### Options');
         buffer.writeln();

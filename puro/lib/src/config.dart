@@ -92,7 +92,8 @@ class PuroConfig {
     if (!const LocalProcessManager().canRun(gitExecutable)) {
       final String instructions;
       if (Platform.isWindows) {
-        instructions = 'getting it at https://git-scm.com/download/win';
+        instructions =
+            'running `winget install Git.Git` and restarting your shell';
       } else if (Platform.isLinux) {
         instructions = 'running `apt install git`';
       } else if (Platform.isMacOS) {
@@ -105,14 +106,12 @@ class PuroConfig {
       );
     }
 
-    final absoluteProjectDir =
-        projectDir == null ? null : fileSystem.directory(projectDir).absolute;
+    final absoluteProjectDir = projectDir == null
+        ? null
+        : fileSystem.directory(projectDir).absolute;
 
-    var resultProjectDir = absoluteProjectDir ??
-        findProjectDir(
-          currentDir,
-          'pubspec.yaml',
-        );
+    var resultProjectDir =
+        absoluteProjectDir ?? findProjectDir(currentDir, 'pubspec.yaml');
 
     // Puro looks for a suitable project root in the following order:
     //   1. Directory specified in `--project`
@@ -122,16 +121,11 @@ class PuroConfig {
     // If Puro finds a grandparent and tries to access the parentProjectDir with
     // dotfileForWriting, it throws an error indicating the selection is
     // ambiguous.
-    final Directory? parentProjectDir = absoluteProjectDir ??
-        findProjectDir(
-          currentDir,
-          ProjectConfig.dotfileName,
-        ) ??
+    final Directory? parentProjectDir =
+        absoluteProjectDir ??
+        findProjectDir(currentDir, ProjectConfig.dotfileName) ??
         (resultProjectDir != null
-            ? findProjectDir(
-                resultProjectDir.parent,
-                'pubspec.yaml',
-              )
+            ? findProjectDir(resultProjectDir.parent, 'pubspec.yaml')
             : null) ??
         resultProjectDir;
 
@@ -139,8 +133,9 @@ class PuroConfig {
 
     log.d('puroRootDir: $puroRoot');
     puroRoot.createSync(recursive: true);
-    puroRoot =
-        fileSystem.directory(puroRoot.resolveSymbolicLinksSync()).absolute;
+    puroRoot = fileSystem
+        .directory(puroRoot.resolveSymbolicLinksSync())
+        .absolute;
     log.d('puroRoot (resolved): $puroRoot');
 
     if (environmentOverride == null) {
@@ -168,7 +163,8 @@ class PuroConfig {
       }
     }
 
-    flutterStorageBaseUrl ??= (globalPrefs.hasFlutterStorageBaseUrl()
+    flutterStorageBaseUrl ??=
+        (globalPrefs.hasFlutterStorageBaseUrl()
             ? globalPrefs.flutterStorageBaseUrl
             : null) ??
         'https://storage.googleapis.com';
@@ -178,8 +174,10 @@ class PuroConfig {
       pubCache ??= pubCacheOverride;
     }
     pubCache ??= globalPrefs.hasPubCacheDir() ? globalPrefs.pubCacheDir : null;
-    pubCache ??=
-        puroRoot.childDirectory('shared').childDirectory('pub_cache').path;
+    pubCache ??= puroRoot
+        .childDirectory('shared')
+        .childDirectory('pub_cache')
+        .path;
 
     shouldSkipCacheSync ??=
         Platform.environment['PURO_SKIP_CACHE_SYNC']?.isNotEmpty ?? false;
@@ -194,13 +192,16 @@ class PuroConfig {
       homeDir: fileSystem.directory(homeDir),
       projectDir: resultProjectDir,
       parentProjectDir: parentProjectDir,
-      flutterGitUrl: flutterGitUrl ??
+      flutterGitUrl:
+          flutterGitUrl ??
           (globalPrefs.hasFlutterGitUrl() ? globalPrefs.flutterGitUrl : null) ??
           'https://github.com/flutter/flutter.git',
-      engineGitUrl: engineGitUrl ??
+      engineGitUrl:
+          engineGitUrl ??
           (globalPrefs.hasEngineGitUrl() ? globalPrefs.engineGitUrl : null) ??
           'https://github.com/flutter/engine.git',
-      dartSdkGitUrl: dartSdkGitUrl ??
+      dartSdkGitUrl:
+          dartSdkGitUrl ??
           (globalPrefs.hasDartSdkGitUrl() ? globalPrefs.dartSdkGitUrl : null) ??
           'https://github.com/dart-lang/sdk.git',
       releasesJsonUrl: Uri.parse(
@@ -213,13 +214,15 @@ class PuroConfig {
       flutterStorageBaseUrl: Uri.parse(flutterStorageBaseUrl),
       environmentOverride: environmentOverride,
       puroBuildsUrl: Uri.parse(
-          (globalPrefs.hasPuroBuildsUrl() ? globalPrefs.puroBuildsUrl : null) ??
-              'https://puro.dev/builds'),
+        (globalPrefs.hasPuroBuildsUrl() ? globalPrefs.puroBuildsUrl : null) ??
+            'https://puro.dev/builds',
+      ),
       buildTarget: globalPrefs.hasPuroBuildTarget()
           ? PuroBuildTarget.fromString(globalPrefs.puroBuildTarget)
           : PuroBuildTarget.query(),
       enableShims: enableShims,
-      shouldInstall: shouldInstall ??
+      shouldInstall:
+          shouldInstall ??
           (!globalPrefs.hasShouldInstall() || globalPrefs.shouldInstall),
       shouldSkipCacheSync: shouldSkipCacheSync,
     );
@@ -296,26 +299,34 @@ class PuroConfig {
   late final Directory sharedFlutterDir = sharedDir.childDirectory('flutter');
   late final Directory sharedEngineDir = sharedDir.childDirectory('engine');
   late final Directory sharedDartSdkDir = sharedDir.childDirectory('dart-sdk');
-  late final Directory sharedDartReleaseDir =
-      sharedDir.childDirectory('dart-release');
+  late final Directory sharedDartReleaseDir = sharedDir.childDirectory(
+    'dart-release',
+  );
   late final Directory sharedCachesDir = sharedDir.childDirectory('caches');
   late final Directory sharedGClientDir = sharedDir.childDirectory('gclient');
   late final Directory pubCacheBinDir = legacyPubCacheDir.childDirectory('bin');
-  late final Directory sharedFlutterToolsDir =
-      sharedDir.childDirectory('flutter_tools');
-  late final File puroExecutableFile =
-      binDir.childFile(buildTarget.executableName);
-  late final File puroTrampolineFile =
-      binDir.childFile(buildTarget.trampolineName);
+  late final Directory sharedFlutterToolsDir = sharedDir.childDirectory(
+    'flutter_tools',
+  );
+  late final File puroExecutableFile = binDir.childFile(
+    buildTarget.executableName,
+  );
+  late final File puroTrampolineFile = binDir.childFile(
+    buildTarget.trampolineName,
+  );
   late final File puroDartShimFile = binDir.childFile(buildTarget.dartName);
-  late final File puroFlutterShimFile =
-      binDir.childFile(buildTarget.flutterName);
-  late final File puroExecutableTempFile =
-      binDir.childFile('${buildTarget.executableName}.tmp');
-  late final File cachedReleasesJsonFile =
-      puroRoot.childFile(releasesJsonUrl.pathSegments.last);
-  late final File cachedDartReleasesJsonFile =
-      puroRoot.childFile('dart_releases.json');
+  late final File puroFlutterShimFile = binDir.childFile(
+    buildTarget.flutterName,
+  );
+  late final File puroExecutableTempFile = binDir.childFile(
+    '${buildTarget.executableName}.tmp',
+  );
+  late final File cachedReleasesJsonFile = puroRoot.childFile(
+    releasesJsonUrl.pathSegments.last,
+  );
+  late final File cachedDartReleasesJsonFile = puroRoot.childFile(
+    'dart_releases.json',
+  );
   late final File defaultEnvNameFile = puroRoot.childFile('default_env');
   late final Link defaultEnvLink = envsDir.childLink('default');
   late final Uri puroLatestVersionUrl = puroBuildsUrl.append(path: 'latest');
@@ -376,18 +387,20 @@ class PuroConfig {
       );
     }
     if (patched) {
-      return FlutterCacheConfig(sharedCachesDir.childDirectory(
-        '${engineCommit}_patched',
-      ));
+      return FlutterCacheConfig(
+        sharedCachesDir.childDirectory('${engineCommit}_patched'),
+      );
     } else {
       return FlutterCacheConfig(sharedCachesDir.childDirectory(engineCommit));
     }
   }
 
   DartSdkConfig getDartRelease(DartRelease release) {
-    return DartSdkConfig(sharedDartReleaseDir
-        .childDirectory(release.name)
-        .childDirectory('dart-sdk'));
+    return DartSdkConfig(
+      sharedDartReleaseDir
+          .childDirectory(release.name)
+          .childDirectory('dart-sdk'),
+    );
   }
 
   Uri? tryGetFlutterGitDownloadUrl({
@@ -401,10 +414,7 @@ class PuroConfig {
         flutterGitUrl.endsWith('.git')) {
       return Uri.https(
         'raw.githubusercontent.com',
-        '${flutterGitUrl.substring(
-          isHttp ? httpPrefix.length : sshPrefix.length,
-          flutterGitUrl.length - 4,
-        )}/$commit/$path',
+        '${flutterGitUrl.substring(isHttp ? httpPrefix.length : sshPrefix.length, flutterGitUrl.length - 4)}/$commit/$path',
       );
     }
     return null;
@@ -421,10 +431,7 @@ class PuroConfig {
         engineGitUrl.endsWith('.git')) {
       return Uri.https(
         'raw.githubusercontent.com',
-        '${engineGitUrl.substring(
-          isHttp ? httpPrefix.length : sshPrefix.length,
-          engineGitUrl.length - 4,
-        )}/$commit/$path',
+        '${engineGitUrl.substring(isHttp ? httpPrefix.length : sshPrefix.length, engineGitUrl.length - 4)}/$commit/$path',
       );
     }
     return null;
@@ -546,10 +553,7 @@ class ProjectConfig {
 }
 
 class EnvConfig {
-  EnvConfig({
-    required this.parentConfig,
-    required this.envDir,
-  });
+  EnvConfig({required this.parentConfig, required this.envDir});
 
   final PuroConfig parentConfig;
   final Directory envDir;
@@ -580,9 +584,7 @@ class EnvConfig {
   // lets you change it with an environment variable
   String get flutterToolArgs => '';
 
-  Future<PuroEnvPrefsModel> readPrefs({
-    required Scope scope,
-  }) async {
+  Future<PuroEnvPrefsModel> readPrefs({required Scope scope}) async {
     final model = PuroEnvPrefsModel();
     if (prefsJsonFile.existsSync()) {
       final contents = await readAtomic(scope: scope, file: prefsJsonFile);
@@ -596,25 +598,20 @@ class EnvConfig {
     required FutureOr<void> Function(PuroEnvPrefsModel prefs) fn,
     bool background = false,
   }) {
-    return lockFile(
-      scope,
-      prefsJsonFile,
-      (handle) async {
-        final model = PuroEnvPrefsModel();
-        String? contents;
-        if (handle.lengthSync() > 0) {
-          contents = handle.readAllAsStringSync();
-          model.mergeFromProto3Json(jsonDecode(contents));
-        }
-        await fn(model);
-        final newContents = prettyJsonEncoder.convert(model.toProto3Json());
-        if (contents != newContents) {
-          handle.writeAllStringSync(newContents);
-        }
-        return model;
-      },
-      mode: FileMode.append,
-    );
+    return lockFile(scope, prefsJsonFile, (handle) async {
+      final model = PuroEnvPrefsModel();
+      String? contents;
+      if (handle.lengthSync() > 0) {
+        contents = handle.readAllAsStringSync();
+        model.mergeFromProto3Json(jsonDecode(contents));
+      }
+      await fn(model);
+      final newContents = prettyJsonEncoder.convert(model.toProto3Json());
+      if (contents != newContents) {
+        handle.writeAllStringSync(newContents);
+      }
+      return model;
+    }, mode: FileMode.append);
   }
 }
 
@@ -625,29 +622,40 @@ class FlutterConfig {
 
   late final Directory binDir = sdkDir.childDirectory('bin');
   late final Directory packagesDir = sdkDir.childDirectory('packages');
-  late final File flutterScript =
-      binDir.childFile(Platform.isWindows ? 'flutter.bat' : 'flutter');
-  late final File dartScript =
-      binDir.childFile(Platform.isWindows ? 'dart.bat' : 'dart');
+  late final File flutterScript = binDir.childFile(
+    Platform.isWindows ? 'flutter.bat' : 'flutter',
+  );
+  late final File dartScript = binDir.childFile(
+    Platform.isWindows ? 'dart.bat' : 'dart',
+  );
   late final Directory binInternalDir = binDir.childDirectory('internal');
   late final Directory cacheDir = binDir.childDirectory('cache');
   late final FlutterCacheConfig cache = FlutterCacheConfig(cacheDir);
-  late final File engineVersionFile =
-      binInternalDir.childFile('engine.version');
-  late final Directory flutterToolsDir =
-      packagesDir.childDirectory('flutter_tools');
-  late final File flutterToolsScriptFile =
-      flutterToolsDir.childDirectory('bin').childFile('flutter_tools.dart');
-  late final File flutterToolsPubspecYamlFile =
-      flutterToolsDir.childFile('pubspec.yaml');
-  late final File flutterToolsPubspecLockFile =
-      flutterToolsDir.childFile('pubspec.lock');
+  late final File engineVersionFile = binInternalDir.childFile(
+    'engine.version',
+  );
+  late final Directory flutterToolsDir = packagesDir.childDirectory(
+    'flutter_tools',
+  );
+  late final File flutterToolsScriptFile = flutterToolsDir
+      .childDirectory('bin')
+      .childFile('flutter_tools.dart');
+  late final File flutterToolsPubspecYamlFile = flutterToolsDir.childFile(
+    'pubspec.yaml',
+  );
+  late final File flutterToolsPubspecLockFile = flutterToolsDir.childFile(
+    'pubspec.lock',
+  );
   late final File flutterToolsPackageConfigJsonFile = flutterToolsDir
       .childDirectory('.dart_tool')
       .childFile('package_config.json');
-  late final File flutterToolsLegacyPackagesFile =
-      flutterToolsDir.childFile('.packages');
+  late final File flutterToolsLegacyPackagesFile = flutterToolsDir.childFile(
+    '.packages',
+  );
   late final File legacyVersionFile = sdkDir.childFile('version');
+  late final File updateEngineVersionScript = sdkDir
+      .childDirectory('bin')
+      .childFile('update_engine_version.sh');
 
   String? get engineVersion => engineVersionFile.existsSync()
       ? engineVersionFile.readAsStringSync().trim()
@@ -668,12 +676,14 @@ class FlutterCacheConfig {
   late final Directory dartSdkDir = cacheDir.childDirectory('dart-sdk');
   late final DartSdkConfig dartSdk = DartSdkConfig(dartSdkDir);
 
-  late final File flutterToolsStampFile =
-      cacheDir.childFile('flutter_tools.stamp');
+  late final File flutterToolsStampFile = cacheDir.childFile(
+    'flutter_tools.stamp',
+  );
   late final File engineStampFile = cacheDir.childFile('engine.stamp');
   late final File engineRealmFile = cacheDir.childFile('engine.realm');
-  late final File engineVersionFile =
-      cacheDir.childFile('engine-dart-sdk.stamp');
+  late final File engineVersionFile = cacheDir.childFile(
+    'engine-dart-sdk.stamp',
+  );
   String? get engineVersion => engineVersionFile.existsSync()
       ? engineVersionFile.readAsStringSync().trim()
       : null;
@@ -692,13 +702,15 @@ class DartSdkConfig {
 
   late final Directory binDir = sdkDir.childDirectory('bin');
 
-  late final File dartExecutable =
-      binDir.childFile(Platform.isWindows ? 'dart.exe' : 'dart');
+  late final File dartExecutable = binDir.childFile(
+    Platform.isWindows ? 'dart.exe' : 'dart',
+  );
 
   // This no longer exists on recent versions of Dart where we instead use
   // `dart pub`.
-  late final File oldPubExecutable =
-      binDir.childFile(Platform.isWindows ? 'pub.bat' : 'pub');
+  late final File oldPubExecutable = binDir.childFile(
+    Platform.isWindows ? 'pub.bat' : 'pub',
+  );
 
   late final Directory libDir = sdkDir.childDirectory('lib');
   late final Directory internalLibDir = libDir.childDirectory('_internal');
@@ -786,9 +798,7 @@ void ensureValidEnvName(String name) {
 
 const prettyJsonEncoder = JsonEncoder.withIndent('  ');
 
-Future<PuroGlobalPrefsModel> _readGlobalPrefs({
-  required Scope scope,
-}) async {
+Future<PuroGlobalPrefsModel> _readGlobalPrefs({required Scope scope}) async {
   final model = PuroGlobalPrefsModel();
   final file = scope.read(globalPrefsJsonFileProvider);
   if (file.existsSync()) {
@@ -805,28 +815,23 @@ Future<PuroGlobalPrefsModel> _updateGlobalPrefs({
 }) {
   final file = scope.read(globalPrefsJsonFileProvider);
   file.parent.createSync(recursive: true);
-  return lockFile(
-    scope,
-    file,
-    (handle) async {
-      final model = PuroGlobalPrefsModel();
-      String? contents;
-      if (handle.lengthSync() > 0) {
-        contents = handle.readAllAsStringSync();
-        model.mergeFromProto3Json(jsonDecode(contents));
-      }
-      await fn(model);
-      if (!model.hasLegacyPubCache()) {
-        model.legacyPubCache = !scope.read(isFirstRunProvider);
-      }
-      final newContents = prettyJsonEncoder.convert(model.toProto3Json());
-      if (contents != newContents) {
-        handle.writeAllStringSync(newContents);
-      }
-      return model;
-    },
-    mode: FileMode.append,
-  );
+  return lockFile(scope, file, (handle) async {
+    final model = PuroGlobalPrefsModel();
+    String? contents;
+    if (handle.lengthSync() > 0) {
+      contents = handle.readAllAsStringSync();
+      model.mergeFromProto3Json(jsonDecode(contents));
+    }
+    await fn(model);
+    if (!model.hasLegacyPubCache()) {
+      model.legacyPubCache = !scope.read(isFirstRunProvider);
+    }
+    final newContents = prettyJsonEncoder.convert(model.toProto3Json());
+    if (contents != newContents) {
+      handle.writeAllStringSync(newContents);
+    }
+    return model;
+  }, mode: FileMode.append);
 }
 
 final globalPrefsJsonFileProvider = Provider<File>.late();
@@ -835,9 +840,7 @@ final globalPrefsProvider = Provider<Future<PuroGlobalPrefsModel>>(
   (scope) => _readGlobalPrefs(scope: scope),
 );
 
-Future<PuroGlobalPrefsModel> readGlobalPrefs({
-  required Scope scope,
-}) {
+Future<PuroGlobalPrefsModel> readGlobalPrefs({required Scope scope}) {
   return scope.read(globalPrefsProvider);
 }
 
@@ -891,9 +894,7 @@ Future<void> cleanDotfiles({required Scope scope}) {
   );
 }
 
-Future<Map<String, List<File>>> getAllDotfiles({
-  required Scope scope,
-}) async {
+Future<Map<String, List<File>>> getAllDotfiles({required Scope scope}) async {
   final log = PuroLogger.of(scope);
   final config = PuroConfig.of(scope);
   final prefs = await readGlobalPrefs(scope: scope);
@@ -910,9 +911,9 @@ Future<Map<String, List<File>>> getAllDotfiles({
       final model = PuroDotfileModel.create();
       model.mergeFromProto3Json(data);
       if (model.hasEnv()) {
-        result.putIfAbsent(model.env, () => {}).add(
-              dotfile.resolveSymbolicLinksSync(),
-            );
+        result
+            .putIfAbsent(model.env, () => {})
+            .add(dotfile.resolveSymbolicLinksSync());
       }
     } catch (exception, stackTrace) {
       log.w('Error while reading $path');
@@ -924,10 +925,8 @@ Future<Map<String, List<File>>> getAllDotfiles({
     await cleanDotfiles(scope: scope);
   }
   return result.map(
-    (key, value) => MapEntry(
-      key,
-      value.map((e) => config.fileSystem.file(e)).toList(),
-    ),
+    (key, value) =>
+        MapEntry(key, value.map((e) => config.fileSystem.file(e)).toList()),
   );
 }
 

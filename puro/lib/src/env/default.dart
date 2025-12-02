@@ -71,9 +71,7 @@ Future<EnvConfig> getProjectEnvOrDefault({
   return env;
 }
 
-Future<String> getDefaultEnvName({
-  required Scope scope,
-}) async {
+Future<String> getDefaultEnvName({required Scope scope}) async {
   final prefs = await readGlobalPrefs(scope: scope);
   return prefs.hasDefaultEnvironment() ? prefs.defaultEnvironment : 'stable';
 }
@@ -89,10 +87,7 @@ Future<void> setDefaultEnvName({
       prefs.defaultEnvironment = envName;
     },
   );
-  await updateDefaultEnvSymlink(
-    scope: scope,
-    name: envName,
-  );
+  await updateDefaultEnvSymlink(scope: scope, name: envName);
 }
 
 Future<void> updateDefaultEnvSymlink({

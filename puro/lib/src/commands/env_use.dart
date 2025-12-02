@@ -66,16 +66,14 @@ class EnvUseCommand extends PuroCommand {
           log.w('Environment `${env.name}` does not exist');
         }
       }
-      await setDefaultEnvName(
-        scope: scope,
-        envName: env.name,
-      );
+      await setDefaultEnvName(scope: scope, envName: env.name);
       return BasicMessageResult(
         'Set global default environment to `${env.name}`',
       );
     }
-    var vscodeOverride =
-        argResults!.wasParsed('vscode') ? argResults!['vscode'] as bool : null;
+    var vscodeOverride = argResults!.wasParsed('vscode')
+        ? argResults!['vscode'] as bool
+        : null;
     if (vscodeOverride == null && await isRunningInVscode(scope: scope)) {
       vscodeOverride = true;
     }
@@ -88,8 +86,6 @@ class EnvUseCommand extends PuroCommand {
           : null,
       projectConfig: config.project,
     );
-    return BasicMessageResult(
-      'Switched to environment `${environment.name}`',
-    );
+    return BasicMessageResult('Switched to environment `${environment.name}`');
   }
 }

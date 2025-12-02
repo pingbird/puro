@@ -3,7 +3,7 @@ version: 2.1
 orbs:
   aws-s3: circleci/aws-s3@3.0
   win: circleci/windows@4.1.1
-  macos: circleci/macos@2.5.2
+  macos: circleci/macos@2.5.4
 
 commands:
   install_dart:
@@ -20,6 +20,17 @@ commands:
             wget https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/linux_packages/dart_${DART_VERSION}-1_amd64.deb
             sudo dpkg -i dart_${DART_VERSION}-1_amd64.deb
             fi
+            dart --version
+
+  install_dart_arm64:
+    steps:
+      - run:
+          name: "Install Dart (arm64)"
+          command: |-
+            cd ~/
+            curl https://storage.googleapis.com/dart-archive/channels/$DART_RELEASE/release/$DART_VERSION/sdk/dartsdk-macos-arm64-release.zip -o dart-sdk.zip
+            unzip dart-sdk.zip
+            sudo ln -s `pwd`/dart-sdk/bin/dart /usr/local/bin/dart
             dart --version
 
   install_dart_windows:
@@ -123,7 +134,7 @@ commands:
 jobs:
   linux_tests:
     environment: &dart_version
-      DART_VERSION: "3.7.2"
+      DART_VERSION: "3.10.0"
       DART_RELEASE: "stable"
     docker:
       - image: cimg/base:stable
@@ -153,13 +164,29 @@ jobs:
         default: ""
     environment: *dart_version
     macos:
-      xcode: 14.1.0
+      xcode: '16.4'
     steps:
       - macos/install-rosetta
       - install_dart
       - test_all
       - build_puro:
           os_name: darwin-x64
+          build_args: << parameters.build_args >>
+
+  macos_arm64_build:
+    parameters:
+      build_args:
+        type: string
+        default: ""
+    environment: *dart_version
+    macos:
+      xcode: '16.4'
+    resource_class: macos.m1.medium.gen1
+    steps:
+      - install_dart_arm64
+      - test_all
+      - build_puro:
+          os_name: darwin-arm64
           build_args: << parameters.build_args >>
 
   windows_build:
@@ -236,11 +263,13 @@ workflows:
     jobs:
       - linux_build
       - macos_build
+      - macos_arm64_build
       - windows_build
       - upload_master_builds:
           requires:
             - linux_build
             - macos_build
+            - macos_arm64_build
             - windows_build
       - build_website
     when:
@@ -265,6 +294,9 @@ workflows:
       - macos_build:
           filters: *release-filters
           build_args: --release
+      - macos_arm64_build:
+          filters: *release-filters
+          build_args: --release
       - windows_build:
           filters: *release-filters
           build_args: --release
@@ -273,6 +305,7 @@ workflows:
           requires:
             - linux_build
             - macos_build
+            - macos_arm64_build
             - windows_build
       - build_website:
           filters: *release-filters

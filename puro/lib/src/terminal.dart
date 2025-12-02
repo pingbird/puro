@@ -79,11 +79,7 @@ class OutputFormatter {
     CompletionType type = CompletionType.success,
   }) {
     return prefix(
-      color(
-        type.prefix,
-        foregroundColor: type.color,
-        bold: true,
-      ),
+      color(type.prefix, foregroundColor: type.color, bold: true),
       content,
     );
   }
@@ -124,12 +120,11 @@ class ColorOutputFormatter extends OutputFormatter {
 }
 
 class Terminal implements StringSink {
-  Terminal({
-    required this.stdout,
-  });
+  Terminal({required this.stdout});
 
   final Stdout stdout;
-  late var enableColor = stdout.supportsAnsiEscapes ||
+  late var enableColor =
+      stdout.supportsAnsiEscapes ||
       (Platform.isWindows &&
           (Platform.environment['TERM']?.contains('xterm') ?? false));
   late var enableStatus = enableColor;

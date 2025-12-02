@@ -6,8 +6,10 @@ class Reader {
   Reader(this._bytes);
 
   final Uint8List _bytes;
-  late final byteData =
-      _bytes.buffer.asByteData(_bytes.offsetInBytes, _bytes.lengthInBytes);
+  late final byteData = _bytes.buffer.asByteData(
+    _bytes.offsetInBytes,
+    _bytes.lengthInBytes,
+  );
   var byteOffset = 0;
   int readByte() => _bytes[byteOffset++];
   int peekByte() => _bytes[byteOffset];
@@ -50,8 +52,8 @@ class Reader {
   Uint8List? _doubleBufferUint8;
 
   double readDouble() {
-    final doubleBufferUint8 =
-        _doubleBufferUint8 ??= _doubleBuffer.buffer.asUint8List();
+    final doubleBufferUint8 = _doubleBufferUint8 ??= _doubleBuffer.buffer
+        .asUint8List();
     doubleBufferUint8[0] = readByte();
     doubleBufferUint8[1] = readByte();
     doubleBufferUint8[2] = readByte();

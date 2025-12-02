@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: flutter_releases.proto
-//
+// Generated from flutter_releases.proto.
+
 // @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -26,40 +27,26 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
     $core.String? archive,
     $core.String? sha256,
   }) {
-    final $result = create();
-    if (hash != null) {
-      $result.hash = hash;
-    }
-    if (channel != null) {
-      $result.channel = channel;
-    }
-    if (version != null) {
-      $result.version = version;
-    }
-    if (dartSdkVersion != null) {
-      $result.dartSdkVersion = dartSdkVersion;
-    }
-    if (dartSdkArch != null) {
-      $result.dartSdkArch = dartSdkArch;
-    }
-    if (releaseDate != null) {
-      $result.releaseDate = releaseDate;
-    }
-    if (archive != null) {
-      $result.archive = archive;
-    }
-    if (sha256 != null) {
-      $result.sha256 = sha256;
-    }
-    return $result;
+    final result = create();
+    if (hash != null) result.hash = hash;
+    if (channel != null) result.channel = channel;
+    if (version != null) result.version = version;
+    if (dartSdkVersion != null) result.dartSdkVersion = dartSdkVersion;
+    if (dartSdkArch != null) result.dartSdkArch = dartSdkArch;
+    if (releaseDate != null) result.releaseDate = releaseDate;
+    if (archive != null) result.archive = archive;
+    if (sha256 != null) result.sha256 = sha256;
+    return result;
   }
-  FlutterReleaseModel._() : super();
-  factory FlutterReleaseModel.fromBuffer($core.List<$core.int> i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(i, r);
-  factory FlutterReleaseModel.fromJson($core.String i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(i, r);
+
+  FlutterReleaseModel._();
+
+  factory FlutterReleaseModel.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FlutterReleaseModel.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'FlutterReleaseModel',
@@ -74,24 +61,20 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'sha256')
     ..hasRequiredFields = false;
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  FlutterReleaseModel clone() => FlutterReleaseModel()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FlutterReleaseModel clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   FlutterReleaseModel copyWith(void Function(FlutterReleaseModel) updates) =>
       super.copyWith((message) => updates(message as FlutterReleaseModel))
           as FlutterReleaseModel;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static FlutterReleaseModel create() => FlutterReleaseModel._();
+  @$core.override
   FlutterReleaseModel createEmptyInstance() => create();
-  static $pb.PbList<FlutterReleaseModel> createRepeated() =>
-      $pb.PbList<FlutterReleaseModel>();
   @$core.pragma('dart2js:noInline')
   static FlutterReleaseModel getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<FlutterReleaseModel>(create);
@@ -100,10 +83,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.String get hash => $_getSZ(0);
   @$pb.TagNumber(1)
-  set hash($core.String v) {
-    $_setString(0, v);
-  }
-
+  set hash($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasHash() => $_has(0);
   @$pb.TagNumber(1)
@@ -112,10 +92,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get channel => $_getSZ(1);
   @$pb.TagNumber(2)
-  set channel($core.String v) {
-    $_setString(1, v);
-  }
-
+  set channel($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasChannel() => $_has(1);
   @$pb.TagNumber(2)
@@ -124,10 +101,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get version => $_getSZ(2);
   @$pb.TagNumber(3)
-  set version($core.String v) {
-    $_setString(2, v);
-  }
-
+  set version($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasVersion() => $_has(2);
   @$pb.TagNumber(3)
@@ -136,10 +110,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.String get dartSdkVersion => $_getSZ(3);
   @$pb.TagNumber(4)
-  set dartSdkVersion($core.String v) {
-    $_setString(3, v);
-  }
-
+  set dartSdkVersion($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasDartSdkVersion() => $_has(3);
   @$pb.TagNumber(4)
@@ -148,10 +119,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.String get dartSdkArch => $_getSZ(4);
   @$pb.TagNumber(5)
-  set dartSdkArch($core.String v) {
-    $_setString(4, v);
-  }
-
+  set dartSdkArch($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasDartSdkArch() => $_has(4);
   @$pb.TagNumber(5)
@@ -160,10 +128,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.String get releaseDate => $_getSZ(5);
   @$pb.TagNumber(6)
-  set releaseDate($core.String v) {
-    $_setString(5, v);
-  }
-
+  set releaseDate($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasReleaseDate() => $_has(5);
   @$pb.TagNumber(6)
@@ -172,10 +137,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.String get archive => $_getSZ(6);
   @$pb.TagNumber(7)
-  set archive($core.String v) {
-    $_setString(6, v);
-  }
-
+  set archive($core.String value) => $_setString(6, value);
   @$pb.TagNumber(7)
   $core.bool hasArchive() => $_has(6);
   @$pb.TagNumber(7)
@@ -184,10 +146,7 @@ class FlutterReleaseModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $core.String get sha256 => $_getSZ(7);
   @$pb.TagNumber(8)
-  set sha256($core.String v) {
-    $_setString(7, v);
-  }
-
+  set sha256($core.String value) => $_setString(7, value);
   @$pb.TagNumber(8)
   $core.bool hasSha256() => $_has(7);
   @$pb.TagNumber(8)
@@ -200,25 +159,22 @@ class FlutterReleasesModel extends $pb.GeneratedMessage {
     $core.Iterable<$core.MapEntry<$core.String, $core.String>>? currentRelease,
     $core.Iterable<FlutterReleaseModel>? releases,
   }) {
-    final $result = create();
-    if (baseUrl != null) {
-      $result.baseUrl = baseUrl;
-    }
-    if (currentRelease != null) {
-      $result.currentRelease.addEntries(currentRelease);
-    }
-    if (releases != null) {
-      $result.releases.addAll(releases);
-    }
-    return $result;
+    final result = create();
+    if (baseUrl != null) result.baseUrl = baseUrl;
+    if (currentRelease != null)
+      result.currentRelease.addEntries(currentRelease);
+    if (releases != null) result.releases.addAll(releases);
+    return result;
   }
-  FlutterReleasesModel._() : super();
-  factory FlutterReleasesModel.fromBuffer($core.List<$core.int> i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(i, r);
-  factory FlutterReleasesModel.fromJson($core.String i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(i, r);
+
+  FlutterReleasesModel._();
+
+  factory FlutterReleasesModel.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FlutterReleasesModel.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'FlutterReleasesModel',
@@ -228,30 +184,24 @@ class FlutterReleasesModel extends $pb.GeneratedMessage {
         entryClassName: 'FlutterReleasesModel.CurrentReleaseEntry',
         keyFieldType: $pb.PbFieldType.OS,
         valueFieldType: $pb.PbFieldType.OS)
-    ..pc<FlutterReleaseModel>(
-        3, _omitFieldNames ? '' : 'releases', $pb.PbFieldType.PM,
+    ..pPM<FlutterReleaseModel>(3, _omitFieldNames ? '' : 'releases',
         subBuilder: FlutterReleaseModel.create)
     ..hasRequiredFields = false;
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  FlutterReleasesModel clone() =>
-      FlutterReleasesModel()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FlutterReleasesModel clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   FlutterReleasesModel copyWith(void Function(FlutterReleasesModel) updates) =>
       super.copyWith((message) => updates(message as FlutterReleasesModel))
           as FlutterReleasesModel;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static FlutterReleasesModel create() => FlutterReleasesModel._();
+  @$core.override
   FlutterReleasesModel createEmptyInstance() => create();
-  static $pb.PbList<FlutterReleasesModel> createRepeated() =>
-      $pb.PbList<FlutterReleasesModel>();
   @$core.pragma('dart2js:noInline')
   static FlutterReleasesModel getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<FlutterReleasesModel>(create);
@@ -260,10 +210,7 @@ class FlutterReleasesModel extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.String get baseUrl => $_getSZ(0);
   @$pb.TagNumber(1)
-  set baseUrl($core.String v) {
-    $_setString(0, v);
-  }
-
+  set baseUrl($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasBaseUrl() => $_has(0);
   @$pb.TagNumber(1)
@@ -276,6 +223,7 @@ class FlutterReleasesModel extends $pb.GeneratedMessage {
   $pb.PbList<FlutterReleaseModel> get releases => $_getList(2);
 }
 
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames =
+const $core.bool _omitFieldNames =
+    $core.bool.fromEnvironment('protobuf.omit_field_names');
+const $core.bool _omitMessageNames =
     $core.bool.fromEnvironment('protobuf.omit_message_names');

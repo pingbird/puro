@@ -39,16 +39,14 @@ Future<void> installLinuxWorkerPackages({required Scope scope}) async {
         CommandMessage(
           'Try running `sudo apt install ${tryApt.join(' ')}`',
           type: CompletionType.info,
-        )
+        ),
     ]);
   }
 }
 
 final visualStudioProvider = Provider((scope) => VisualStudio(scope: scope));
 
-Future<VisualStudio> ensureVisualStudioInstalled({
-  required Scope scope,
-}) async {
+Future<VisualStudio> ensureVisualStudioInstalled({required Scope scope}) async {
   final log = PuroLogger.of(scope);
   final vs = scope.read(visualStudioProvider);
 
@@ -116,10 +114,12 @@ Future<void> ensureWindowsDebuggerInstalled({required Scope scope}) async {
   final config = PuroConfig.of(scope);
   final log = PuroLogger.of(scope);
 
-  final win10sdkPath =
-      config.fileSystem.directory(vs.getWindows10SdkLocation()!);
-  final debuggersDir =
-      win10sdkPath.childDirectory('Debuggers').childDirectory('x86');
+  final win10sdkPath = config.fileSystem.directory(
+    vs.getWindows10SdkLocation()!,
+  );
+  final debuggersDir = win10sdkPath
+      .childDirectory('Debuggers')
+      .childDirectory('x86');
   final dbghelpFile = debuggersDir.childFile('dbghelp.dll');
   log.d('dbghelpFile: $dbghelpFile');
   await ProgressNode.of(scope).wrap((scope, node) async {
@@ -139,7 +139,7 @@ Future<void> ensureWindowsDebuggerInstalled({required Scope scope}) async {
       int compareVersions(String a, String b) {
         final x = a.split('.').map(int.parse).toList();
         final y = b.split('.').map(int.parse).toList();
-        for (var i = 0;; i++) {
+        for (var i = 0; ; i++) {
           if (x.length <= i) {
             if (y.length <= i) {
               return 0;
@@ -155,18 +155,21 @@ Future<void> ensureWindowsDebuggerInstalled({required Scope scope}) async {
 
       final dependencyList =
           (jsonDecode(result.stdout as String) as List<dynamic>).toList();
-      dependencyList.removeWhere((dynamic e) =>
-          e['Version'] == null ||
-          e['DisplayName'] == null ||
-          !(e['DisplayName'] as String)
-              .startsWith('Windows Software Development Kit - Windows 10.'));
+      dependencyList.removeWhere(
+        (dynamic e) =>
+            e['Version'] == null ||
+            e['DisplayName'] == null ||
+            !(e['DisplayName'] as String).startsWith(
+              'Windows Software Development Kit - Windows 10.',
+            ),
+      );
       if (dependencyList.isNotEmpty) {
         final dynamic dependency = dependencyList.reduce(
           (dynamic a, dynamic b) =>
               compareVersions(a['Version'] as String, b['Version'] as String) >
-                      0
-                  ? a
-                  : b,
+                  0
+              ? a
+              : b,
         );
         final dependencyKey = dependency['PSChildName'] as String;
         log.d('dependencyKey: $dependencyKey');
@@ -180,16 +183,12 @@ Future<void> ensureWindowsDebuggerInstalled({required Scope scope}) async {
           installerFile = depDirectory.childFile('sdksetup.exe');
         }
         if (installerFile.existsSync()) {
-          final result = await runProcess(
-            scope,
-            installerFile.path,
-            [
-              '/features',
-              'OptionId.WindowsDesktopDebuggers',
-              '/q',
-              '/norestart'
-            ],
-          );
+          final result = await runProcess(scope, installerFile.path, [
+            '/features',
+            'OptionId.WindowsDesktopDebuggers',
+            '/q',
+            '/norestart',
+          ]);
           if (result.exitCode == 0) return;
         }
       }
@@ -242,12 +241,9 @@ Future<void> ensureWindowsPythonInstalled({required Scope scope}) async {
     if (parent.basename == 'WindowsApps' &&
         parent.parent.basename == 'Microsoft') {
       // Double check that the executable is indeed useless before deleting.
-      final result = await runProcess(
-        scope,
-        program.path,
-        ['-V'],
-        runInShell: true,
-      );
+      final result = await runProcess(scope, program.path, [
+        '-V',
+      ], runInShell: true);
       if (result.exitCode == 9009) {
         program.deleteSync();
         pythonPrograms.removeAt(i);
@@ -257,13 +253,10 @@ Future<void> ensureWindowsPythonInstalled({required Scope scope}) async {
   }
   if (pythonPrograms.length > 1) {
     CommandMessage.format(
-      (format) => 'Multiple installations of python found in your PATH\n'
+      (format) =>
+          'Multiple installations of python found in your PATH\n'
           'If engine builds fail, try removing all but one:\n'
-          '${pythonPrograms.map((e) => '${format.color(
-                '*',
-                bold: true,
-                foregroundColor: Ansi8BitColor.red,
-              )} ${e.path}').join('\n')}',
+          '${pythonPrograms.map((e) => '${format.color('*', bold: true, foregroundColor: Ansi8BitColor.red)} ${e.path}').join('\n')}',
       type: CompletionType.alert,
     ).queue(scope);
   } else if (pythonPrograms.isEmpty) {
@@ -275,12 +268,9 @@ Future<void> ensureWindowsPythonInstalled({required Scope scope}) async {
       ),
     ]);
   }
-  final python3Result = await runProcess(
-    scope,
-    'python',
-    ['-V'],
-    runInShell: true,
-  );
+  final python3Result = await runProcess(scope, 'python', [
+    '-V',
+  ], runInShell: true);
   if (python3Result.exitCode != 0) {
     throw CommandError(
       '`python -V` did not pass the vibe check (exited with code ${python3Result.exitCode})',

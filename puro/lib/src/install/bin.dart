@@ -41,10 +41,7 @@ Future<void> ensurePuroInstalled({
   if (promote) {
     await _promoteStandalone(scope: scope);
   } else {
-    await _installTrampoline(
-      scope: scope,
-      force: force,
-    );
+    await _installTrampoline(scope: scope, force: force);
   }
   await _installShims(scope: scope);
   await updateDefaultEnvSymlink(scope: scope);
@@ -114,8 +111,9 @@ Future<void> _installTrampoline({
       installLocation = Platform.executable;
       break;
     case PuroInstallationType.development:
-      final puroDartFile =
-          version.packageRoot!.childDirectory('bin').childFile('puro.dart');
+      final puroDartFile = version.packageRoot!
+          .childDirectory('bin')
+          .childFile('puro.dart');
       command = '"${Platform.executable}" "${puroDartFile.path}"';
       installLocation = puroDartFile.path;
       break;
@@ -136,8 +134,9 @@ Future<void> _installTrampoline({
       : '$trampolineHeader\n$command "\$@"';
 
   final trampolineExists = trampolineFile.existsSync();
-  final executableExists =
-      executableIsTrampoline ? trampolineExists : executableFile.existsSync();
+  final executableExists = executableIsTrampoline
+      ? trampolineExists
+      : executableFile.existsSync();
   final installed = trampolineExists || executableExists;
 
   if (installed) {
@@ -146,7 +145,8 @@ Future<void> _installTrampoline({
     // --x--x--x -> 0b001001001 -> 0x49
     final needsChmod =
         !Platform.isWindows && trampolineStat.mode & 0x49 != 0x49;
-    final upToDate = exists &&
+    final upToDate =
+        exists &&
         await compareFileAtomic(
           scope: scope,
           file: trampolineFile,
@@ -181,16 +181,15 @@ Future<void> _installTrampoline({
   }
 }
 
-Future<void> _installShims({
-  required Scope scope,
-}) async {
+Future<void> _installShims({required Scope scope}) async {
   final config = PuroConfig.of(scope);
   if (config.enableShims) {
     if (Platform.isWindows) {
       await writePassiveAtomic(
         scope: scope,
         file: config.puroDartShimFile,
-        content: '@echo off\n'
+        content:
+            '@echo off\n'
             'SETLOCAL ENABLEDELAYEDEXPANSION\n'
             'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
             '"%PURO_BIN%\\puro.exe" dart %* & exit /B !ERRORLEVEL!',
@@ -198,7 +197,8 @@ Future<void> _installShims({
       await writePassiveAtomic(
         scope: scope,
         file: config.puroFlutterShimFile,
-        content: '@echo off\n'
+        content:
+            '@echo off\n'
             'SETLOCAL ENABLEDELAYEDEXPANSION\n'
             'FOR %%i IN ("%~dp0.") DO SET PURO_BIN=%%~fi\n'
             '"%PURO_BIN%\\puro.exe" flutter %* & exit /B !ERRORLEVEL!',
@@ -207,26 +207,24 @@ Future<void> _installShims({
       await writePassiveAtomic(
         scope: scope,
         file: config.puroDartShimFile,
-        content: '$bashShimHeader\n'
+        content:
+            '$bashShimHeader\n'
             'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
             '"\$PURO_BIN/puro" dart "\$@"',
       );
       await writePassiveAtomic(
         scope: scope,
         file: config.puroFlutterShimFile,
-        content: '$bashShimHeader\n'
+        content:
+            '$bashShimHeader\n'
             'PURO_BIN="\$(cd "\${PROG_NAME%/*}" ; pwd -P)"\n'
             '"\$PURO_BIN/puro" flutter "\$@"',
       );
-      await runProcess(
-        scope,
-        'chmod',
-        [
-          '+x',
-          config.puroDartShimFile.path,
-          config.puroFlutterShimFile.path,
-        ],
-      );
+      await runProcess(scope, 'chmod', [
+        '+x',
+        config.puroDartShimFile.path,
+        config.puroFlutterShimFile.path,
+      ]);
     }
   } else {
     if (config.puroDartShimFile.existsSync()) {
